@@ -204,5 +204,3 @@ bowling-alley-web/
 
 MIT
 
-testing
-
