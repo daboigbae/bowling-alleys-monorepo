@@ -72,7 +72,6 @@ PORT=5000
 FRONTEND_URL=https://bowlingalleys.io
 FIREBASE_SERVICE_ACCOUNT_KEY='{"type":"service_account",...}'
 FIREBASE_PROJECT_ID=bowling-alleys-io
-NODE_ENV=production
 ```
 
 ### Frontend (Production)
@@ -103,8 +102,6 @@ NEXT_PUBLIC_SITE_URL=https://bowlingalleys.io
 | `FIREBASE_SERVICE_ACCOUNT_KEY` | Yes | Firebase service account JSON as single-line string (works for local & Railway) |
 | `FIREBASE_PROJECT_ID` | Yes | Firebase project ID |
 | `USE_PRODUCTION_EMAIL` | No | Use production Resend for emails (`true` or `false`) |
-| `NODE_ENV` | No | Node environment (`development` or `production`) |
-
 
 ### Frontend Variables
 

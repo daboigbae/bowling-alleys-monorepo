@@ -11,7 +11,12 @@ if (!admin.apps.length) {
     
     // Initialize with environment variables or service account
     if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+      // Strip surrounding quotes (dotenv/Railway can include them)
+      let keyStr = process.env.FIREBASE_SERVICE_ACCOUNT_KEY.trim();
+      if ((keyStr.startsWith("'") && keyStr.endsWith("'")) || (keyStr.startsWith('"') && keyStr.endsWith('"'))) {
+        keyStr = keyStr.slice(1, -1);
+      }
+      const serviceAccount = JSON.parse(keyStr);
       admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
         projectId: projectId,
