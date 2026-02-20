@@ -79,7 +79,7 @@ Use this checklist when migrating to the monorepo structure.
 
 - [ ] Copy `server/.env` → `packages/api/.env`
 - [ ] Update paths in `packages/api/.env`:
-  - [ ] `GOOGLE_APPLICATION_CREDENTIALS` path
+  - [ ] `FIREBASE_SERVICE_ACCOUNT_KEY` (JSON string)
 - [ ] Copy `frontend/.env.local` → `packages/frontend/.env.local`
 - [ ] Verify `NEXT_PUBLIC_API_URL` is correct
 - [ ] Create `.env.example` files for documentation

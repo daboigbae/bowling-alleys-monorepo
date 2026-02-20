@@ -11,48 +11,33 @@ if (!admin.apps.length) {
     
     // Initialize with environment variables or service account
     if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+      // Strip surrounding quotes (dotenv/Railway can include them)
+      let keyStr = process.env.FIREBASE_SERVICE_ACCOUNT_KEY.trim();
+      if ((keyStr.startsWith("'") && keyStr.endsWith("'")) || (keyStr.startsWith('"') && keyStr.endsWith('"'))) {
+        keyStr = keyStr.slice(1, -1);
+      }
+      // Fix literal newlines (Railway/env paste can introduce these; JSON requires \n)
+      keyStr = keyStr.replace(/\r\n/g, "\\n").replace(/\n/g, "\\n").replace(/\r/g, "\\n");
+      const serviceAccount = JSON.parse(keyStr);
       admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
         projectId: projectId,
       });
       console.log(`[Firebase Admin] Initialized with service account for project: ${projectId}`);
-    } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-      // Use service account file path
-      const credsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-      console.log(`[Firebase Admin] Using credentials file: ${credsPath}`);
-      
-      // Load and parse the service account file
-      const fs = await import('fs');
-      const path = await import('path');
-      
-      if (!fs.existsSync(credsPath)) {
-        throw new Error(`Credentials file not found: ${credsPath}`);
-      }
-      
-      const serviceAccountJson = fs.readFileSync(credsPath, 'utf8');
-      const serviceAccount = JSON.parse(serviceAccountJson);
-      
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        projectId: projectId,
-      });
-      console.log(`[Firebase Admin] ✓ Initialized with credentials file for project: ${projectId}`);
     } else {
-      // For local development, try default credentials
-      // Note: This requires gcloud auth application-default login or GOOGLE_APPLICATION_CREDENTIALS
+      // Fallback for local dev: gcloud auth application-default login
       admin.initializeApp({
         projectId: projectId,
       });
       console.log(`[Firebase Admin] Initialized with default credentials for project: ${projectId}`);
-      console.warn('[Firebase Admin] Warning: Using default credentials. For production, set FIREBASE_SERVICE_ACCOUNT_KEY or GOOGLE_APPLICATION_CREDENTIALS');
+      console.warn('[Firebase Admin] Warning: Using default credentials. For production, set FIREBASE_SERVICE_ACCOUNT_KEY');
     }
   } catch (error) {
     console.error("Firebase Admin initialization failed:", error);
     console.error("Make sure you have:");
     console.error("  1. FIREBASE_PROJECT_ID or NEXT_PUBLIC_FIREBASE_PROJECT_ID set");
-    console.error("  2. Either FIREBASE_SERVICE_ACCOUNT_KEY (JSON string) or GOOGLE_APPLICATION_CREDENTIALS (file path)");
-    console.error("  3. Or run: gcloud auth application-default login");
+    console.error("  2. FIREBASE_SERVICE_ACCOUNT_KEY (minified JSON string) in your .env");
+    console.error("  3. Or run: gcloud auth application-default login (local dev only)");
   }
 }
 
