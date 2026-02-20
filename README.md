@@ -72,7 +72,7 @@ The backend is a standalone **Express.js** server in TypeScript that provides a 
    PORT=5000
    FRONTEND_URL=http://localhost:3000
    FIREBASE_PROJECT_ID=your-project-id
-   GOOGLE_APPLICATION_CREDENTIALS=server/config/firebase-service-account.json
+   FIREBASE_SERVICE_ACCOUNT_KEY='{"type":"service_account",...}'
    # OR use FIREBASE_SERVICE_ACCOUNT_KEY with JSON string
    ```
 

@@ -15,14 +15,9 @@ Create `server/.env` or `packages/api/.env`:
 PORT=5000
 FRONTEND_URL=http://localhost:3000
 
-# Firebase Admin SDK Configuration
-# Option 1: Use service account file path
-GOOGLE_APPLICATION_CREDENTIALS=server/config/firebase-service-account.json
-# OR
-GOOGLE_APPLICATION_CREDENTIALS=packages/api/config/firebase-service-account.json
-
-# Option 2: Use service account JSON as string (single line)
-# FIREBASE_SERVICE_ACCOUNT_KEY='{"type":"service_account",...}'
+# Firebase Admin SDK Configuration (use same approach for local & Railway)
+# Service account JSON as single-line string (recommended)
+FIREBASE_SERVICE_ACCOUNT_KEY='{"type":"service_account","project_id":"...","private_key_id":"...","private_key":"...","client_email":"...","client_id":"...","auth_uri":"...","token_uri":"...","auth_provider_x509_cert_url":"...","client_x509_cert_url":"..."}'
 
 # Firebase Project ID (required)
 FIREBASE_PROJECT_ID=bowling-alleys-io
@@ -39,16 +34,11 @@ USE_PRODUCTION_EMAIL=false
 
 ### Firebase Admin SDK Setup
 
-**Method 1: Service Account File (Recommended)**
-1. Download service account JSON from Firebase Console
-2. Save to `server/config/firebase-service-account.json` (or `packages/api/config/`)
-3. Set `GOOGLE_APPLICATION_CREDENTIALS` to the file path
-4. Ensure file is in `.gitignore`
-
-**Method 2: Environment Variable**
-1. Convert service account JSON to single-line string
-2. Set `FIREBASE_SERVICE_ACCOUNT_KEY` environment variable
-3. Note: This is less secure and harder to manage
+**FIREBASE_SERVICE_ACCOUNT_KEY** (works for both local and Railway):
+1. Go to Firebase Console → Project Settings → Service Accounts
+2. Click "Generate new private key" and download the JSON file
+3. Minify the JSON to a single line (remove newlines, escape quotes if needed)
+4. Set `FIREBASE_SERVICE_ACCOUNT_KEY` to that string in your `.env` or Railway variables
 
 ## Frontend (`packages/frontend/` or `frontend/`)
 
@@ -80,7 +70,7 @@ NEXT_PUBLIC_SITE_URL=https://bowlingalleys.io
 ```env
 PORT=5000
 FRONTEND_URL=https://bowlingalleys.io
-GOOGLE_APPLICATION_CREDENTIALS=/path/to/firebase-service-account.json
+FIREBASE_SERVICE_ACCOUNT_KEY='{"type":"service_account",...}'
 FIREBASE_PROJECT_ID=bowling-alleys-io
 NODE_ENV=production
 ```
@@ -110,13 +100,11 @@ NEXT_PUBLIC_SITE_URL=https://bowlingalleys.io
 |----------|----------|-------------|
 | `PORT` | Yes | Port number for the API server (default: 5000) |
 | `FRONTEND_URL` | Yes | URL of the frontend application (for CORS) |
-| `GOOGLE_APPLICATION_CREDENTIALS` | Yes* | Path to Firebase service account JSON file |
-| `FIREBASE_SERVICE_ACCOUNT_KEY` | Yes* | Firebase service account JSON as string (alternative to file) |
+| `FIREBASE_SERVICE_ACCOUNT_KEY` | Yes | Firebase service account JSON as single-line string (works for local & Railway) |
 | `FIREBASE_PROJECT_ID` | Yes | Firebase project ID |
 | `USE_PRODUCTION_EMAIL` | No | Use production Resend for emails (`true` or `false`) |
 | `NODE_ENV` | No | Node environment (`development` or `production`) |
 
-*Either `GOOGLE_APPLICATION_CREDENTIALS` or `FIREBASE_SERVICE_ACCOUNT_KEY` is required.
 
 ### Frontend Variables
 
@@ -147,19 +135,16 @@ NEXT_PUBLIC_SITE_URL=https://bowlingalleys.io
 3. Select your web app (or create one)
 4. Copy the config values
 
-### Firebase Service Account
+### Firebase Service Account (for FIREBASE_SERVICE_ACCOUNT_KEY)
 1. Go to Firebase Console → Project Settings → Service Accounts
 2. Click "Generate new private key"
 3. Download the JSON file
-4. Save to `server/config/firebase-service-account.json` (or `packages/api/config/`)
-5. Add to `.gitignore`
+4. Minify to single line and set as `FIREBASE_SERVICE_ACCOUNT_KEY` env var
 
 ## Troubleshooting
 
 ### "Could not load the default credentials"
-- Ensure `GOOGLE_APPLICATION_CREDENTIALS` points to a valid file path
-- Or ensure `FIREBASE_SERVICE_ACCOUNT_KEY` is a valid JSON string
-- Check file permissions on the service account file
+- Ensure `FIREBASE_SERVICE_ACCOUNT_KEY` is set and is valid JSON (single-line string)
 
 ### "Unable to detect a Project Id"
 - Set `FIREBASE_PROJECT_ID` in your `.env` file
