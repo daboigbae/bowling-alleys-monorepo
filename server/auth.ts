@@ -16,6 +16,8 @@ if (!admin.apps.length) {
       if ((keyStr.startsWith("'") && keyStr.endsWith("'")) || (keyStr.startsWith('"') && keyStr.endsWith('"'))) {
         keyStr = keyStr.slice(1, -1);
       }
+      // Fix literal newlines (Railway/env paste can introduce these; JSON requires \n)
+      keyStr = keyStr.replace(/\r\n/g, "\\n").replace(/\n/g, "\\n").replace(/\r/g, "\\n");
       const serviceAccount = JSON.parse(keyStr);
       admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
