@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 
 const TermsPage = dynamic(() => import('@/components/pages/TermsPage'), {
-  ssr: true,
+  ssr: false,
 });
 
 export default function Terms() {

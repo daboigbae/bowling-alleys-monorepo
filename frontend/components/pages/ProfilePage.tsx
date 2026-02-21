@@ -163,7 +163,7 @@ export default function Profile() {
       // Update Firestore profile with bio/website/privacy settings
       await updateUserProfile(user.uid, {
         displayName: displayName.trim(),
-        photoURL: newPhotoURL,
+        photoURL: newPhotoURL ?? undefined,
         bio: bio.trim(),
         website: websiteUrl.trim(),
         showReviewsOnProfile,

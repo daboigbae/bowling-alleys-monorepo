@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 
 const FoundingPartnersPage = dynamic(() => import('@/components/pages/FoundingPartnersPage'), {
-  ssr: true,
+  ssr: false,
 });
 
 export default function FoundingPartners() {

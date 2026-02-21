@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 
 const PrivacyPage = dynamic(() => import('@/components/pages/PrivacyPage'), {
-  ssr: true,
+  ssr: false,
 });
 
 export default function Privacy() {

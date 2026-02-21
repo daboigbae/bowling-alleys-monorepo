@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 
 const ExperiencesPage = dynamic(() => import('@/components/pages/ExperiencesPage'), {
-  ssr: true,
+  ssr: false,
 });
 
 export default function Experiences() {

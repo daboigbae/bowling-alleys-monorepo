@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 
 const TeamLogoLabPage = dynamic(() => import('@/components/pages/TeamLogoLabPage'), {
-  ssr: true,
+  ssr: false,
 });
 
 export default function TeamLogoLab() {

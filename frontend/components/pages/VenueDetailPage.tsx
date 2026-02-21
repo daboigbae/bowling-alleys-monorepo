@@ -2407,7 +2407,7 @@ export default function VenueDetail({ venueId }: VenueDetailPageProps) {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Claim Venue Button */}
-              {!user?.ownedVenueIds?.includes(venue.id) && (
+              {!(user as { ownedVenueIds?: string[] })?.ownedVenueIds?.includes(venue.id) && (
                 <div className="flex items-center gap-2 p-4 bg-muted/50 rounded-lg border">
                   <Building2 className="h-5 w-5 text-primary" />
                   <span className="text-sm text-muted-foreground">
