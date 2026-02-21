@@ -9,8 +9,9 @@ import { useToast } from "@/hooks/use-toast";
 
 interface OnboardingModalProps {
   open: boolean;
-  userId: string;
-  onComplete: () => void;
+  userId?: string;
+  onComplete?: () => void;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const steps = [
@@ -216,7 +217,7 @@ const steps = [
   },
 ];
 
-export function OnboardingModal({ open, userId, onComplete }: OnboardingModalProps) {
+export function OnboardingModal({ open, userId, onComplete, onOpenChange }: OnboardingModalProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -238,10 +239,12 @@ export function OnboardingModal({ open, userId, onComplete }: OnboardingModalPro
   };
 
   const handleComplete = async () => {
+    if (!userId) return;
     setIsSubmitting(true);
     try {
       await updateUserProfile(userId, { isOnboarded: true });
-      onComplete();
+      onComplete?.();
+      onOpenChange?.(false);
       toast({
         title: "Welcome to BAiO!",
         description: "You're all set. Start exploring and earning Pin Points!",
@@ -259,7 +262,7 @@ export function OnboardingModal({ open, userId, onComplete }: OnboardingModalPro
   };
 
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
+    <Dialog open={open} onOpenChange={onOpenChange ?? (() => {})}>
       <DialogContent 
         className="sm:max-w-lg max-h-[90vh] overflow-y-auto"
         onPointerDownOutside={(e) => e.preventDefault()}
