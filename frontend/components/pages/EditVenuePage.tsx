@@ -62,13 +62,14 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 
-export default function EditVenue() {
+interface EditVenuePageProps { venueId?: string; }
+export default function EditVenue({ venueId: propVenueId }: EditVenuePageProps = {}) {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [, params] = useRoute("/my-venues/:id/edit");
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const venueId = params?.id;
+  const venueId = propVenueId ?? params?.id;
 
   // Form state
   const [formData, setFormData] = useState({
