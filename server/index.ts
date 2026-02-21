@@ -22,9 +22,17 @@ const app = express();
 
 // Enable CORS for Next.js frontend
 const frontendUrl = process.env.FRONTEND_URL || process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
-console.log(`[CORS] Allowing requests from: ${frontendUrl}`);
+const allowedOrigins = [
+  frontendUrl,
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "https://bowlingalleys.io",
+  "https://www.bowlingalleys.io",
+  "https://bowling-alleys-monorepo.vercel.app",
+].filter((o, i, arr) => arr.indexOf(o) === i);
+console.log(`[CORS] Allowing requests from: ${allowedOrigins.join(", ")}`);
 app.use(cors({
-  origin: [frontendUrl, "http://localhost:3000", "http://localhost:3001"],
+  origin: allowedOrigins,
   credentials: true,
 }));
 
