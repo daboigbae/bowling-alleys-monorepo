@@ -2386,15 +2386,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.header("Content-Type", "application/xml");
       res.header("Content-Encoding", "gzip");
 
-      // Ensure hostname is always https:// and strip port numbers
-      let hostname = "https://bowlingalleys.io";
-      const host = req.get("host");
-      if (host) {
-        // Remove port numbers (like :443, :80, etc.)
-        const cleanHost = host.split(":")[0];
-        // Always use https:// regardless of request protocol
-        hostname = `https://${cleanHost}`;
-      }
+      // Use FRONTEND_URL for consistent sitemap base URLs (avoids wrong host from proxies)
+      const base = process.env.FRONTEND_URL || process.env.SITE_URL || "https://bowlingalleys.io";
+      const hostname = base.replace(/\/$/, "").match(/^https?:\/\//) ? base.replace(/\/$/, "") : `https://${base}`;
       const smStream = new SitemapStream({ hostname });
       const pipeline = smStream.pipe(createGzip());
 

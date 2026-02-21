@@ -28,13 +28,17 @@ export async function GET(request: NextRequest) {
 
     const body = await res.arrayBuffer();
     const contentType = res.headers.get('content-type') || 'application/xml';
+    const contentEncoding = res.headers.get('content-encoding');
+
+    const headers: Record<string, string> = {
+      'Content-Type': contentType,
+      'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+    };
+    if (contentEncoding) headers['Content-Encoding'] = contentEncoding;
 
     return new NextResponse(body, {
       status: 200,
-      headers: {
-        'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=3600, s-maxage=3600',
-      },
+      headers,
     });
   } catch (error) {
     console.error('Sitemap proxy error:', error);
