@@ -50,18 +50,15 @@ const formatCurrency = (amount: number | null | undefined) => {
   return `$${amount.toFixed(2)}`;
 };
 
-export default function BowlingCost() {
+interface BowlingCostPageProps { state?: string; city?: string; }
+export default function BowlingCost({ state: propState, city: propCity }: BowlingCostPageProps = {}) {
   const [cityMatch, cityParams] = useRoute("/bowling-cost/:state/:city");
   const [stateMatch, stateParams] = useRoute("/bowling-cost/:state");
   const [baseMatch] = useRoute("/bowling-cost");
   const [location, setLocation] = useLocation();
 
-  const selectedState = cityMatch
-    ? decodeURIComponent(cityParams!.state)
-    : stateMatch
-      ? decodeURIComponent(stateParams!.state)
-      : null;
-  const selectedCity = cityMatch ? decodeURIComponent(cityParams!.city) : null;
+  const selectedState = propState ?? (cityMatch ? decodeURIComponent(cityParams!.state) : stateMatch ? decodeURIComponent(stateParams!.state) : null);
+  const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
 
   const displayState = selectedState?.toUpperCase();
   const displayCity = selectedCity ? formatDisplayName(selectedCity) : null;

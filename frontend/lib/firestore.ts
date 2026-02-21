@@ -140,6 +140,8 @@ export interface User {
   allowOwnerEmails?: boolean; // Owner-specific emails (review alerts, analytics, etc.)
   // Privacy settings
   showReviewsOnProfile?: boolean; // Whether to display reviews on public profile
+  // Onboarding
+  isOnboarded?: boolean;
 }
 
 export interface VerificationCode {

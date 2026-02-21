@@ -781,7 +781,7 @@ export default function Locations({ state: propState, city: propCity }: Location
                       key={venue.id}
                       className="hover-elevate cursor-pointer"
                       onClick={() => {
-                        sessionStorage.setItem("venueBackPath", location);
+                        sessionStorage.setItem("venueBackPath", pathname);
                         router.push(`/venue/${venue.id}`);
                       }}
                       data-testid={`top-venue-${idx + 1}`}
@@ -924,7 +924,7 @@ export default function Locations({ state: propState, city: propCity }: Location
                     <Card
                       className="hover-elevate cursor-pointer"
                       onClick={() => {
-                        sessionStorage.setItem("venueBackPath", location);
+                        sessionStorage.setItem("venueBackPath", pathname);
                         router.push(`/venue/${reviewsStats.highestRated!.id}`);
                       }}
                     >
@@ -953,11 +953,8 @@ export default function Locations({ state: propState, city: propCity }: Location
                 <CityMap
                   venues={Object.values(filteredVenuesByCity).flat()}
                   onVenueClick={(venueId) => {
-                    const allVenues = Object.values(filteredVenuesByCity).flat();
-                    const venue = allVenues.find((v) => v.id === venueId);
-                    if (venue) {
-                      setLocation(`/venue/${venue.id}`);
-                    }
+                    sessionStorage.setItem("venueBackPath", pathname);
+                    router.push(`/venue/${venueId}`);
                   }}
                 />
               </section>
@@ -989,7 +986,7 @@ export default function Locations({ state: propState, city: propCity }: Location
                           key={venue.id}
                           venue={venue}
                           onViewDetails={(venueId) => {
-                            sessionStorage.setItem("venueBackPath", location);
+                            sessionStorage.setItem("venueBackPath", pathname);
                             router.push(`/venue/${venueId}`);
                           }}
                           showRating={true}
@@ -1082,7 +1079,7 @@ export default function Locations({ state: propState, city: propCity }: Location
                           venue={venue}
                           onViewDetails={(venueId) => {
                             // Store current location path for back navigation
-                            sessionStorage.setItem("venueBackPath", location);
+                            sessionStorage.setItem("venueBackPath", pathname);
                             router.push(`/venue/${venueId}`);
                           }}
                           showRating={true}

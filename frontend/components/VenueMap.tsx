@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import { Venue } from "@/lib/firestore";
 
 interface VenueMapProps {
@@ -56,9 +57,6 @@ export default function VenueMap({ venue, className = "" }: VenueMapProps) {
   const mapInstanceRef = useRef<L.Map | null>(null);
 
   useEffect(() => {
-    // Dynamically import Leaflet CSS only when map is needed
-    import('leaflet/dist/leaflet.css');
-
     if (!mapRef.current) return;
 
     // Get coordinates (prefer new format, fallback to legacy)

@@ -64,18 +64,15 @@ const formatDisplayName = (slug: string) => {
     .join(" ");
 };
 
-export default function OpenBowling() {
+interface OpenBowlingPageProps { state?: string; city?: string; }
+export default function OpenBowling({ state: propState, city: propCity }: OpenBowlingPageProps = {}) {
   const [cityMatch, cityParams] = useRoute("/open-bowling/:state/:city");
   const [stateMatch, stateParams] = useRoute("/open-bowling/:state");
   const [baseMatch] = useRoute("/open-bowling");
   const [location, setLocation] = useLocation();
 
-  const selectedState = cityMatch
-    ? decodeURIComponent(cityParams!.state)
-    : stateMatch
-      ? decodeURIComponent(stateParams!.state)
-      : null;
-  const selectedCity = cityMatch ? decodeURIComponent(cityParams!.city) : null;
+  const selectedState = propState ?? (cityMatch ? decodeURIComponent(cityParams!.state) : stateMatch ? decodeURIComponent(stateParams!.state) : null);
+  const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
 
   const displayState = selectedState?.toUpperCase();
   const displayCity = selectedCity ? formatDisplayName(selectedCity) : null;

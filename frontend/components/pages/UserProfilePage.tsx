@@ -19,8 +19,10 @@ import { getUserBySlug, getSuggestionsByUserId, getReviewsByUserId, type User, t
 
 const REVIEWS_PER_PAGE = 5;
 
-export default function UserProfile() {
-  const { slug } = useParams<{ slug: string }>();
+interface UserProfilePageProps { slug?: string; }
+export default function UserProfile({ slug: propSlug }: UserProfilePageProps = {}) {
+  const { slug: paramSlug } = useParams<{ slug: string }>();
+  const slug = propSlug ?? paramSlug;
   const [, setLocation] = useLocation();
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [copied, setCopied] = useState(false);

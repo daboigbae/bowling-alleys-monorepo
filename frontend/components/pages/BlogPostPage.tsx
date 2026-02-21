@@ -49,11 +49,11 @@ export default function BlogPostPage({ post, allPosts }: BlogPostPageProps) {
       // Update meta description
       const metaDescription = document.querySelector('meta[name="description"]');
       if (metaDescription) {
-        metaDescription.setAttribute('content', post.description);
+        metaDescription.setAttribute('content', post.description ?? "");
       } else {
         const meta = document.createElement('meta');
         meta.name = 'description';
-        meta.content = post.description;
+        meta.content = post.description ?? "";
         document.head.appendChild(meta);
       }
       
@@ -63,24 +63,25 @@ export default function BlogPostPage({ post, allPosts }: BlogPostPageProps) {
         : `${origin}/og-image.png`;
       const ogTags = [
         { property: 'og:title', content: post.title },
-        { property: 'og:description', content: post.description },
+        { property: 'og:description', content: post.description ?? "" },
         { property: 'og:url', content: currentUrl },
         { property: 'og:type', content: 'article' },
         { property: 'og:site_name', content: 'BowlingAlleys.io' },
         { property: 'og:image', content: ogImageUrl },
-        { property: 'article:published_time', content: post.updated },
+        { property: 'article:published_time', content: post.updated ?? "" },
         { property: 'article:author', content: 'BowlingAlleys.io' },
         { property: 'article:section', content: 'Bowling Tips & Guides' }
       ];
       
       ogTags.forEach(tag => {
+        const content = tag.content ?? "";
         let existing = document.querySelector(`meta[property="${tag.property}"]`);
         if (existing) {
-          existing.setAttribute('content', tag.content);
+          existing.setAttribute('content', content);
         } else {
           const meta = document.createElement('meta');
           meta.setAttribute('property', tag.property);
-          meta.setAttribute('content', tag.content);
+          meta.setAttribute('content', content);
           document.head.appendChild(meta);
         }
       });
@@ -90,7 +91,7 @@ export default function BlogPostPage({ post, allPosts }: BlogPostPageProps) {
         "@context": "https://schema.org",
         "@type": "Article",
         "headline": post.title,
-        "description": post.description,
+        "description": post.description ?? "",
         "url": currentUrl,
         "datePublished": post.updated,
         "dateModified": post.updated,
@@ -107,7 +108,7 @@ export default function BlogPostPage({ post, allPosts }: BlogPostPageProps) {
           "@type": "WebPage",
           "@id": currentUrl
         },
-        "keywords": post.tags.join(', ')
+        "keywords": (post.tags ?? []).join(', ')
       };
       
       // Remove existing structured data

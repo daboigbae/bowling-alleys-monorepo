@@ -70,20 +70,15 @@ const formatDisplayName = (slug: string) => {
     .join(" ");
 };
 
-export default function ProShop() {
-  // Extract route parameters
+interface ProShopPageProps { state?: string; city?: string; }
+export default function ProShop({ state: propState, city: propCity }: ProShopPageProps = {}) {
   const [cityMatch, cityParams] = useRoute("/pro-shop/:state/:city");
   const [stateMatch, stateParams] = useRoute("/pro-shop/:state");
   const [baseMatch] = useRoute("/pro-shop");
   const [location, setLocation] = useLocation();
 
-  // Determine current navigation state from route params
-  const selectedState = cityMatch
-    ? decodeURIComponent(cityParams!.state)
-    : stateMatch
-      ? decodeURIComponent(stateParams!.state)
-      : null;
-  const selectedCity = cityMatch ? decodeURIComponent(cityParams!.city) : null;
+  const selectedState = propState ?? (cityMatch ? decodeURIComponent(cityParams!.state) : stateMatch ? decodeURIComponent(stateParams!.state) : null);
+  const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
 
   // Convert display names back from URL slugs using stateNameMap
   const displayState = selectedState ? formatDisplayName(selectedState) : null;

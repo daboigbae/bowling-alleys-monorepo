@@ -70,20 +70,15 @@ const formatDisplayName = (slug: string) => {
     .join(" ");
 };
 
-export default function WheelchairAccessible() {
-  // Extract route parameters
+interface WheelchairAccessiblePageProps { state?: string; city?: string; }
+export default function WheelchairAccessible({ state: propState, city: propCity }: WheelchairAccessiblePageProps = {}) {
   const [cityMatch, cityParams] = useRoute("/wheelchair-accessible/:state/:city");
   const [stateMatch, stateParams] = useRoute("/wheelchair-accessible/:state");
   const [baseMatch] = useRoute("/wheelchair-accessible");
   const [location, setLocation] = useLocation();
 
-  // Determine current navigation state from route params
-  const selectedState = cityMatch
-    ? decodeURIComponent(cityParams!.state)
-    : stateMatch
-      ? decodeURIComponent(stateParams!.state)
-      : null;
-  const selectedCity = cityMatch ? decodeURIComponent(cityParams!.city) : null;
+  const selectedState = propState ?? (cityMatch ? decodeURIComponent(cityParams!.state) : stateMatch ? decodeURIComponent(stateParams!.state) : null);
+  const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
 
   // Convert display names back from URL slugs using stateNameMap
   const displayState = selectedState ? formatDisplayName(selectedState) : null;

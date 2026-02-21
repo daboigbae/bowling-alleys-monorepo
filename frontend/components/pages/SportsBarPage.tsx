@@ -68,18 +68,15 @@ const formatDisplayName = (slug: string) => {
     .join(" ");
 };
 
-export default function SportsBar() {
+interface SportsBarPageProps { state?: string; city?: string; }
+export default function SportsBar({ state: propState, city: propCity }: SportsBarPageProps = {}) {
   const [cityMatch, cityParams] = useRoute("/sports-bar/:state/:city");
   const [stateMatch, stateParams] = useRoute("/sports-bar/:state");
   const [baseMatch] = useRoute("/sports-bar");
   const [location, setLocation] = useLocation();
 
-  const selectedState = cityMatch
-    ? decodeURIComponent(cityParams!.state)
-    : stateMatch
-      ? decodeURIComponent(stateParams!.state)
-      : null;
-  const selectedCity = cityMatch ? decodeURIComponent(cityParams!.city) : null;
+  const selectedState = propState ?? (cityMatch ? decodeURIComponent(cityParams!.state) : stateMatch ? decodeURIComponent(stateParams!.state) : null);
+  const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
 
   const displayState = selectedState?.toUpperCase();
   const displayCity = selectedCity ? formatDisplayName(selectedCity) : null;

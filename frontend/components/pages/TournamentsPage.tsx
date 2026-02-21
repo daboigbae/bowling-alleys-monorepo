@@ -64,18 +64,15 @@ const formatDisplayName = (slug: string) => {
     .join(" ");
 };
 
-export default function Tournaments() {
+interface TournamentsPageProps { state?: string; city?: string; }
+export default function Tournaments({ state: propState, city: propCity }: TournamentsPageProps = {}) {
   const [cityMatch, cityParams] = useRoute("/tournaments/:state/:city");
   const [stateMatch, stateParams] = useRoute("/tournaments/:state");
   const [baseMatch] = useRoute("/tournaments");
   const [location, setLocation] = useLocation();
 
-  const selectedState = cityMatch
-    ? decodeURIComponent(cityParams!.state)
-    : stateMatch
-      ? decodeURIComponent(stateParams!.state)
-      : null;
-  const selectedCity = cityMatch ? decodeURIComponent(cityParams!.city) : null;
+  const selectedState = propState ?? (cityMatch ? decodeURIComponent(cityParams!.state) : stateMatch ? decodeURIComponent(stateParams!.state) : null);
+  const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
 
   const displayState = selectedState?.toUpperCase();
   const displayCity = selectedCity ? formatDisplayName(selectedCity) : null;

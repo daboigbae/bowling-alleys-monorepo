@@ -70,20 +70,25 @@ const formatDisplayName = (slug: string) => {
     .join(" ");
 };
 
-export default function ArcadeBowling() {
-  // Extract route parameters
+interface ArcadeBowlingPageProps {
+  state?: string;
+  city?: string;
+}
+
+export default function ArcadeBowling({ state: propState, city: propCity }: ArcadeBowlingPageProps = {}) {
+  // Extract route parameters (from props or wouter)
   const [cityMatch, cityParams] = useRoute("/arcade-bowling/:state/:city");
   const [stateMatch, stateParams] = useRoute("/arcade-bowling/:state");
   const [baseMatch] = useRoute("/arcade-bowling");
   const [location, setLocation] = useLocation();
 
-  // Determine current navigation state from route params
-  const selectedState = cityMatch
+  // Use props from Next.js when provided, otherwise fall back to wouter
+  const selectedState = propState ?? (cityMatch
     ? decodeURIComponent(cityParams!.state)
     : stateMatch
       ? decodeURIComponent(stateParams!.state)
-      : null;
-  const selectedCity = cityMatch ? decodeURIComponent(cityParams!.city) : null;
+      : null);
+  const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
 
   // Convert display names back from URL slugs
   const displayState = selectedState?.toUpperCase();

@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 
 const AboutPage = dynamic(() => import('@/components/pages/AboutPage'), {
-  ssr: true,
+  ssr: false,
   loading: () => (
     <div className="flex items-center justify-center min-h-screen">
       <div className="flex flex-col items-center gap-4">

@@ -73,14 +73,15 @@ export default function BlogListPage({ initialPosts }: BlogListPageProps) {
 
   // Category mapping based on tags and content
   const getPostCategory = (post: BlogPost) => {
-    if (post.tags.includes("beginners")) return "beginners";
-    if (post.tags.includes("advanced")) return "advanced";
-    if (post.tags.includes("social")) return "social";
-    if (post.tags.includes("food")) return "food";
-    if (post.tags.includes("bowling business")) return "business";
-    if (post.tags.includes("skills")) return "skills";
-    if (post.tags.includes("community")) return "community";
-    if (post.tags.includes("travel")) return "travel";
+    const tags = post.tags ?? [];
+    if (tags.includes("beginners")) return "beginners";
+    if (tags.includes("advanced")) return "advanced";
+    if (tags.includes("social")) return "social";
+    if (tags.includes("food")) return "food";
+    if (tags.includes("bowling business")) return "business";
+    if (tags.includes("skills")) return "skills";
+    if (tags.includes("community")) return "community";
+    if (tags.includes("travel")) return "travel";
 
     return "tips";
   };
@@ -114,8 +115,8 @@ export default function BlogListPage({ initialPosts }: BlogListPageProps) {
       const matchesSearch =
         searchTerm === "" ||
         post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        post.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        post.tags.some((tag) =>
+        (post.description ?? "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (post.tags ?? []).some((tag) =>
           tag.toLowerCase().includes(searchTerm.toLowerCase()),
         );
 
@@ -284,14 +285,14 @@ export default function BlogListPage({ initialPosts }: BlogListPageProps) {
                         </CardDescription>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Calendar className="w-3 h-3" />
-                          <time dateTime={post.updated}>
-                            {new Date(post.updated).toLocaleDateString()}
+                          <time dateTime={post.updated ?? ""}>
+                            {post.updated ? new Date(post.updated).toLocaleDateString() : "—"}
                           </time>
                         </div>
                       </CardHeader>
                       <CardContent>
                         <div className="flex flex-wrap gap-1 mb-3">
-                          {post.tags.slice(0, 2).map((tag) => (
+                          {(post.tags ?? []).slice(0, 2).map((tag) => (
                             <Badge
                               key={tag}
                               variant="secondary"
@@ -303,7 +304,7 @@ export default function BlogListPage({ initialPosts }: BlogListPageProps) {
                           ))}
                         </div>
                         <p className="text-muted-foreground text-sm line-clamp-2">
-                          {post.content.slice(0, 100)}...
+                          {(post.content ?? "").slice(0, 100)}...
                         </p>
                       </CardContent>
                     </Card>
@@ -361,15 +362,15 @@ export default function BlogListPage({ initialPosts }: BlogListPageProps) {
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <div className="flex items-center gap-1">
                             <Calendar className="w-4 h-4" />
-                            <time dateTime={post.updated}>
-                              {new Date(post.updated).toLocaleDateString()}
+                            <time dateTime={post.updated ?? ""}>
+                              {post.updated ? new Date(post.updated).toLocaleDateString() : "—"}
                             </time>
                           </div>
                         </div>
                       </CardHeader>
                       <CardContent>
                         <div className="flex flex-wrap gap-1 mb-3">
-                          {post.tags.slice(0, 2).map((tag) => (
+                          {(post.tags ?? []).slice(0, 2).map((tag) => (
                             <Badge
                               key={tag}
                               variant="secondary"
@@ -379,14 +380,14 @@ export default function BlogListPage({ initialPosts }: BlogListPageProps) {
                               {tag}
                             </Badge>
                           ))}
-                          {post.tags.length > 2 && (
+                          {(post.tags ?? []).length > 2 && (
                             <Badge variant="outline" className="text-xs">
-                              +{post.tags.length - 2} more
+                              +{(post.tags ?? []).length - 2} more
                             </Badge>
                           )}
                         </div>
                         <p className="text-muted-foreground line-clamp-3">
-                          {post.content.slice(0, 150)}...
+                          {(post.content ?? "").slice(0, 150)}...
                         </p>
                       </CardContent>
                     </Card>

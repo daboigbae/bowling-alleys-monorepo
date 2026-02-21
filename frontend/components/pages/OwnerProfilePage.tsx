@@ -19,8 +19,10 @@ import { SiFacebook } from "react-icons/si";
 import { getUserBySlug, getVenuesByOwner, type Venue } from "@/lib/firestore";
 import VenueCard from "@/components/VenueCard";
 
-export default function OwnerProfile() {
-  const { slug } = useParams<{ slug: string }>();
+interface OwnerProfilePageProps { slug?: string; }
+export default function OwnerProfile({ slug: propSlug }: OwnerProfilePageProps = {}) {
+  const { slug: paramSlug } = useParams<{ slug: string }>();
+  const slug = propSlug ?? paramSlug;
   const [, setLocation] = useLocation();
 
   // Fetch owner profile by slug
