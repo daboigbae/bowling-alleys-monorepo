@@ -159,20 +159,15 @@ const formatDisplayName = (slug: string) => {
     .join(" ");
 };
 
-export default function EscapeRooms() {
-  // Extract route parameters
+interface EscapeRoomsPageProps { state?: string; city?: string; }
+export default function EscapeRooms({ state: propState, city: propCity }: EscapeRoomsPageProps = {}) {
   const [cityMatch, cityParams] = useRoute("/escape-rooms/:state/:city");
   const [stateMatch, stateParams] = useRoute("/escape-rooms/:state");
   const [baseMatch] = useRoute("/escape-rooms");
   const [location, setLocation] = useLocation();
 
-  // Determine current navigation state from route params
-  const selectedState = cityMatch
-    ? decodeURIComponent(cityParams!.state)
-    : stateMatch
-      ? decodeURIComponent(stateParams!.state)
-      : null;
-  const selectedCity = cityMatch ? decodeURIComponent(cityParams!.city) : null;
+  const selectedState = propState ?? (cityMatch ? decodeURIComponent(cityParams!.state) : stateMatch ? decodeURIComponent(stateParams!.state) : null);
+  const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
 
   // Convert display names back from URL slugs using stateNameMap
   const displayState = selectedState ? formatDisplayName(selectedState) : null;

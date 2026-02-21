@@ -68,18 +68,15 @@ const formatDisplayName = (slug: string) => {
     .join(" ");
 };
 
-export default function KidsBowling() {
+interface KidsBowlingPageProps { state?: string; city?: string; }
+export default function KidsBowling({ state: propState, city: propCity }: KidsBowlingPageProps = {}) {
   const [cityMatch, cityParams] = useRoute("/kids-bowling/:state/:city");
   const [stateMatch, stateParams] = useRoute("/kids-bowling/:state");
   const [baseMatch] = useRoute("/kids-bowling");
   const [location, setLocation] = useLocation();
 
-  const selectedState = cityMatch
-    ? decodeURIComponent(cityParams!.state)
-    : stateMatch
-      ? decodeURIComponent(stateParams!.state)
-      : null;
-  const selectedCity = cityMatch ? decodeURIComponent(cityParams!.city) : null;
+  const selectedState = propState ?? (cityMatch ? decodeURIComponent(cityParams!.state) : stateMatch ? decodeURIComponent(stateParams!.state) : null);
+  const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
 
   const displayState = selectedState?.toUpperCase();
   const displayCity = selectedCity ? formatDisplayName(selectedCity) : null;

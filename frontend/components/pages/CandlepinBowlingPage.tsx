@@ -84,20 +84,15 @@ const formatDisplayName = (slug: string) => {
     .join(" ");
 };
 
-export default function CandlepinBowling() {
-  // Extract route parameters
+interface CandlepinBowlingPageProps { state?: string; city?: string; }
+export default function CandlepinBowling({ state: propState, city: propCity }: CandlepinBowlingPageProps = {}) {
   const [cityMatch, cityParams] = useRoute("/candlepin-bowling/:state/:city");
   const [stateMatch, stateParams] = useRoute("/candlepin-bowling/:state");
   const [baseMatch] = useRoute("/candlepin-bowling");
   const [location, setLocation] = useLocation();
 
-  // Determine current navigation state from route params
-  const selectedState = cityMatch
-    ? decodeURIComponent(cityParams!.state)
-    : stateMatch
-      ? decodeURIComponent(stateParams!.state)
-      : null;
-  const selectedCity = cityMatch ? decodeURIComponent(cityParams!.city) : null;
+  const selectedState = propState ?? (cityMatch ? decodeURIComponent(cityParams!.state) : stateMatch ? decodeURIComponent(stateParams!.state) : null);
+  const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
 
   // Convert display names back from URL slugs using stateNameMap
   const displayState = selectedState ? formatDisplayName(selectedState) : null;

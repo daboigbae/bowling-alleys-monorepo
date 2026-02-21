@@ -70,20 +70,15 @@ const formatDisplayName = (slug: string) => {
     .join(" ");
 };
 
-export default function BowlingBilliards() {
-  // Extract route parameters
+interface BowlingBilliardsPageProps { state?: string; city?: string; }
+export default function BowlingBilliards({ state: propState, city: propCity }: BowlingBilliardsPageProps = {}) {
   const [cityMatch, cityParams] = useRoute("/bowling-billiards/:state/:city");
   const [stateMatch, stateParams] = useRoute("/bowling-billiards/:state");
   const [baseMatch] = useRoute("/bowling-billiards");
   const [location, setLocation] = useLocation();
 
-  // Determine current navigation state from route params
-  const selectedState = cityMatch
-    ? decodeURIComponent(cityParams!.state)
-    : stateMatch
-      ? decodeURIComponent(stateParams!.state)
-      : null;
-  const selectedCity = cityMatch ? decodeURIComponent(cityParams!.city) : null;
+  const selectedState = propState ?? (cityMatch ? decodeURIComponent(cityParams!.state) : stateMatch ? decodeURIComponent(stateParams!.state) : null);
+  const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
 
   // Convert display names back from URL slugs
   const displayState = selectedState?.toUpperCase();

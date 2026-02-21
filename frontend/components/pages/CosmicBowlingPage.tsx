@@ -70,20 +70,15 @@ const formatDisplayName = (slug: string) => {
     .join(" ");
 };
 
-export default function CosmicBowling() {
-  // Extract route parameters
+interface CosmicBowlingPageProps { state?: string; city?: string; }
+export default function CosmicBowling({ state: propState, city: propCity }: CosmicBowlingPageProps = {}) {
   const [cityMatch, cityParams] = useRoute("/cosmic-bowling/:state/:city");
   const [stateMatch, stateParams] = useRoute("/cosmic-bowling/:state");
   const [baseMatch] = useRoute("/cosmic-bowling");
   const [location, setLocation] = useLocation();
 
-  // Determine current navigation state from route params
-  const selectedState = cityMatch
-    ? decodeURIComponent(cityParams!.state)
-    : stateMatch
-      ? decodeURIComponent(stateParams!.state)
-      : null;
-  const selectedCity = cityMatch ? decodeURIComponent(cityParams!.city) : null;
+  const selectedState = propState ?? (cityMatch ? decodeURIComponent(cityParams!.state) : stateMatch ? decodeURIComponent(stateParams!.state) : null);
+  const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
 
   // Convert display names back from URL slugs
   const displayState = selectedState?.toUpperCase();

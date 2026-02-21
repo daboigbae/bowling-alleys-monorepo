@@ -66,18 +66,15 @@ const formatDisplayName = (slug: string) => {
     .join(" ");
 };
 
-export default function Specials() {
+interface SpecialsPageProps { state?: string; city?: string; }
+export default function Specials({ state: propState, city: propCity }: SpecialsPageProps = {}) {
   const [cityMatch, cityParams] = useRoute("/specials/:state/:city");
   const [stateMatch, stateParams] = useRoute("/specials/:state");
   const [baseMatch] = useRoute("/specials");
   const [location, setLocation] = useLocation();
 
-  const selectedState = cityMatch
-    ? decodeURIComponent(cityParams!.state)
-    : stateMatch
-      ? decodeURIComponent(stateParams!.state)
-      : null;
-  const selectedCity = cityMatch ? decodeURIComponent(cityParams!.city) : null;
+  const selectedState = propState ?? (cityMatch ? decodeURIComponent(cityParams!.state) : stateMatch ? decodeURIComponent(stateParams!.state) : null);
+  const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
 
   const displayState = selectedState?.toUpperCase();
   const displayCity = selectedCity ? formatDisplayName(selectedCity) : null;

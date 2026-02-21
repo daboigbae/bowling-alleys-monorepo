@@ -70,20 +70,15 @@ const formatDisplayName = (slug: string) => {
     .join(" ");
 };
 
-export default function KaraokeBowling() {
-  // Extract route parameters
+interface KaraokeBowlingPageProps { state?: string; city?: string; }
+export default function KaraokeBowling({ state: propState, city: propCity }: KaraokeBowlingPageProps = {}) {
   const [cityMatch, cityParams] = useRoute("/karaoke-bowling/:state/:city");
   const [stateMatch, stateParams] = useRoute("/karaoke-bowling/:state");
   const [baseMatch] = useRoute("/karaoke-bowling");
   const [location, setLocation] = useLocation();
 
-  // Determine current navigation state from route params
-  const selectedState = cityMatch
-    ? decodeURIComponent(cityParams!.state)
-    : stateMatch
-      ? decodeURIComponent(stateParams!.state)
-      : null;
-  const selectedCity = cityMatch ? decodeURIComponent(cityParams!.city) : null;
+  const selectedState = propState ?? (cityMatch ? decodeURIComponent(cityParams!.state) : stateMatch ? decodeURIComponent(stateParams!.state) : null);
+  const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
 
   // Convert display names back from URL slugs
   const displayState = selectedState?.toUpperCase();

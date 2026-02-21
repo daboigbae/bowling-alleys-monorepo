@@ -64,18 +64,15 @@ const formatDisplayName = (slug: string) => {
     .join(" ");
 };
 
-export default function BowlingLessons() {
+interface BowlingLessonsPageProps { state?: string; city?: string; }
+export default function BowlingLessons({ state: propState, city: propCity }: BowlingLessonsPageProps = {}) {
   const [cityMatch, cityParams] = useRoute("/bowling-lessons/:state/:city");
   const [stateMatch, stateParams] = useRoute("/bowling-lessons/:state");
   const [baseMatch] = useRoute("/bowling-lessons");
   const [location, setLocation] = useLocation();
 
-  const selectedState = cityMatch
-    ? decodeURIComponent(cityParams!.state)
-    : stateMatch
-      ? decodeURIComponent(stateParams!.state)
-      : null;
-  const selectedCity = cityMatch ? decodeURIComponent(cityParams!.city) : null;
+  const selectedState = propState ?? (cityMatch ? decodeURIComponent(cityParams!.state) : stateMatch ? decodeURIComponent(stateParams!.state) : null);
+  const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
 
   const displayState = selectedState?.toUpperCase();
   const displayCity = selectedCity ? formatDisplayName(selectedCity) : null;

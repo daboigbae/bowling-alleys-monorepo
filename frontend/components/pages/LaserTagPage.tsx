@@ -70,20 +70,15 @@ const formatDisplayName = (slug: string) => {
     .join(" ");
 };
 
-export default function LaserTag() {
-  // Extract route parameters
+interface LaserTagPageProps { state?: string; city?: string; }
+export default function LaserTag({ state: propState, city: propCity }: LaserTagPageProps = {}) {
   const [cityMatch, cityParams] = useRoute("/laser-tag/:state/:city");
   const [stateMatch, stateParams] = useRoute("/laser-tag/:state");
   const [baseMatch] = useRoute("/laser-tag");
   const [location, setLocation] = useLocation();
 
-  // Determine current navigation state from route params
-  const selectedState = cityMatch
-    ? decodeURIComponent(cityParams!.state)
-    : stateMatch
-      ? decodeURIComponent(stateParams!.state)
-      : null;
-  const selectedCity = cityMatch ? decodeURIComponent(cityParams!.city) : null;
+  const selectedState = propState ?? (cityMatch ? decodeURIComponent(cityParams!.state) : stateMatch ? decodeURIComponent(stateParams!.state) : null);
+  const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
 
   // Convert display names back from URL slugs using stateNameMap
   const displayState = selectedState ? formatDisplayName(selectedState) : null;
