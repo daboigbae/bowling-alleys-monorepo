@@ -2386,9 +2386,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.header("Content-Type", "application/xml");
       res.header("Content-Encoding", "gzip");
 
-      // Use FRONTEND_URL for consistent sitemap base URLs (avoids wrong host from proxies)
-      const base = process.env.FRONTEND_URL || "https://bowlingalleys.io";
-      const hostname = base.replace(/\/$/, "").match(/^https?:\/\//) ? base.replace(/\/$/, "") : `https://${base}`;
+      // Always use production domain for sitemap (env can be wrong when behind Railway proxy)
+      const hostname = "https://www.bowlingalleys.io";
       const smStream = new SitemapStream({ hostname });
       const pipeline = smStream.pipe(createGzip());
 
