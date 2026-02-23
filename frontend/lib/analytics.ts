@@ -8,29 +8,31 @@ declare global {
   }
 }
 
-// Initialize Google Analytics
+// Initialize Google Analytics — always define gtag so it's never undefined
 export const initGA = () => {
-  const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  if (typeof window === 'undefined') return;
 
+  // Define dataLayer and gtag immediately (no-op until GA script loads)
+  window.dataLayer = window.dataLayer || [];
+  if (!window.gtag) {
+    window.gtag = function gtag() {
+      window.dataLayer.push(arguments);
+    };
+  }
+
+  const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
   if (!measurementId) {
     return;
   }
 
-  // Add Google Analytics script to the head
+  // Load Google Analytics script
   const script1 = document.createElement('script');
   script1.async = true;
   script1.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
   document.head.appendChild(script1);
 
-  // Initialize gtag
-  const script2 = document.createElement('script');
-  script2.textContent = `
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', '${measurementId}');
-  `;
-  document.head.appendChild(script2);
+  window.gtag('js', new Date());
+  window.gtag('config', measurementId);
 };
 
 // Track page views - useful for single-page applications
