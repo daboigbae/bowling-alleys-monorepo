@@ -10,10 +10,12 @@ import { HelmetProvider } from "react-helmet-async";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
+import { Analytics } from "@/components/Analytics";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <HelmetProvider>
+      <Analytics />
       <ThemeProvider
         attribute="class"
         defaultTheme="light"
