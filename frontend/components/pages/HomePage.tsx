@@ -38,13 +38,24 @@ import {
   Star,
   Navigation,
   ArrowRight,
+  Search,
+  Loader2,
 } from "lucide-react";
+import {
+  lookupZipCode,
+  parseCityState,
+  parseStateOnly,
+  findCityInVenues,
+} from "@/lib/location-search";
 
 export default function Home() {
   const router = useRouter();
   const { user } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
+  const [locationInput, setLocationInput] = useState("");
+  const [locationSearchError, setLocationSearchError] = useState<string | null>(null);
+  const [locationSearchLoading, setLocationSearchLoading] = useState(false);
   const { latitude, longitude, loading: locationLoading } = useGeolocation();
   
   // Get origin/URL safely for SSR
@@ -62,6 +73,58 @@ export default function Home() {
     setAuthMode(mode);
     setAuthModalOpen(true);
   };
+
+  const handleLocationSearch = async () => {
+    const trimmed = locationInput.trim();
+    if (!trimmed) return;
+
+    setLocationSearchError(null);
+
+    const zipOnly = trimmed.replace(/\D/g, "");
+    if (zipOnly.length === 5) {
+      setLocationSearchLoading(true);
+      try {
+        const result = await lookupZipCode(trimmed);
+        if (result) {
+          router.push(
+            `/locations/${encodeURIComponent(result.stateAbbr)}/${encodeURIComponent(result.city)}`
+          );
+        } else {
+          setLocationSearchError("Zip code not found. Please try another.");
+        }
+      } catch {
+        setLocationSearchError("Unable to look up zip code. Please try again.");
+      } finally {
+        setLocationSearchLoading(false);
+      }
+      return;
+    }
+
+    const parsed = parseCityState(trimmed);
+    if (parsed) {
+      router.push(
+        `/locations/${encodeURIComponent(parsed.stateAbbr)}/${encodeURIComponent(parsed.city)}`
+      );
+      return;
+    }
+
+    const stateAbbr = parseStateOnly(trimmed);
+    if (stateAbbr) {
+      router.push(`/locations/${encodeURIComponent(stateAbbr)}`);
+      return;
+    }
+
+    const venueMatch = findCityInVenues(venues, trimmed);
+    if (venueMatch) {
+      router.push(
+        `/locations/${encodeURIComponent(venueMatch.stateAbbr)}/${encodeURIComponent(venueMatch.city)}`
+      );
+      return;
+    }
+
+    setLocationSearchError("Could not find that location. Try a city name, state, city and state, or zip code.");
+  };
+
   const [sortBy, setSortBy] = useState("recently-updated");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9; // 3x3 grid looks good
@@ -354,7 +417,7 @@ export default function Home() {
       <div className="min-h-screen bg-background">
         {/* Hero Section with Bowling Alley Image */}
         <section className="relative">
-          <div className="h-auto min-h-[280px] sm:min-h-[320px] md:h-[40vh] relative overflow-hidden">
+          <div className="h-auto min-h-[380px] sm:min-h-[460px] md:min-h-[65vh] relative overflow-hidden">
             <Image
               src={heroImage}
               alt="Modern bowling alley lanes"
@@ -374,6 +437,53 @@ export default function Home() {
                   Compare alleys, see real prices, and plan your bowling night
                   fast.
                 </p>
+
+                {/* Location search bar */}
+                <div className="w-full max-w-xl mx-auto mb-4">
+                  <div className="flex rounded-2xl overflow-hidden bg-white shadow-xl ring-1 ring-black/5">
+                    <div className="relative flex-1 flex items-center">
+                      <MapPin
+                        className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none"
+                        style={{ color: "#6b7280" }}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Enter your city, state, or zip code"
+                        value={locationInput}
+                        onChange={(e) => {
+                          setLocationInput(e.target.value);
+                          setLocationSearchError(null);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleLocationSearch();
+                        }}
+                        disabled={locationSearchLoading}
+                        className="h-12 pl-11 pr-4 w-full border-0 rounded-none focus:outline-none focus:ring-0 bg-transparent text-base placeholder:text-[#6b7280]"
+                        style={{
+                          color: "#111827",
+                          caretColor: "#111827",
+                        }}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleLocationSearch}
+                      disabled={locationSearchLoading}
+                      className="h-12 px-6 flex items-center justify-center bg-[#d52231] hover:bg-[#b91d2a] transition-colors disabled:opacity-70 shrink-0"
+                    >
+                      {locationSearchLoading ? (
+                        <Loader2 className="h-5 w-5 text-white animate-spin" />
+                      ) : (
+                        <Search className="h-5 w-5 text-white" />
+                      )}
+                    </button>
+                  </div>
+                  {locationSearchError && (
+                    <p className="text-sm text-red-200 mt-2 drop-shadow-sm">
+                      {locationSearchError}
+                    </p>
+                  )}
+                </div>
 
                 {/* Main CTAs stacked */}
                 <div className="flex flex-col gap-3 items-center">

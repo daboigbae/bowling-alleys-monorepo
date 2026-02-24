@@ -35,7 +35,7 @@ export interface FooterVenuesData {
 export async function getFooterVenues(): Promise<FooterVenuesData> {
   try {
     const response = await fetch(`${getApiUrl()}/api/venues`, {
-      next: { revalidate: 3600 },
+      cache: "no-store", // Response ~5MB exceeds Next.js 2MB cache limit
     });
     if (!response.ok) return { topAlleys: [], sponsorVenues: [] };
     const venues: FooterVenue[] = await response.json();

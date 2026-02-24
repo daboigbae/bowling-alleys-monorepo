@@ -7,7 +7,7 @@ const SportsBarPage = dynamic(() => import('@/components/pages/SportsBarPage'), 
 });
 
 export default function SportsBar({ params }: { params?: { params?: string[] } }) {
-  const state = params?.params?.[0];
-  const city = params?.params?.[1];
+  const state = params?.params?.[0] ? decodeURIComponent(params.params[0]) : undefined;
+  const city = params?.params?.[1] ? decodeURIComponent(params.params[1]) : undefined;
   return <SportsBarPage state={state} city={city} />;
 }
