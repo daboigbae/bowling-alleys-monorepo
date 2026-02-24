@@ -27,9 +27,6 @@ export const metadata: Metadata = {
   title: "Find Bowling Alleys: Reviews & Locations - BowlingAlleys.io",
   description: "Discover the best bowling alleys near you. Read reviews, compare prices, and find cosmic bowling, leagues, birthday parties, and more.",
   keywords: "bowling alleys, bowling reviews, find bowling alleys, local bowling centers, bowling ratings",
-  icons: {
-    icon: "/favicon.svg",
-  },
 };
 
 export default async function RootLayout({
