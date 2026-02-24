@@ -13,11 +13,17 @@ export async function GET(request: NextRequest) {
   const url = `${apiUrl.replace(/\/$/, '')}/sitemap.xml`;
 
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 90_000);
+
     const res = await fetch(url, {
       headers: {
         Host: host,
+        'Accept-Encoding': 'identity',
       },
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
 
     if (!res.ok) {
       return NextResponse.json(
@@ -27,14 +33,18 @@ export async function GET(request: NextRequest) {
     }
 
     const body = await res.arrayBuffer();
-    const contentType = res.headers.get('content-type') || 'application/xml';
-    const contentEncoding = res.headers.get('content-encoding');
+    if (body.byteLength < 500) {
+      console.error('Sitemap proxy: API returned too few bytes', body.byteLength);
+      return NextResponse.json(
+        { error: 'Sitemap from API was empty or truncated' },
+        { status: 502 }
+      );
+    }
 
     const headers: Record<string, string> = {
-      'Content-Type': contentType,
+      'Content-Type': res.headers.get('content-type') || 'application/xml',
       'Cache-Control': 'public, max-age=3600, s-maxage=3600',
     };
-    if (contentEncoding) headers['Content-Encoding'] = contentEncoding;
 
     return new NextResponse(body, {
       status: 200,
