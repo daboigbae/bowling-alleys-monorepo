@@ -1,5 +1,7 @@
 # BowlingAlleys.io
 
+**Live site: [bowlingalleys.io](https://bowlingalleys.io)**
+
 A comprehensive platform for discovering, rating, and reviewing bowling alleys across the United States. Connect bowlers with venues through interactive maps, detailed venue pages, user-generated reviews, and specialized directory pages.
 
 ## Overview
@@ -50,7 +52,7 @@ The backend is a standalone **Express.js** server in TypeScript that provides a 
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd bowling-alley-web
+   cd bowling-alleys-monorepo
    ```
 
 2. **Install root dependencies**
@@ -137,19 +139,19 @@ The backend is a standalone **Express.js** server in TypeScript that provides a 
 ## Project Structure
 
 ```
-bowling-alley-web/
+bowling-alleys-monorepo/
 ├── frontend/          # Next.js frontend application
-│   ├── app/          # Next.js App Router pages
-│   ├── components/   # React components
-│   ├── lib/          # Utilities and API client
-│   ├── content/      # MDX blog content
-│   └── public/       # Static assets
-├── server/           # Express.js API server
-│   ├── routes.ts     # API route definitions
-│   ├── auth.ts       # Firebase Admin setup
-│   └── config/       # Service account credentials
-├── shared/           # Shared TypeScript types
-└── attached_assets/  # Static assets (logos, images)
+│   ├── app/           # Next.js App Router pages
+│   ├── components/    # React components
+│   ├── lib/           # Utilities and API client
+│   ├── content/       # MDX blog content
+│   └── public/        # Static assets
+├── server/            # Express.js API server
+│   ├── routes.ts      # API route definitions
+│   ├── auth.ts        # Firebase Admin setup
+│   └── config/        # Service account credentials
+├── shared/            # Shared TypeScript types (if present)
+└── attached_assets/   # Static assets (logos, images)
 ```
 
 ## Development
