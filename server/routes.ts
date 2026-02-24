@@ -822,65 +822,20 @@ async function getSpecialsLocationsForSitemap() {
   }
 }
 
-// Helper function to get states with pricing data
+// Helper function to get states with pricing data (uses server pricing cache)
 async function getPricingStatesForSitemap(): Promise<string[]> {
   try {
-    const { initializeApp } = await import("firebase/app");
-    const { getFirestore, doc, getDoc, collection, getDocs } = await import(
-      "firebase/firestore"
-    );
-
-    const firebaseConfig = {
-      apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-      authDomain: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID + ".firebaseapp.com",
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID + ".appspot.com",
-      messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-      appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-    };
-
-    const app = initializeApp(
-      firebaseConfig,
-      "sitemap-pricing-states-" + Date.now(),
-    );
-    const db = getFirestore(app);
-
-    // Get the latest report date
-    const today = new Date().toISOString().split("T")[0];
-    const yesterday = new Date(Date.now() - 86400000)
-      .toISOString()
-      .split("T")[0];
-    const dayBefore = new Date(Date.now() - 172800000)
-      .toISOString()
-      .split("T")[0];
-
-    let latestDate = null;
-    for (const date of [today, yesterday, dayBefore]) {
-      const usaRef = doc(db, "reports", date, "usa", "average");
-      const snapshot = await getDoc(usaRef);
-      if (snapshot.exists()) {
-        latestDate = date;
-        break;
-      }
-    }
-
-    if (!latestDate) {
-      console.log("getPricingStatesForSitemap: No reports found");
+    const cache = await getPricingReportCache();
+    if (!cache || !cache.latestDate) {
+      console.log("getPricingStatesForSitemap: No pricing cache");
       return [];
     }
-
-    console.log("getPricingStatesForSitemap: Using report date:", latestDate);
-
-    const statesRef = collection(db, "reports", latestDate, "states");
-    const snapshot = await getDocs(statesRef);
-
-    const states = snapshot.docs.map((d) => d.id);
+    const states = Array.from(cache.states.keys()).sort();
     console.log(
       "getPricingStatesForSitemap: Pricing states found:",
       states.length,
       states,
     );
-
     return states;
   } catch (error) {
     console.error("Error fetching pricing states for sitemap:", error);
@@ -888,79 +843,30 @@ async function getPricingStatesForSitemap(): Promise<string[]> {
   }
 }
 
-// Helper function to get cities with pricing data
+// Helper function to get cities with pricing data (uses server pricing cache)
 async function getPricingLocationsForSitemap(): Promise<
   Array<{ state: string; city: string }>
 > {
   try {
-    const { initializeApp } = await import("firebase/app");
-    const { getFirestore, doc, getDoc, collection, getDocs } = await import(
-      "firebase/firestore"
-    );
-
-    const firebaseConfig = {
-      apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-      authDomain: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID + ".firebaseapp.com",
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID + ".appspot.com",
-      messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-      appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-    };
-
-    const app = initializeApp(
-      firebaseConfig,
-      "sitemap-pricing-locations-" + Date.now(),
-    );
-    const db = getFirestore(app);
-
-    // Get the latest report date
-    const today = new Date().toISOString().split("T")[0];
-    const yesterday = new Date(Date.now() - 86400000)
-      .toISOString()
-      .split("T")[0];
-    const dayBefore = new Date(Date.now() - 172800000)
-      .toISOString()
-      .split("T")[0];
-
-    let latestDate = null;
-    for (const date of [today, yesterday, dayBefore]) {
-      const usaRef = doc(db, "reports", date, "usa", "average");
-      const snapshot = await getDoc(usaRef);
-      if (snapshot.exists()) {
-        latestDate = date;
-        break;
-      }
-    }
-
-    if (!latestDate) {
-      console.log("getPricingLocationsForSitemap: No reports found");
+    const cache = await getPricingReportCache();
+    if (!cache || !cache.latestDate) {
+      console.log("getPricingLocationsForSitemap: No pricing cache");
       return [];
     }
-
-    console.log(
-      "getPricingLocationsForSitemap: Using report date:",
-      latestDate,
-    );
-
-    const citiesRef = collection(db, "reports", latestDate, "cities");
-    const snapshot = await getDocs(citiesRef);
-
     const locations: Array<{ state: string; city: string }> = [];
-    snapshot.docs.forEach((d) => {
+    cache.cities.forEach((_, docId) => {
       // Document ID format: "City-STATE" (e.g., "Surprise-AZ")
-      const parts = d.id.split("-");
+      const parts = docId.split("-");
       if (parts.length >= 2) {
-        const state = parts[parts.length - 1]; // Last part is state
-        const city = parts.slice(0, -1).join("-"); // Everything before last dash is city
+        const state = parts[parts.length - 1];
+        const city = parts.slice(0, -1).join("-");
         locations.push({ state, city });
       }
     });
-
     console.log(
       "getPricingLocationsForSitemap: Pricing locations found:",
       locations.length,
     );
-
     return locations;
   } catch (error) {
     console.error("Error fetching pricing locations for sitemap:", error);
