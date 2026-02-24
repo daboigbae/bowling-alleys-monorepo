@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { gunzipSync } from 'zlib';
 
 export async function GET(request: NextRequest) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -18,7 +17,10 @@ export async function GET(request: NextRequest) {
     const timeoutId = setTimeout(() => controller.abort(), 90_000);
 
     const res = await fetch(url, {
-      headers: { Host: host },
+      headers: {
+        Host: host,
+        'Accept-Encoding': 'identity',
+      },
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
@@ -30,23 +32,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const rawBody = await res.arrayBuffer();
-    const contentType = res.headers.get('content-type') || 'application/xml';
-    const contentEncoding = res.headers.get('content-encoding')?.toLowerCase() ?? '';
-
-    let body: Buffer | ArrayBuffer = rawBody;
-    if (contentEncoding.includes('gzip')) {
-      try {
-        body = gunzipSync(Buffer.from(rawBody));
-      } catch (e) {
-        console.error('Sitemap proxy: gzip decompress failed', e);
-        return NextResponse.json(
-          { error: 'Sitemap decompression failed' },
-          { status: 502 }
-        );
-      }
-    }
-
+    const body = await res.arrayBuffer();
     if (body.byteLength < 500) {
       console.error('Sitemap proxy: API returned too few bytes', body.byteLength);
       return NextResponse.json(
@@ -56,12 +42,11 @@ export async function GET(request: NextRequest) {
     }
 
     const headers: Record<string, string> = {
-      'Content-Type': contentType,
+      'Content-Type': res.headers.get('content-type') || 'application/xml',
       'Cache-Control': 'public, max-age=3600, s-maxage=3600',
     };
 
-    const payload = body instanceof Buffer ? body : Buffer.from(body as ArrayBuffer);
-    return new NextResponse(new Uint8Array(payload), {
+    return new NextResponse(body, {
       status: 200,
       headers,
     });

@@ -2404,12 +2404,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/sitemap.xml", async (req, res) => {
     try {
       res.header("Content-Type", "application/xml");
-      res.header("Content-Encoding", "gzip");
+      const acceptEncodingRaw = req.headers["accept-encoding"];
+      const acceptEncoding = (Array.isArray(acceptEncodingRaw)
+        ? acceptEncodingRaw.join(", ")
+        : acceptEncodingRaw || ""
+      ).toLowerCase();
+      const useGzip = acceptEncoding.includes("gzip");
 
       // Always use production domain for sitemap (env can be wrong when behind Railway proxy)
       const hostname = "https://www.bowlingalleys.io";
       const smStream = new SitemapStream({ hostname });
-      const pipeline = smStream.pipe(createGzip());
+      const pipeline = useGzip ? smStream.pipe(createGzip()) : smStream;
+      if (useGzip) res.header("Content-Encoding", "gzip");
 
       // Static pages
       smStream.write({
@@ -3919,7 +3925,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.set("Cache-Control", "public, max-age=86400");
 
       const sitemap = await streamToPromise(pipeline);
-      res.send(sitemap);
+      res.send(Buffer.isBuffer(sitemap) ? sitemap : Buffer.from(sitemap));
     } catch (error) {
       console.error("Sitemap generation error:", error);
       res.status(500).json({ error: "Failed to generate sitemap" });
