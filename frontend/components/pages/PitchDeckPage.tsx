@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -119,10 +120,13 @@ export default function PitchDeck() {
         {/* Hero Section */}
         <section className="relative overflow-hidden border-b bg-card">
           <div className="absolute inset-0">
-            <img 
-              src={heroImage} 
-              alt="Modern bowling alley" 
-              className="h-full w-full object-cover opacity-10"
+            <Image
+              src={heroImage}
+              alt="Modern bowling alley"
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover opacity-10"
             />
             <div className="absolute inset-0 bg-gradient-to-br from-background/95 via-background/90 to-background/95" />
           </div>

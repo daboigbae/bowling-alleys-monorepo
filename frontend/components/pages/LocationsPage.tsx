@@ -20,6 +20,7 @@ import {
   type Venue,
   type StateVenueCount,
 } from "@/lib/firestore";
+import Image from "next/image";
 import { MapPin, Search, ArrowLeft, Trophy, Star, Sparkles, Users, Cake, Image as ImageIcon, ChevronRight, MessageSquare, Navigation } from "lucide-react";
 import VenueCard from "@/components/VenueCard";
 import AuthModal from "@/components/AuthModal";
@@ -751,10 +752,12 @@ export default function Locations({ state: propState, city: propCity }: Location
                       className="aspect-video rounded-lg overflow-hidden relative group"
                       data-testid={`photo-${idx}`}
                     >
-                      <img
+                      <Image
                         src={photo.url}
                         alt={`${photo.venueName} bowling alley`}
-                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                        fill
+                        sizes="(max-width: 768px) 50vw, 33vw"
+                        className="object-cover transition-transform group-hover:scale-105"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
                         <span className="text-white text-sm font-medium">{photo.venueName}</span>
@@ -790,15 +793,20 @@ export default function Locations({ state: propState, city: propCity }: Location
                         <div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                           <span className="text-2xl font-bold text-primary">#{idx + 1}</span>
                         </div>
-                        {(venue.coverImageUrl || venue.photoUrl) && (
-                          <div className="flex-shrink-0 w-20 h-16 rounded-lg overflow-hidden">
-                            <img
-                              src={venue.coverImageUrl || venue.photoUrl}
-                              alt={venue.name}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        )}
+                        {(() => {
+                          const imgSrc = venue.coverImageUrl || venue.photoUrl;
+                          return imgSrc ? (
+                            <div className="flex-shrink-0 w-20 h-16 rounded-lg overflow-hidden relative">
+                              <Image
+                                src={imgSrc}
+                                alt={venue.name}
+                                fill
+                                sizes="80px"
+                                className="object-cover"
+                              />
+                            </div>
+                          ) : null;
+                        })()}
                         <div className="flex-1 min-w-0">
                           <h3 className="font-semibold text-lg truncate">{venue.name}</h3>
                           <p className="text-sm text-muted-foreground truncate">{venue.address}</p>
