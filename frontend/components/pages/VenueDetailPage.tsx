@@ -102,6 +102,7 @@ import {
   addSavedAlley,
   removeSavedAlley,
   getSuggestionByVenueId,
+  type Venue,
 } from "@/lib/firestore";
 import { useAuth } from "@/providers/auth-provider";
 import { trackEvent } from "@/lib/analytics";
@@ -208,9 +209,10 @@ const claimFormSchema = z.object({
 
 interface VenueDetailPageProps {
   venueId: string;
+  initialVenueData?: Venue | null;
 }
 
-export default function VenueDetail({ venueId }: VenueDetailPageProps) {
+export default function VenueDetail({ venueId, initialVenueData }: VenueDetailPageProps) {
   const router = useRouter();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -289,6 +291,7 @@ export default function VenueDetail({ venueId }: VenueDetailPageProps) {
     queryKey: ["venue", venueId],
     queryFn: () => getVenue(venueId!),
     enabled: !!venueId,
+    initialData: initialVenueData !== undefined ? initialVenueData : undefined,
   });
 
   // Fetch owner profile if venue has ownerId
