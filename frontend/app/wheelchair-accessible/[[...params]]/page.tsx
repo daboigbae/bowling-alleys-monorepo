@@ -7,7 +7,7 @@ const WheelchairAccessiblePage = dynamic(() => import('@/components/pages/Wheelc
 });
 
 export default function WheelchairAccessible({ params }: { params?: { params?: string[] } }) {
-  const state = params?.params?.[0];
-  const city = params?.params?.[1];
+  const state = params?.params?.[0] ? decodeURIComponent(params.params[0]) : undefined;
+  const city = params?.params?.[1] ? decodeURIComponent(params.params[1]) : undefined;
   return <WheelchairAccessiblePage state={state} city={city} />;
 }
