@@ -85,7 +85,8 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   };
 }
 
-export default function VenueDetail({ params }: { params: { id: string } }) {
-  return <VenueDetailPage venueId={params.id} />;
+export default async function VenueDetail({ params }: { params: { id: string } }) {
+  const venueData = await getVenueForMetadata(params.id);
+  return <VenueDetailPage venueId={params.id} initialVenueData={venueData} />;
 }
 
