@@ -236,6 +236,120 @@ function getRecentReviewsFromCache(limitCount: number = 6): Array<ReviewData & {
     .slice(0, limitCount);
 }
 
+// Server-side pricing report cache (refreshes daily at midnight, same as venue cache)
+interface PricingReportCacheData {
+  latestDate: string | null;
+  usa: Record<string, any> | null;
+  states: Map<string, Record<string, any>>;
+  cities: Map<string, Record<string, any>>;
+  extremes: {
+    cheapestByGame: any;
+    mostExpensiveByGame: any;
+    cheapestByHour: any;
+    mostExpensiveByHour: any;
+  } | null;
+  timestamp: number;
+}
+
+const pricingReportCache: {
+  data: PricingReportCacheData | null;
+  promise: Promise<PricingReportCacheData | null> | null;
+} = {
+  data: null,
+  promise: null,
+};
+
+function isPricingCacheExpired(): boolean {
+  if (!pricingReportCache.data) return true;
+  const now = new Date();
+  const lastUpdate = new Date(pricingReportCache.data.timestamp);
+  const midnightToday = new Date(now);
+  midnightToday.setHours(0, 0, 0, 0);
+  return lastUpdate < midnightToday;
+}
+
+async function getPricingReportCache(): Promise<PricingReportCacheData | null> {
+  if (!isPricingCacheExpired() && pricingReportCache.data) {
+    console.log("Server cache: Using cached pricing report");
+    return pricingReportCache.data;
+  }
+  if (pricingReportCache.promise) {
+    return pricingReportCache.promise;
+  }
+  pricingReportCache.promise = (async (): Promise<PricingReportCacheData | null> => {
+    try {
+      console.log("Server cache: Fetching fresh pricing report from Firestore");
+      const db = admin.firestore();
+      const today = new Date().toISOString().split("T")[0];
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+      const dayBefore = new Date(Date.now() - 172800000).toISOString().split("T")[0];
+      let latestDate: string | null = null;
+      for (const date of [today, yesterday, dayBefore]) {
+        const usaRef = db.collection("reports").doc(date).collection("usa").doc("average");
+        const snap = await usaRef.get();
+        if (snap.exists) {
+          latestDate = date;
+          break;
+        }
+      }
+      if (!latestDate) {
+        console.log("Server cache: No pricing report found");
+        pricingReportCache.promise = null;
+        return null;
+      }
+      const [usaSnap, statesSnap, citiesSnap] = await Promise.all([
+        db.collection("reports").doc(latestDate).collection("usa").doc("average").get(),
+        db.collection("reports").doc(latestDate).collection("states").get(),
+        db.collection("reports").doc(latestDate).collection("cities").get(),
+      ]);
+      const usa = usaSnap.exists ? usaSnap.data() || null : null;
+      const states = new Map<string, Record<string, any>>();
+      statesSnap.docs.forEach((d) => states.set(d.id, d.data()));
+      const cities = new Map<string, Record<string, any>>();
+      citiesSnap.docs.forEach((d) => cities.set(d.id, d.data()));
+      const excludedStates = ["DC", "PR", "HI", "AK"];
+      let cheapestByGame: any = null;
+      let mostExpensiveByGame: any = null;
+      let cheapestByHour: any = null;
+      let mostExpensiveByHour: any = null;
+      states.forEach((data, stateAbbr) => {
+        if (excludedStates.includes(stateAbbr)) return;
+        const gamePrice = data.averageGamePrice;
+        const hourlyPrice = data.averageHourlyPrice;
+        if (typeof gamePrice === "number" && gamePrice > 0) {
+          if (!cheapestByGame || gamePrice < cheapestByGame.gamePrice) cheapestByGame = { state: stateAbbr, gamePrice };
+          if (!mostExpensiveByGame || gamePrice > mostExpensiveByGame.gamePrice) mostExpensiveByGame = { state: stateAbbr, gamePrice };
+        }
+        if (typeof hourlyPrice === "number" && hourlyPrice > 0) {
+          if (!cheapestByHour || hourlyPrice < cheapestByHour.hourlyPrice) cheapestByHour = { state: stateAbbr, hourlyPrice };
+          if (!mostExpensiveByHour || hourlyPrice > mostExpensiveByHour.hourlyPrice) mostExpensiveByHour = { state: stateAbbr, hourlyPrice };
+        }
+      });
+      const data: PricingReportCacheData = {
+        latestDate,
+        usa,
+        states,
+        cities,
+        extremes: { cheapestByGame, mostExpensiveByGame, cheapestByHour, mostExpensiveByHour },
+        timestamp: Date.now(),
+      };
+      pricingReportCache.data = data;
+      pricingReportCache.promise = null;
+      console.log(`Server cache: Cached pricing report for ${latestDate} (${states.size} states, ${cities.size} cities)`);
+      return data;
+    } catch (error) {
+      console.error("Server cache: Error fetching pricing report:", error);
+      pricingReportCache.promise = null;
+      if (pricingReportCache.data) {
+        console.log("Server cache: Using stale pricing cache due to fetch error");
+        return pricingReportCache.data;
+      }
+      return null;
+    }
+  })();
+  return pricingReportCache.promise;
+}
+
 // Helper function to get blog posts from MDX files
 async function getBlogPostsForSitemap() {
   try {
@@ -5358,50 +5472,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Helper function to get latest report date
-  async function getLatestReportDate(): Promise<string | null> {
-    const db = admin.firestore();
-    const today = new Date().toISOString().split("T")[0];
-    
-    try {
-      const todayRef = db.collection("reports").doc(today).collection("usa").doc("average");
-      const todayDoc = await todayRef.get();
-      if (todayDoc.exists) return today;
-      
-      const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
-      const yesterdayRef = db.collection("reports").doc(yesterday).collection("usa").doc("average");
-      const yesterdayDoc = await yesterdayRef.get();
-      if (yesterdayDoc.exists) return yesterday;
-      
-      const dayBefore = new Date(Date.now() - 172800000).toISOString().split("T")[0];
-      const dayBeforeRef = db.collection("reports").doc(dayBefore).collection("usa").doc("average");
-      const dayBeforeDoc = await dayBeforeRef.get();
-      if (dayBeforeDoc.exists) return dayBefore;
-      
-      return null;
-    } catch (error) {
-      console.error("Error fetching latest report date:", error);
-      return null;
-    }
-  }
-
-  // Public endpoint: Get USA pricing
+  // Public endpoint: Get USA pricing (uses server cache, refreshes at midnight)
   app.get("/api/pricing/usa", async (req, res) => {
     try {
-      const latestDate = await getLatestReportDate();
-      if (!latestDate) {
+      const cache = await getPricingReportCache();
+      if (!cache || !cache.latestDate || !cache.usa) {
         return res.status(404).json({ error: "Pricing data not available" });
       }
-      
-      const db = admin.firestore();
-      const usaRef = db.collection("reports").doc(latestDate).collection("usa").doc("average");
-      const snapshot = await usaRef.get();
-      
-      if (!snapshot.exists) {
-        return res.status(404).json({ error: "Pricing data not found" });
-      }
-      
-      const data = snapshot.data();
+      const data = cache.usa;
+      res.setHeader("Cache-Control", "public, max-age=3600");
       res.json({
         averageHourlyPrice: data?.averageHourlyPrice,
         averageGamePrice: data?.averageGamePrice,
@@ -5418,24 +5497,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public endpoint: Get state pricing
+  // Public endpoint: Get state pricing (uses server cache)
   app.get("/api/pricing/state/:state", async (req, res) => {
     try {
       const { state } = req.params;
-      const latestDate = await getLatestReportDate();
-      if (!latestDate) {
+      const cache = await getPricingReportCache();
+      if (!cache || !cache.latestDate) {
         return res.status(404).json({ error: "Pricing data not available" });
       }
-      
-      const db = admin.firestore();
-      const stateRef = db.collection("reports").doc(latestDate).collection("states").doc(state.toUpperCase());
-      const snapshot = await stateRef.get();
-      
-      if (!snapshot.exists) {
+      const data = cache.states.get(state.toUpperCase());
+      if (!data) {
         return res.status(404).json({ error: "Pricing data not found" });
       }
-      
-      const data = snapshot.data();
+      res.setHeader("Cache-Control", "public, max-age=3600");
       res.json({
         averageHourlyPrice: data?.averageHourlyPrice,
         averageGamePrice: data?.averageGamePrice,
@@ -5453,30 +5527,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public endpoint: Get city pricing
+  // Public endpoint: Get city pricing (uses server cache)
   app.get("/api/pricing/city/:city/:state", async (req, res) => {
     try {
       const { city, state } = req.params;
-      const latestDate = await getLatestReportDate();
-      if (!latestDate) {
+      const cache = await getPricingReportCache();
+      if (!cache || !cache.latestDate) {
         return res.status(404).json({ error: "Pricing data not available" });
       }
-      
       const cityKey = city
         .split(/[\s-]+/)
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
         .join("-");
       const docId = `${cityKey}-${state.toUpperCase()}`;
-      
-      const db = admin.firestore();
-      const cityRef = db.collection("reports").doc(latestDate).collection("cities").doc(docId);
-      const snapshot = await cityRef.get();
-      
-      if (!snapshot.exists) {
+      const data = cache.cities.get(docId);
+      if (!data) {
         return res.status(404).json({ error: "Pricing data not found" });
       }
-      
-      const data = snapshot.data();
+      res.setHeader("Cache-Control", "public, max-age=3600");
       res.json({
         averageHourlyPrice: data?.averageHourlyPrice,
         averageGamePrice: data?.averageGamePrice,
@@ -5495,19 +5563,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public endpoint: Get all states with pricing
+  // Public endpoint: Get all states with pricing (uses server cache)
   app.get("/api/pricing/states", async (req, res) => {
     try {
-      const latestDate = await getLatestReportDate();
-      if (!latestDate) {
+      const cache = await getPricingReportCache();
+      if (!cache || !cache.latestDate) {
         return res.json([]);
       }
-      
-      const db = admin.firestore();
-      const statesRef = db.collection("reports").doc(latestDate).collection("states");
-      const snapshot = await statesRef.get();
-      
-      const states = snapshot.docs.map(doc => doc.id).sort();
+      const states = Array.from(cache.states.keys()).sort();
+      res.setHeader("Cache-Control", "public, max-age=3600");
       res.json(states);
     } catch (error) {
       console.error("Error fetching pricing states:", error);
@@ -5515,30 +5579,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public endpoint: Get cities with pricing for state
+  // Public endpoint: Get cities with pricing for state (uses server cache)
   app.get("/api/pricing/cities/:state", async (req, res) => {
     try {
       const { state } = req.params;
-      const latestDate = await getLatestReportDate();
-      if (!latestDate) {
+      const cache = await getPricingReportCache();
+      if (!cache || !cache.latestDate) {
         return res.json([]);
       }
-      
-      const db = admin.firestore();
-      const citiesRef = db.collection("reports").doc(latestDate).collection("cities");
-      const snapshot = await citiesRef.get();
-      
       const cities = new Set<string>();
       const stateUpper = state.toUpperCase();
-      
-      snapshot.docs.forEach(doc => {
-        if (doc.id.endsWith(`-${stateUpper}`)) {
-          const cityPart = doc.id.replace(`-${stateUpper}`, "");
+      cache.cities.forEach((_, docId) => {
+        if (docId.endsWith(`-${stateUpper}`)) {
+          const cityPart = docId.replace(`-${stateUpper}`, "");
           const cityName = cityPart.replace(/-/g, " ");
           cities.add(cityName);
         }
       });
-      
+      res.setHeader("Cache-Control", "public, max-age=3600");
       res.json(Array.from(cities).sort());
     } catch (error) {
       console.error("Error fetching pricing cities:", error);
@@ -5546,11 +5604,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public endpoint: Get pricing extremes
+  // Public endpoint: Get pricing extremes (uses server cache)
   app.get("/api/pricing/extremes", async (req, res) => {
     try {
-      const latestDate = await getLatestReportDate();
-      if (!latestDate) {
+      const cache = await getPricingReportCache();
+      if (!cache || !cache.latestDate || !cache.extremes) {
         return res.json({
           cheapestByGame: null,
           mostExpensiveByGame: null,
@@ -5559,50 +5617,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           reportDate: null,
         });
       }
-      
-      const db = admin.firestore();
-      const statesRef = db.collection("reports").doc(latestDate).collection("states");
-      const snapshot = await statesRef.get();
-      
-      const excludedStates = ['DC', 'PR', 'HI', 'AK'];
-      let cheapestByGame: any = null;
-      let mostExpensiveByGame: any = null;
-      let cheapestByHour: any = null;
-      let mostExpensiveByHour: any = null;
-      
-      snapshot.docs.forEach(doc => {
-        const stateAbbr = doc.id;
-        if (excludedStates.includes(stateAbbr)) return;
-        
-        const data = doc.data();
-        const gamePrice = data.averageGamePrice;
-        const hourlyPrice = data.averageHourlyPrice;
-        
-        if (typeof gamePrice === 'number' && gamePrice > 0) {
-          if (!cheapestByGame || gamePrice < cheapestByGame.gamePrice) {
-            cheapestByGame = { state: stateAbbr, gamePrice };
-          }
-          if (!mostExpensiveByGame || gamePrice > mostExpensiveByGame.gamePrice) {
-            mostExpensiveByGame = { state: stateAbbr, gamePrice };
-          }
-        }
-        
-        if (typeof hourlyPrice === 'number' && hourlyPrice > 0) {
-          if (!cheapestByHour || hourlyPrice < cheapestByHour.hourlyPrice) {
-            cheapestByHour = { state: stateAbbr, hourlyPrice };
-          }
-          if (!mostExpensiveByHour || hourlyPrice > mostExpensiveByHour.hourlyPrice) {
-            mostExpensiveByHour = { state: stateAbbr, hourlyPrice };
-          }
-        }
-      });
-      
+      res.setHeader("Cache-Control", "public, max-age=3600");
       res.json({
-        cheapestByGame,
-        mostExpensiveByGame,
-        cheapestByHour,
-        mostExpensiveByHour,
-        reportDate: latestDate,
+        ...cache.extremes,
+        reportDate: cache.latestDate,
       });
     } catch (error) {
       console.error("Error fetching pricing extremes:", error);
