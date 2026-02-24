@@ -68,17 +68,6 @@ export default function Locations({ state: propState, city: propCity }: Location
     }
   }, [latitude, longitude]);
 
-  // Set page title based on route parameters
-  useEffect(() => {
-    let title = "Find Bowling Alleys by Location - BowlingAlleys.io";
-    if (selectedState && selectedCity) {
-      title = `Bowling Alleys in ${selectedCity}, ${selectedState} - BowlingAlleys.io`;
-    } else if (selectedState) {
-      title = `Bowling Alleys in ${selectedState} - BowlingAlleys.io`;
-    }
-    document.title = title;
-  }, [selectedState, selectedCity]);
-
   const openAuthModal = (mode: "signin" | "signup") => {
     setAuthMode(mode);
     setAuthModalOpen(true);
@@ -210,14 +199,34 @@ export default function Locations({ state: propState, city: propCity }: Location
     return grouped;
   }, [selectedState, stateVenues]);
 
+  // Resolve selectedCity to canonical form (case-insensitive match) for lookups and display
+  const canonicalCity = useMemo(() => {
+    if (!selectedCity) return undefined;
+    const match = Object.keys(venuesByCity).find(
+      (k) => k.toLowerCase() === selectedCity.toLowerCase()
+    );
+    return match ?? selectedCity;
+  }, [selectedCity, venuesByCity]);
+
+  // Set page title based on route parameters
+  useEffect(() => {
+    let title = "Find Bowling Alleys by Location - BowlingAlleys.io";
+    if (selectedState && canonicalCity) {
+      title = `Bowling Alleys in ${canonicalCity}, ${selectedState} - BowlingAlleys.io`;
+    } else if (selectedState) {
+      title = `Bowling Alleys in ${selectedState} - BowlingAlleys.io`;
+    }
+    document.title = title;
+  }, [selectedState, canonicalCity]);
+
   // Filter venues by search term and selected city
   const filteredVenuesByCity = useMemo(() => {
     let filtered = venuesByCity;
 
     // Filter by selected city if specified, and include nearby cities to fill up to 20 venues
-    if (selectedCity) {
-      const cityVenues = venuesByCity[selectedCity] || [];
-      const result: Record<string, Venue[]> = { [selectedCity]: cityVenues };
+    if (canonicalCity) {
+      const cityVenues = venuesByCity[canonicalCity] || [];
+      const result: Record<string, Venue[]> = { [canonicalCity]: cityVenues };
 
       // If the city has fewer than 20 venues, add nearby venues from other cities
       if (cityVenues.length < 20) {
@@ -226,7 +235,7 @@ export default function Locations({ state: propState, city: propCity }: Location
 
         // Get venues from other cities in the same state
         Object.entries(venuesByCity).forEach(([city, venues]) => {
-          if (city !== selectedCity) {
+          if (city.toLowerCase() !== canonicalCity.toLowerCase()) {
             nearbyVenues.push(...venues);
           }
         });
@@ -276,7 +285,7 @@ export default function Locations({ state: propState, city: propCity }: Location
     }
 
     return filtered;
-  }, [venuesByCity, searchTerm, selectedCity]);
+  }, [venuesByCity, searchTerm, canonicalCity]);
 
   const totalVenues = Object.values(filteredVenuesByCity).reduce(
     (total, venues) => total + venues.length,
@@ -285,15 +294,15 @@ export default function Locations({ state: propState, city: propCity }: Location
 
   // Get top 5 bowling alleys in the selected city (sorted by rating)
   const top5Venues = useMemo(() => {
-    if (!selectedCity) return [];
-    const cityVenues = venuesByCity[selectedCity] || [];
+    if (!canonicalCity) return [];
+    const cityVenues = venuesByCity[canonicalCity] || [];
     return cityVenues.slice(0, 5);
-  }, [selectedCity, venuesByCity]);
+  }, [canonicalCity, venuesByCity]);
 
   // Collect photos from venues in the city (deduplicated)
   const cityPhotos = useMemo(() => {
-    if (!selectedCity) return [];
-    const cityVenues = venuesByCity[selectedCity] || [];
+    if (!canonicalCity) return [];
+    const cityVenues = venuesByCity[canonicalCity] || [];
     const photos: { url: string; venueName: string }[] = [];
     const seenUrls = new Set<string>();
     
@@ -320,12 +329,12 @@ export default function Locations({ state: propState, city: propCity }: Location
     });
     
     return photos.slice(0, 6); // Limit to 6 photos for gallery
-  }, [selectedCity, venuesByCity]);
+  }, [canonicalCity, venuesByCity]);
 
   // Reviews summary stats for the city
   const reviewsStats = useMemo(() => {
-    if (!selectedCity) return null;
-    const cityVenues = venuesByCity[selectedCity] || [];
+    if (!canonicalCity) return null;
+    const cityVenues = venuesByCity[canonicalCity] || [];
     const totalReviews = cityVenues.reduce((sum, v) => sum + (v.reviewCount || 0), 0);
     const venuesWithRatings = cityVenues.filter(v => v.avgRating > 0);
     const avgRating = venuesWithRatings.length > 0
@@ -339,12 +348,12 @@ export default function Locations({ state: propState, city: propCity }: Location
       venueCount: cityVenues.length,
       highestRated
     };
-  }, [selectedCity, venuesByCity]);
+  }, [canonicalCity, venuesByCity]);
 
   // Check which experiences are available in this city based on amenities
   const availableExperiences = useMemo(() => {
-    if (!selectedCity) return { cosmic: false, leagues: false, birthday: false };
-    const cityVenues = venuesByCity[selectedCity] || [];
+    if (!canonicalCity) return { cosmic: false, leagues: false, birthday: false };
+    const cityVenues = venuesByCity[canonicalCity] || [];
     
     const hasCosmic = cityVenues.some(v => 
       v.amenities?.some(a => a.toLowerCase().includes('cosmic') || a.toLowerCase().includes('glow'))
@@ -414,7 +423,7 @@ export default function Locations({ state: propState, city: propCity }: Location
               </div>
             )}
           </>
-        ) : selectedCity ? (
+        ) : canonicalCity ? (
           <>
             {/* Breadcrumb navigation for city view */}
             <nav className="flex items-center gap-2 mb-4 text-sm">
@@ -435,7 +444,7 @@ export default function Locations({ state: propState, city: propCity }: Location
               </Link>
               <span className="text-muted-foreground">/</span>
               <span className="font-medium text-foreground">
-                {selectedCity}
+                {canonicalCity}
               </span>
             </nav>
             <div className="flex items-center gap-4 mb-4">
@@ -449,28 +458,28 @@ export default function Locations({ state: propState, city: propCity }: Location
                 className="text-3xl font-bold text-foreground"
                 data-testid="text-city-title"
               >
-                Bowling Alleys in {selectedCity}, {selectedState}
+                Bowling Alleys in {canonicalCity}, {selectedState}
               </h1>
             </div>
             <p className="text-muted-foreground text-lg mb-4">
               {(() => {
-                const cityVenues = venuesByCity[selectedCity]?.length || 0;
+                const cityVenues = venuesByCity[canonicalCity]?.length || 0;
                 const nearbyVenues = totalVenues - cityVenues;
                 if (nearbyVenues > 0) {
-                  return `${cityVenues} ${cityVenues === 1 ? "alley" : "alleys"} in ${selectedCity} + ${nearbyVenues} nearby`;
+                  return `${cityVenues} ${cityVenues === 1 ? "alley" : "alleys"} in ${canonicalCity} + ${nearbyVenues} nearby`;
                 }
                 return `${totalVenues} bowling ${totalVenues === 1 ? "alley" : "alleys"} found`;
               })()}
             </p>
             {/* City Guide Banner */}
-            {getCityHubUrl(selectedCity) && (
+            {getCityHubUrl(canonicalCity) && (
               <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
                 <MapPin className="h-4 w-4" />
                 <AlertDescription>
                   <span className="text-sm">
-                    Want to find the best bowling alleys in {selectedCity}?{" "}
+                    Want to find the best bowling alleys in {canonicalCity}?{" "}
                     <Link
-                      href={getCityHubUrl(selectedCity)!}
+                      href={getCityHubUrl(canonicalCity)!}
                       className="font-semibold text-primary hover:underline"
                       data-testid="link-city-guide-banner"
                     >
@@ -734,7 +743,7 @@ export default function Locations({ state: propState, city: propCity }: Location
             </Card>
           ))}
         </div>
-      ) : selectedCity ? (
+      ) : canonicalCity ? (
         /* Enhanced City Landing Page */
         Object.keys(filteredVenuesByCity).length > 0 ? (
           <div className="space-y-12">
@@ -743,7 +752,7 @@ export default function Locations({ state: propState, city: propCity }: Location
               <section data-testid="section-city-photos">
                 <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
                   <ImageIcon className="h-6 w-6 text-primary" />
-                  Photos from {selectedCity} Bowling Alleys
+                  Photos from {canonicalCity} Bowling Alleys
                 </h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {cityPhotos.map((photo, idx) => (
@@ -773,7 +782,7 @@ export default function Locations({ state: propState, city: propCity }: Location
               <section data-testid="section-top-5">
                 <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
                   <Trophy className="h-6 w-6 text-yellow-500" />
-                  Top {Math.min(5, top5Venues.length)} Bowling Alleys in {selectedCity}
+                  Top {Math.min(5, top5Venues.length)} Bowling Alleys in {canonicalCity}
                 </h2>
                 <p className="text-muted-foreground mb-6">
                   The highest-rated bowling centers based on community reviews
@@ -830,15 +839,15 @@ export default function Locations({ state: propState, city: propCity }: Location
             <section data-testid="section-experiences">
               <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
                 <Sparkles className="h-6 w-6 text-purple-500" />
-                Bowling Experiences in {selectedCity}
+                Bowling Experiences in {canonicalCity}
               </h2>
               <p className="text-muted-foreground mb-6">
-                Discover unique bowling experiences available in {selectedCity}, {selectedState}
+                Discover unique bowling experiences available in {canonicalCity}, {selectedState}
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {availableExperiences.cosmic && (
                   <Link
-                    href={`/cosmic-bowling/${encodeURIComponent(selectedState!)}/${encodeURIComponent(selectedCity)}`}
+                    href={`/cosmic-bowling/${encodeURIComponent(selectedState!)}/${encodeURIComponent(canonicalCity)}`}
                     data-testid="link-cosmic-bowling"
                   >
                     <Card className="hover-elevate h-full">
@@ -859,7 +868,7 @@ export default function Locations({ state: propState, city: propCity }: Location
                 )}
                 {availableExperiences.leagues && (
                   <Link
-                    href={`/bowling-leagues/${encodeURIComponent(selectedState!)}/${encodeURIComponent(selectedCity)}`}
+                    href={`/bowling-leagues/${encodeURIComponent(selectedState!)}/${encodeURIComponent(canonicalCity)}`}
                     data-testid="link-leagues"
                   >
                     <Card className="hover-elevate h-full">
@@ -880,7 +889,7 @@ export default function Locations({ state: propState, city: propCity }: Location
                 )}
                 {availableExperiences.birthday && (
                   <Link
-                    href={`/bowling-birthday-party/${encodeURIComponent(selectedState!)}/${encodeURIComponent(selectedCity)}`}
+                    href={`/bowling-birthday-party/${encodeURIComponent(selectedState!)}/${encodeURIComponent(canonicalCity)}`}
                     data-testid="link-birthday"
                   >
                     <Card className="hover-elevate h-full">
@@ -907,7 +916,7 @@ export default function Locations({ state: propState, city: propCity }: Location
               <section data-testid="section-reviews-summary">
                 <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
                   <MessageSquare className="h-6 w-6 text-green-500" />
-                  Reviews Summary for {selectedCity}
+                  Reviews Summary for {canonicalCity}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <Card>
@@ -956,7 +965,7 @@ export default function Locations({ state: propState, city: propCity }: Location
               <section data-testid="section-map">
                 <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
                   <MapPin className="h-6 w-6 text-red-500" />
-                  Map of Bowling Alleys in {selectedCity}
+                  Map of Bowling Alleys in {canonicalCity}
                 </h2>
                 <CityMap
                   venues={Object.values(filteredVenuesByCity).flat()}
@@ -973,14 +982,14 @@ export default function Locations({ state: propState, city: propCity }: Location
               <h2 className="text-2xl font-bold mb-4">All Bowling Alleys</h2>
               {Object.entries(filteredVenuesByCity)
                 .sort(([cityA], [cityB]) => {
-                  if (cityA === selectedCity) return -1;
-                  if (cityB === selectedCity) return 1;
+                  if (cityA.toLowerCase() === canonicalCity.toLowerCase()) return -1;
+                  if (cityB.toLowerCase() === canonicalCity.toLowerCase()) return 1;
                   return cityA.localeCompare(cityB);
                 })
                 .map(([city, venues]) => (
                   <div key={city} className="mb-8">
                     <h3 className="text-xl font-semibold mb-4">
-                      {city === selectedCity ? (
+                      {city.toLowerCase() === canonicalCity.toLowerCase() ? (
                         `${city}`
                       ) : (
                         <span className="text-muted-foreground">
@@ -1011,8 +1020,8 @@ export default function Locations({ state: propState, city: propCity }: Location
             <h3 className="text-lg font-semibold mb-2">No venues found</h3>
             <p className="text-muted-foreground mb-4">
               {searchTerm
-                ? `No venues found matching "${searchTerm}" in ${selectedCity}, ${selectedState}.`
-                : `No bowling alleys found in ${selectedCity}, ${selectedState}.`}
+                ? `No venues found matching "${searchTerm}" in ${canonicalCity}, ${selectedState}.`
+                : `No bowling alleys found in ${canonicalCity}, ${selectedState}.`}
             </p>
             {searchTerm && (
               <Button variant="outline" onClick={() => setSearchTerm("")}>
