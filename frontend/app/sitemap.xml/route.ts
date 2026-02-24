@@ -28,13 +28,14 @@ export async function GET(request: NextRequest) {
 
     const body = await res.arrayBuffer();
     const contentType = res.headers.get('content-type') || 'application/xml';
-    const contentEncoding = res.headers.get('content-encoding');
 
+    // Do not forward Content-Encoding: fetch() auto-decompresses the response,
+    // so body is already plain XML. Forwarding gzip would cause ERR_CONTENT_DECODING_FAILED
+    // and break Google Search Console.
     const headers: Record<string, string> = {
       'Content-Type': contentType,
       'Cache-Control': 'public, max-age=3600, s-maxage=3600',
     };
-    if (contentEncoding) headers['Content-Encoding'] = contentEncoding;
 
     return new NextResponse(body, {
       status: 200,
