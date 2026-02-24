@@ -3,6 +3,7 @@ import { Montserrat, Public_Sans } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Providers } from "./providers";
+import { getFooterVenues } from "@/lib/venue-server";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -28,15 +29,16 @@ export const metadata: Metadata = {
   keywords: "bowling alleys, bowling reviews, find bowling alleys, local bowling centers, bowling ratings",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const footerVenues = await getFooterVenues();
   return (
     <html lang="en" suppressHydrationWarning className="light">
       <body className={`${montserrat.variable} ${publicSans.variable} ${csGordon.variable} bg-white`}>
-        <Providers>
+        <Providers initialTopAlleys={footerVenues.topAlleys} initialSponsorVenues={footerVenues.sponsorVenues}>
           {children}
         </Providers>
       </body>

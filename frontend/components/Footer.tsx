@@ -8,16 +8,24 @@ import { SiFacebook, SiReddit, SiCrunchbase } from "react-icons/si";
 import { Crown, DollarSign } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import SuggestLocationBanner from "@/components/SuggestLocationBanner";
+import type { FooterVenue } from "@/lib/footer-venues-types";
 
-export default function Footer() {
+interface FooterProps {
+  initialTopAlleys?: FooterVenue[];
+  initialSponsorVenues?: FooterVenue[];
+}
+
+export default function Footer({ initialTopAlleys, initialSponsorVenues }: FooterProps) {
   const { data: topAlleys } = useQuery({
     queryKey: ["/top-alleys"],
     queryFn: getTopAlleys,
+    initialData: initialTopAlleys,
   });
 
   const { data: sponsorVenues } = useQuery({
     queryKey: ["/sponsor-venues"],
     queryFn: getSponsorVenues,
+    initialData: initialSponsorVenues,
   });
 
   return (

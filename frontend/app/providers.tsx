@@ -11,8 +11,15 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
 import { Analytics } from "@/components/Analytics";
+import type { FooterVenue } from "@/lib/footer-venues-types";
 
-export function Providers({ children }: { children: React.ReactNode }) {
+interface ProvidersProps {
+  children: React.ReactNode;
+  initialTopAlleys?: FooterVenue[];
+  initialSponsorVenues?: FooterVenue[];
+}
+
+export function Providers({ children, initialTopAlleys, initialSponsorVenues }: ProvidersProps) {
   return (
     <HelmetProvider>
       <Analytics />
@@ -31,7 +38,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
                 <div className="min-h-screen bg-white flex flex-col">
                   <Header />
                   <main className="flex-grow bg-white">{children}</main>
-                  <Footer />
+                  <Footer
+                    initialTopAlleys={initialTopAlleys}
+                    initialSponsorVenues={initialSponsorVenues}
+                  />
                 </div>
                 <Toaster />
               </GeolocationProvider>
