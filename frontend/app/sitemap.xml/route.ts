@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
     };
 
     const payload = body instanceof Buffer ? body : Buffer.from(body as ArrayBuffer);
-    return new NextResponse(payload, {
+    return new NextResponse(new Uint8Array(payload), {
       status: 200,
       headers,
     });
