@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { gunzipSync } from 'zlib';
 
 export async function GET(request: NextRequest) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -13,11 +14,14 @@ export async function GET(request: NextRequest) {
   const url = `${apiUrl.replace(/\/$/, '')}/sitemap.xml`;
 
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 90_000);
+
     const res = await fetch(url, {
-      headers: {
-        Host: host,
-      },
+      headers: { Host: host },
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
 
     if (!res.ok) {
       return NextResponse.json(
@@ -26,18 +30,36 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const body = await res.arrayBuffer();
+    let body = await res.arrayBuffer();
     const contentType = res.headers.get('content-type') || 'application/xml';
+    const contentEncoding = res.headers.get('content-encoding')?.toLowerCase() ?? '';
 
-    // Do not forward Content-Encoding: fetch() auto-decompresses the response,
-    // so body is already plain XML. Forwarding gzip would cause ERR_CONTENT_DECODING_FAILED
-    // and break Google Search Console.
+    if (contentEncoding.includes('gzip')) {
+      try {
+        body = gunzipSync(Buffer.from(body));
+      } catch (e) {
+        console.error('Sitemap proxy: gzip decompress failed', e);
+        return NextResponse.json(
+          { error: 'Sitemap decompression failed' },
+          { status: 502 }
+        );
+      }
+    }
+
+    if (body.byteLength < 500) {
+      console.error('Sitemap proxy: API returned too few bytes', body.byteLength);
+      return NextResponse.json(
+        { error: 'Sitemap from API was empty or truncated' },
+        { status: 502 }
+      );
+    }
+
     const headers: Record<string, string> = {
       'Content-Type': contentType,
       'Cache-Control': 'public, max-age=3600, s-maxage=3600',
     };
 
-    return new NextResponse(body, {
+    return new NextResponse(body instanceof Buffer ? body : Buffer.from(body), {
       status: 200,
       headers,
     });
