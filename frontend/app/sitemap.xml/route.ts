@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
       'Cache-Control': 'public, max-age=3600, s-maxage=3600',
     };
 
-    const payload = body instanceof Buffer ? body : Buffer.from(body);
+    const payload = body instanceof Buffer ? body : Buffer.from(body as ArrayBuffer);
     return new NextResponse(payload, {
       status: 200,
       headers,
