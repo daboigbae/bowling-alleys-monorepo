@@ -30,13 +30,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    let body = await res.arrayBuffer();
+    const rawBody = await res.arrayBuffer();
     const contentType = res.headers.get('content-type') || 'application/xml';
     const contentEncoding = res.headers.get('content-encoding')?.toLowerCase() ?? '';
 
+    let body: Buffer | ArrayBuffer = rawBody;
     if (contentEncoding.includes('gzip')) {
       try {
-        body = gunzipSync(Buffer.from(body));
+        body = gunzipSync(Buffer.from(rawBody));
       } catch (e) {
         console.error('Sitemap proxy: gzip decompress failed', e);
         return NextResponse.json(
@@ -59,7 +60,8 @@ export async function GET(request: NextRequest) {
       'Cache-Control': 'public, max-age=3600, s-maxage=3600',
     };
 
-    return new NextResponse(body instanceof Buffer ? body : Buffer.from(body), {
+    const payload = body instanceof Buffer ? body : Buffer.from(body);
+    return new NextResponse(payload, {
       status: 200,
       headers,
     });
