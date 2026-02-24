@@ -3,6 +3,7 @@
 import { useState, useEffect, lazy, Suspense, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Helmet } from "react-helmet-async";
 import { useForm } from "react-hook-form";
@@ -244,6 +245,7 @@ export default function VenueDetail({ venueId }: VenueDetailPageProps) {
   const [carouselApi, setCarouselApi] = useState<any>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [imageErrors, setImageErrors] = useState<Record<number | string, boolean>>({});
 
   const claimForm = useForm<z.infer<typeof claimFormSchema>>({
     resolver: zodResolver(claimFormSchema),
@@ -1494,19 +1496,25 @@ export default function VenueDetail({ venueId }: VenueDetailPageProps) {
                       {imageUrls.map((imageUrl: string, index: number) => (
                         <CarouselItem key={index}>
                           <div className="relative aspect-[16/9] lg:aspect-[21/9]">
-                            <img
-                              src={imageUrl}
-                              alt={`${venue.name} - Image ${index + 1}`}
-                              className="w-full h-full object-cover"
-                              width={1200}
-                              height={675}
-                              loading="lazy"
-                              onError={(e) => {
-                                e.currentTarget.src =
-                                  "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1200&h=400";
-                              }}
-                              data-testid={`img-venue-photo-${index}`}
-                            />
+                            {imageErrors[index] ? (
+                              <img
+                                src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1200&h=400"
+                                alt={`${venue.name} - Image ${index + 1}`}
+                                className="w-full h-full object-cover"
+                                data-testid={`img-venue-photo-${index}`}
+                              />
+                            ) : (
+                              <Image
+                                src={imageUrl}
+                                alt={`${venue.name} - Image ${index + 1}`}
+                                fill
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+                                className="object-cover"
+                                priority={index === 0}
+                                onError={() => setImageErrors((p) => ({ ...p, [index]: true }))}
+                                data-testid={`img-venue-photo-${index}`}
+                              />
+                            )}
 
                             {/* Image Counter */}
                             <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
@@ -1542,21 +1550,30 @@ export default function VenueDetail({ venueId }: VenueDetailPageProps) {
               );
             }
 
+            const coverSrc = venue.coverImageUrl;
+            const fallbackCover =
+              "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1200&h=400";
             return (
-              <div className="rounded-xl overflow-hidden">
-                <img
-                  src={venue.coverImageUrl}
-                  alt={`Interior view of ${venue.name} bowling alley`}
-                  className="w-full aspect-[16/9] lg:aspect-[21/9] object-cover"
-                  width={1200}
-                  height={675}
-                  loading="lazy"
-                  onError={(e) => {
-                    e.currentTarget.src =
-                      "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1200&h=400";
-                  }}
-                  data-testid="img-venue-photo"
-                />
+              <div className="rounded-xl overflow-hidden relative aspect-[16/9] lg:aspect-[21/9]">
+                {imageErrors["cover"] || !coverSrc ? (
+                  <img
+                    src={fallbackCover}
+                    alt={`Interior view of ${venue.name} bowling alley`}
+                    className="w-full h-full object-cover"
+                    data-testid="img-venue-photo"
+                  />
+                ) : (
+                  <Image
+                    src={coverSrc}
+                    alt={`Interior view of ${venue.name} bowling alley`}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+                    className="object-cover"
+                    priority
+                    onError={() => setImageErrors((p) => ({ ...p, cover: true }))}
+                    data-testid="img-venue-photo"
+                  />
+                )}
               </div>
             );
           })()}

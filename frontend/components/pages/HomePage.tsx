@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import Image from "next/image";
 import Map from "@/components/Map";
 import VenueCard from "@/components/VenueCard";
 import AuthModal from "@/components/AuthModal";
@@ -354,11 +355,13 @@ export default function Home() {
         {/* Hero Section with Bowling Alley Image */}
         <section className="relative">
           <div className="h-auto min-h-[280px] sm:min-h-[320px] md:h-[40vh] relative overflow-hidden">
-            <img
+            <Image
               src={heroImage}
               alt="Modern bowling alley lanes"
-              className="absolute inset-0 w-full h-full object-cover"
-              loading="eager"
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
             />
             {/* Hero Overlay */}
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">

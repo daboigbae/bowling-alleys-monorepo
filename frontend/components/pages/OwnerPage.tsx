@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -327,10 +328,13 @@ export default function Owner() {
               {/* Hero Image */}
               <div className="relative hidden lg:block">
                 <div className="relative rounded-lg overflow-hidden shadow-2xl">
-                  <img
+                  <Image
                     src={heroImage}
                     alt="Bowling ball striking pins on a modern bowling lane"
+                    width={800}
+                    height={450}
                     className="w-full h-auto object-cover"
+                    priority
                     data-testid="img-hero"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>

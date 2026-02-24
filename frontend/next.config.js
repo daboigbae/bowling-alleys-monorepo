@@ -21,6 +21,12 @@ const nextConfig = {
         port: '',
         pathname: '/bowling-alleys-io.firebasestorage.app/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import Image from "next/image";
 import { Crown, MapPin, ArrowRight } from "lucide-react";
 import {
   Carousel,
@@ -124,10 +125,12 @@ export function FoundingPartnerCarousel({
               >
                 <div className="relative w-full h-[500px] overflow-hidden rounded-lg">
                   {imageUrl ? (
-                    <img
+                    <Image
                       src={imageUrl}
                       alt={venue.name}
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 80vw"
+                      className="object-cover"
                       data-testid={`carousel-image-${venue.id}`}
                     />
                   ) : (
