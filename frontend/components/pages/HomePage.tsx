@@ -419,7 +419,7 @@ export default function Home() {
       <div className="min-h-screen bg-background">
         {/* Hero Section with Bowling Alley Image */}
         <section className="relative">
-          <div className="h-auto min-h-[280px] sm:min-h-[320px] md:h-[40vh] relative overflow-hidden">
+          <div className="h-auto min-h-[480px] sm:min-h-[560px] md:min-h-[75vh] relative overflow-hidden">
             <Image
               src={heroImage}
               alt="Modern bowling alley lanes"
@@ -430,7 +430,7 @@ export default function Home() {
             />
             {/* Hero Overlay */}
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <div className="text-center text-white px-4 py-6 max-w-5xl mx-auto">
+              <div className="text-center text-white px-4 py-20 sm:py-28 md:py-36 max-w-5xl mx-auto">
                 <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold mb-3 drop-shadow-2xl leading-tight">
                   Find the Best Bowling Alleys Near You — With Prices, Specials,
                   and Real Info
