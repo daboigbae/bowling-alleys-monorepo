@@ -159,7 +159,7 @@ export default function MyVenues() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setLocation(`/venue/${venue.id}`)}
+                          onClick={() => router.push(`/venue/${venue.id}`)}
                           data-testid={`button-view-venue-${venue.id}`}
                         >
                           <ExternalLink className="h-4 w-4" />
