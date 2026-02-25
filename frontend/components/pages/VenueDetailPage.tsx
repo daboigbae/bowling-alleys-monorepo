@@ -1572,8 +1572,8 @@ export default function VenueDetail({ venueId, initialVenueData }: VenueDetailPa
           })()}
         </Card>
 
-        {/* For Bowling Alley Owners - Claim (above Save) */}
-        {!isWebview && !(user as { ownedVenueIds?: string[] })?.ownedVenueIds?.includes(venue.id) && (
+        {/* For Bowling Alley Owners - Claim (above Save). Hide if venue already has an owner. */}
+        {!isWebview && !venue.ownerId && !(user as { ownedVenueIds?: string[] })?.ownedVenueIds?.includes(venue.id) && (
           <div className="flex items-center justify-between p-4 my-4 bg-primary/5 border border-primary/20 rounded-lg">
             <div className="flex items-center gap-3">
               <Building2 className="h-5 w-5 text-primary" />
