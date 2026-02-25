@@ -35,9 +35,9 @@ export function PricingDisplay({ simplePricing, venueName, lastUpdated }: Pricin
 
   const formattedDate = formatUpdatedDate(lastUpdated);
   const hasSimplePricing = simplePricing && (
-    (simplePricing.game && simplePricing.game > 0) ||
-    (simplePricing.hourly && simplePricing.hourly > 0) ||
-    (simplePricing.shoeRental && simplePricing.shoeRental > 0)
+    Number(simplePricing.game) > 0 ||
+    Number(simplePricing.hourly) > 0 ||
+    Number(simplePricing.shoeRental) > 0
   );
 
   return (
@@ -67,24 +67,24 @@ export function PricingDisplay({ simplePricing, venueName, lastUpdated }: Pricin
           <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center p-4 border rounded-lg" data-testid="pricing-simple-game">
               <p className="text-sm text-muted-foreground mb-1">Per Game</p>
-              {simplePricing.game && simplePricing.game > 0 ? (
-                <p className="text-2xl font-bold text-primary">${simplePricing.game.toFixed(2)}</p>
+              {Number(simplePricing.game) > 0 ? (
+                <p className="text-2xl font-bold text-primary">${Number(simplePricing.game).toFixed(2)}</p>
               ) : (
                 <p className="text-sm text-muted-foreground italic">Not available</p>
               )}
             </div>
             <div className="text-center p-4 border rounded-lg" data-testid="pricing-simple-hourly">
               <p className="text-sm text-muted-foreground mb-1">Per Hour</p>
-              {simplePricing.hourly && simplePricing.hourly > 0 ? (
-                <p className="text-2xl font-bold text-primary">${simplePricing.hourly.toFixed(2)}</p>
+              {Number(simplePricing.hourly) > 0 ? (
+                <p className="text-2xl font-bold text-primary">${Number(simplePricing.hourly).toFixed(2)}</p>
               ) : (
                 <p className="text-sm text-muted-foreground italic">Not available</p>
               )}
             </div>
             <div className="text-center p-4 border rounded-lg" data-testid="pricing-simple-shoes">
               <p className="text-sm text-muted-foreground mb-1">Shoe Rental</p>
-              {simplePricing.shoeRental && simplePricing.shoeRental > 0 ? (
-                <p className="text-2xl font-bold text-primary">${simplePricing.shoeRental.toFixed(2)}</p>
+              {Number(simplePricing.shoeRental) > 0 ? (
+                <p className="text-2xl font-bold text-primary">${Number(simplePricing.shoeRental).toFixed(2)}</p>
               ) : (
                 <p className="text-sm text-muted-foreground italic">Not available</p>
               )}

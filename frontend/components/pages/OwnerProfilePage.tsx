@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { useParams, useLocation, Link } from "wouter";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet-async";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,16 +14,16 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { MapPin, Globe, Phone, Star, Award, ExternalLink } from "lucide-react";
+import { Globe, Phone, Star, Award } from "lucide-react";
 import { SiFacebook } from "react-icons/si";
 import { getUserBySlug, getVenuesByOwner, type Venue } from "@/lib/firestore";
 import VenueCard from "@/components/VenueCard";
 
 interface OwnerProfilePageProps { slug?: string; }
 export default function OwnerProfile({ slug: propSlug }: OwnerProfilePageProps = {}) {
-  const { slug: paramSlug } = useParams<{ slug: string }>();
-  const slug = propSlug ?? paramSlug;
-  const [, setLocation] = useLocation();
+  const params = useParams<{ slug: string }>();
+  const router = useRouter();
+  const slug = propSlug ?? (typeof params?.slug === "string" ? params.slug : undefined);
 
   // Fetch owner profile by slug
   const { data: owner, isLoading, error } = useQuery({
@@ -54,7 +54,7 @@ export default function OwnerProfile({ slug: propSlug }: OwnerProfilePageProps =
         <p className="text-muted-foreground mb-6">
           This owner profile doesn't exist or has been removed.
         </p>
-        <Button onClick={() => setLocation("/")}>
+        <Button onClick={() => router.push("/")}>
           Back to Home
         </Button>
       </div>
@@ -296,7 +296,7 @@ export default function OwnerProfile({ slug: propSlug }: OwnerProfilePageProps =
                   <VenueCard
                     key={venue.id}
                     venue={venue}
-                    onViewDetails={(id) => setLocation(`/venue/${id}`)}
+                    onViewDetails={(id) => router.push(`/venue/${id}`)}
                   />
                 ))}
               </div>

@@ -1,48 +1,23 @@
 import { Resend } from 'resend';
 
-let connectionSettings: any;
-
-async function getCredentials() {
-  const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME
-  const xReplitToken = process.env.REPL_IDENTITY 
-    ? 'repl ' + process.env.REPL_IDENTITY 
-    : process.env.WEB_REPL_RENEWAL 
-    ? 'depl ' + process.env.WEB_REPL_RENEWAL 
-    : null;
-
-  if (!xReplitToken) {
-    throw new Error('X_REPLIT_TOKEN not found for repl/depl');
+function getCredentials() {
+  const apiKey = process.env.RESEND_API_KEY;
+  const fromEmail = process.env.RESEND_FROM_EMAIL;
+  if (!apiKey || !fromEmail) {
+    throw new Error(
+      'RESEND_API_KEY and RESEND_FROM_EMAIL must be set. Get them from resend.com/api-keys'
+    );
   }
-
-  connectionSettings = await fetch(
-    'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=resend',
-    {
-      headers: {
-        'Accept': 'application/json',
-        'X_REPLIT_TOKEN': xReplitToken
-      }
-    }
-  ).then(res => res.json()).then(data => data.items?.[0]);
-
-  if (!connectionSettings || (!connectionSettings.settings.api_key)) {
-    throw new Error('Resend not connected');
-  }
-  return {apiKey: connectionSettings.settings.api_key, fromEmail: connectionSettings.settings.from_email};
-}
-
-async function getApiKey() {
-  const creds = await getCredentials();
-  return creds.apiKey;
+  return { apiKey, fromEmail };
 }
 
 // WARNING: Never cache this client.
-// Access tokens expire, so a new client must be created each time.
 // Always call this function again to get a fresh client.
-export async function getUncachableResendClient() {
-  const apiKey = await getApiKey();
+export function getUncachableResendClient() {
+  const { apiKey, fromEmail } = getCredentials();
   return {
     client: new Resend(apiKey),
-    fromEmail: connectionSettings.settings.from_email
+    fromEmail,
   };
 }
 
@@ -53,8 +28,8 @@ export function generateVerificationCode(): string {
 
 // Send verification code email
 export async function sendVerificationEmail(email: string, code: string) {
-  const { client, fromEmail } = await getUncachableResendClient();
-  
+  const { client, fromEmail } = getUncachableResendClient();
+
   const { data, error } = await client.emails.send({
     from: `BowlingAlleys.io <${fromEmail}>`,
     to: email,
@@ -69,7 +44,7 @@ export async function sendVerificationEmail(email: string, code: string) {
         <p style="font-size: 14px; color: #777;">This code will expire in 10 minutes.</p>
         <p style="font-size: 14px; color: #777;">If you didn't request this code, you can safely ignore this email.</p>
       </div>
-    `
+    `,
   });
 
   if (error) {
@@ -81,13 +56,13 @@ export async function sendVerificationEmail(email: string, code: string) {
 
 // Send custom email
 export async function sendCustomEmail(to: string, subject: string, html: string) {
-  const { client, fromEmail } = await getUncachableResendClient();
-  
+  const { client, fromEmail } = getUncachableResendClient();
+
   const { data, error } = await client.emails.send({
     from: `BowlingAlleys.io <${fromEmail}>`,
     to,
     subject,
-    html
+    html,
   });
 
   if (error) {

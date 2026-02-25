@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
-import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,7 +73,7 @@ import { ImageUploader } from "@/components/ImageUploader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 export default function Account() {
   const { user, logout, deleteAccount } = useAuth();
-  const [, setLocation] = useLocation();
+  const router = useRouter();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -124,9 +124,9 @@ export default function Account() {
   // Redirect if not logged in
   useEffect(() => {
     if (!user) {
-      setLocation("/");
+      router.replace("/");
     }
-  }, [user, setLocation]);
+  }, [user, router]);
 
   // Fetch user profile
   const {
@@ -265,7 +265,7 @@ export default function Account() {
     try {
       await deleteAccount();
       setDeleteDialogOpen(false);
-      setLocation("/");
+      router.replace("/");
     } catch (error) {
       setDeleteDialogOpen(false);
     }
@@ -273,7 +273,7 @@ export default function Account() {
 
   const handleSignOut = () => {
     logout();
-    setLocation("/");
+    router.replace("/");
   };
 
   if (!user) {
@@ -300,7 +300,7 @@ export default function Account() {
         <p className="text-muted-foreground mb-6">
           We couldn't load your profile. Please try again.
         </p>
-        <Button onClick={() => setLocation("/")}>Back to Home</Button>
+        <Button onClick={() => router.push("/")}>Back to Home</Button>
       </div>
     );
   }
@@ -448,7 +448,7 @@ export default function Account() {
                   </div>
                   <Button
                     variant="default"
-                    onClick={() => setLocation(`/owner/${formData.slug}`)}
+                    onClick={() => router.push(`/owner/${formData.slug}`)}
                     data-testid="button-view-public-profile"
                   >
                     View Profile
@@ -629,7 +629,7 @@ export default function Account() {
               </div>
               <Button
                 className="w-full mt-4"
-                onClick={() => setLocation("/my-venues")}
+                onClick={() => router.push("/my-venues")}
                 data-testid="button-manage-venues"
               >
                 <Award className="mr-2 h-4 w-4" />

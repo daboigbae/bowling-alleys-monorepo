@@ -105,6 +105,7 @@ import {
   type Venue,
 } from "@/lib/firestore";
 import { useAuth } from "@/providers/auth-provider";
+import { api } from "@/lib/api-client";
 import { trackEvent } from "@/lib/analytics";
 import { getCityHubUrl } from "@/lib/cityHubMap";
 import { useQueryClient } from "@tanstack/react-query";
@@ -259,8 +260,9 @@ export default function VenueDetail({ venueId, initialVenueData }: VenueDetailPa
     },
   });
 
-  // Check if user came from locations using sessionStorage
+  // Check if user came from locations using sessionStorage (client-only)
   const getBackPath = () => {
+    if (typeof window === "undefined") return null;
     const storedPath = sessionStorage.getItem("venueBackPath");
 
     if (storedPath && storedPath.startsWith("/locations")) {
@@ -824,27 +826,14 @@ export default function VenueDetail({ venueId, initialVenueData }: VenueDetailPa
   const onClaimSubmit = async (values: z.infer<typeof claimFormSchema>) => {
     setIsSubmittingClaim(true);
     try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: values.email,
-          subject: values.subject,
-          message: values.message,
-          type: "claim-venue",
-          venueId: venue.id,
-          venueName: venue.name,
-        }),
+      const data = await api.post("/api/contact", {
+        email: values.email,
+        subject: values.subject,
+        message: values.message,
+        type: "claim-venue",
+        venueId: venue.id,
+        venueName: venue.name,
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to send claim request");
-      }
-
-      const data = await response.json();
 
       toast({
         title: "Claim request sent successfully!",
@@ -1582,6 +1571,44 @@ export default function VenueDetail({ venueId, initialVenueData }: VenueDetailPa
             );
           })()}
         </Card>
+
+        {/* For Bowling Alley Owners - Claim (above Save). Hide if venue already has an owner. */}
+        {!isWebview && !venue.ownerId && !(user as { ownedVenueIds?: string[] })?.ownedVenueIds?.includes(venue.id) && (
+          <div className="flex items-center justify-between p-4 my-4 bg-primary/5 border border-primary/20 rounded-lg">
+            <div className="flex items-center gap-3">
+              <Building2 className="h-5 w-5 text-primary" />
+              <div className="flex flex-col">
+                <span className="text-sm text-foreground">
+                  Own or manage {venue.name}? Claim this listing to update info
+                  and manage your venue page.
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  Update hours, pricing, photos, and respond to reviews.
+                </span>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                trackEvent(
+                  "claim_button_click",
+                  "venue_owners_section",
+                  venue.name,
+                );
+                if (user) {
+                  setClaimDialogOpen(true);
+                } else {
+                  setAuthMode("signup");
+                  setAuthModalOpen(true);
+                }
+              }}
+              data-testid="link-claim-venue-owners-section"
+            >
+              Claim this alley
+            </Button>
+          </div>
+        )}
 
         {/* 6. Save CTA - Commitment Moment */}
         {!isWebview && (
@@ -2401,137 +2428,6 @@ export default function VenueDetail({ venueId, initialVenueData }: VenueDetailPa
                     </>
                   )}
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Embed Review Button Section - For Venue Owners - Hidden in webview */}
-        {!isWebview && (
-          <Card className="my-8">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Code className="w-5 h-5 mr-2" />
-                For Bowling Alley Owners
-              </CardTitle>
-              <CardDescription className="space-y-2">
-                <span className="block">
-                  Own or manage {venue.name}? Add a review button to your
-                  website to collect feedback from bowlers after their visit.
-                </span>
-                <span className="block text-xs">
-                  Copy the code below and paste it into your bowling alley's
-                  website. When customers click, they'll be directed here to
-                  leave a review.
-                </span>
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Claim Venue Button */}
-              {!(user as { ownedVenueIds?: string[] })?.ownedVenueIds?.includes(venue.id) && (
-                <div className="flex items-center gap-2 p-4 bg-muted/50 rounded-lg border">
-                  <Building2 className="h-5 w-5 text-primary" />
-                  <span className="text-sm text-muted-foreground">
-                    Own this alley?
-                  </span>
-                  <button
-                    onClick={() => {
-                      trackEvent(
-                        "claim_button_click",
-                        "venue_owners_section",
-                        venue.name,
-                      );
-                      if (user) {
-                        setClaimDialogOpen(true);
-                      } else {
-                        setAuthMode("signup");
-                        setAuthModalOpen(true);
-                      }
-                    }}
-                    className="text-sm font-medium text-primary hover:text-primary/80 underline-offset-2 hover:underline cursor-pointer"
-                    data-testid="link-claim-venue-owners-section"
-                  >
-                    Claim it!
-                  </button>
-                </div>
-              )}
-
-              {/* Red Button Preview & Code */}
-              <div className="space-y-3">
-                <Label className="text-sm font-medium">Red Button</Label>
-                <div className="flex items-center gap-4">
-                  <a
-                    href={`https://bowlingalleys.io/venue/${venue.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors"
-                    data-testid="preview-embed-red"
-                  >
-                    <Star className="w-4 h-4" />
-                    Review Your Bowling Experience
-                  </a>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const code = `<a href="https://bowlingalleys.io/venue/${venue.id}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background-color:#dc2626;color:white;font-weight:600;border-radius:8px;text-decoration:none;font-family:system-ui,sans-serif;">⭐ Review Your Bowling Experience</a>`;
-                      navigator.clipboard.writeText(code);
-                      toast({
-                        title: "Copied!",
-                        description:
-                          "Red button embed code copied to clipboard",
-                      });
-                    }}
-                    data-testid="button-copy-embed-red"
-                  >
-                    <Copy className="w-4 h-4 mr-1" />
-                    Copy Code
-                  </Button>
-                </div>
-                <div className="bg-muted p-3 rounded-md overflow-x-auto">
-                  <code className="text-xs text-muted-foreground break-all">
-                    {`<a href="https://bowlingalleys.io/venue/${venue.id}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background-color:#dc2626;color:white;font-weight:600;border-radius:8px;text-decoration:none;font-family:system-ui,sans-serif;">⭐ Review Your Bowling Experience</a>`}
-                  </code>
-                </div>
-              </div>
-
-              {/* Black Button Preview & Code */}
-              <div className="space-y-3">
-                <Label className="text-sm font-medium">Black Button</Label>
-                <div className="flex items-center gap-4">
-                  <a
-                    href={`https://bowlingalleys.io/venue/${venue.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-black text-white font-semibold rounded-lg transition-colors"
-                    data-testid="preview-embed-black"
-                  >
-                    <Star className="w-4 h-4" />
-                    Review Your Bowling Experience
-                  </a>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const code = `<a href="https://bowlingalleys.io/venue/${venue.id}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background-color:#111827;color:white;font-weight:600;border-radius:8px;text-decoration:none;font-family:system-ui,sans-serif;">⭐ Review Your Bowling Experience</a>`;
-                      navigator.clipboard.writeText(code);
-                      toast({
-                        title: "Copied!",
-                        description:
-                          "Black button embed code copied to clipboard",
-                      });
-                    }}
-                    data-testid="button-copy-embed-black"
-                  >
-                    <Copy className="w-4 h-4 mr-1" />
-                    Copy Code
-                  </Button>
-                </div>
-                <div className="bg-muted p-3 rounded-md overflow-x-auto">
-                  <code className="text-xs text-muted-foreground break-all">
-                    {`<a href="https://bowlingalleys.io/venue/${venue.id}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background-color:#111827;color:white;font-weight:600;border-radius:8px;text-decoration:none;font-family:system-ui,sans-serif;">⭐ Review Your Bowling Experience</a>`}
-                  </code>
-                </div>
               </div>
             </CardContent>
           </Card>
