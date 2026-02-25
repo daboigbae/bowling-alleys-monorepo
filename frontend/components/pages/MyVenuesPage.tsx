@@ -1,6 +1,7 @@
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/lib/auth";
-import { useLocation, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,15 +28,15 @@ import {
 import { Helmet } from "react-helmet-async";
 
 export default function MyVenues() {
-  const { user } = useAuth();
-  const [, setLocation] = useLocation();
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
 
-  // Redirect if not logged in
+  // Redirect only after auth has settled and we know user is not logged in
   useEffect(() => {
-    if (!user) {
-      setLocation("/");
+    if (!authLoading && !user) {
+      router.replace("/");
     }
-  }, [user, setLocation]);
+  }, [authLoading, user, router]);
 
   // Fetch owned venues
   const {
@@ -48,8 +49,13 @@ export default function MyVenues() {
     enabled: !!user,
   });
 
-  if (!user) {
-    return null;
+  // Wait for auth to settle before redirecting or rendering
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
   return (

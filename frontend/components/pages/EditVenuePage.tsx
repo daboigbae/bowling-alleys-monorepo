@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/lib/auth";
-import { useLocation, useRoute, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,11 +66,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 interface EditVenuePageProps { venueId?: string; }
 export default function EditVenue({ venueId: propVenueId }: EditVenuePageProps = {}) {
   const { user } = useAuth();
-  const [, setLocation] = useLocation();
-  const [, params] = useRoute("/my-venues/:id/edit");
+  const router = useRouter();
+  const params = useParams();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const venueId = propVenueId ?? params?.id;
+  const venueId = (propVenueId ?? params?.id) as string | undefined;
 
   // Form state
   const [formData, setFormData] = useState({
@@ -117,9 +118,9 @@ export default function EditVenue({ venueId: propVenueId }: EditVenuePageProps =
   // Redirect if not authenticated
   useEffect(() => {
     if (!user) {
-      setLocation("/");
+      router.replace("/");
     }
-  }, [user, setLocation]);
+  }, [user, router]);
 
   // Fetch venue data
   const { data: venue, isLoading: venueLoading } = useQuery({
@@ -141,9 +142,9 @@ export default function EditVenue({ venueId: propVenueId }: EditVenuePageProps =
         description: "You don't have permission to edit this venue",
         variant: "destructive",
       });
-      setLocation("/my-venues");
+      router.replace("/my-venues");
     }
-  }, [venue, user, setLocation, toast]);
+  }, [venue, user, router, toast]);
 
   // Initialize form data when venue loads
   useEffect(() => {
@@ -210,7 +211,7 @@ export default function EditVenue({ venueId: propVenueId }: EditVenuePageProps =
       });
       queryClient.invalidateQueries({ queryKey: ["venue", venueId] });
       queryClient.invalidateQueries({ queryKey: ["/api/user/venues", user?.uid] });
-      setLocation("/my-venues");
+      router.push("/my-venues");
     },
     onError: (error: any) => {
       toast({
@@ -517,7 +518,7 @@ export default function EditVenue({ venueId: propVenueId }: EditVenuePageProps =
           <div className="text-center py-12">
             <p className="text-muted-foreground">Venue not found</p>
             <Button
-              onClick={() => setLocation("/my-venues")}
+              onClick={() => router.push("/my-venues")}
               className="mt-4"
               data-testid="button-back-to-venues"
             >
@@ -1139,10 +1140,18 @@ export default function EditVenue({ venueId: propVenueId }: EditVenuePageProps =
                                       ))}
                                     </div>
                                     <span className="text-xs text-muted-foreground">
-                                      {review.createdAt &&
-                                        formatDistanceToNow(review.createdAt.toDate(), {
-                                          addSuffix: true,
-                                        })}
+                                      {(() => {
+                                        if (!review.createdAt) return null;
+                                        const raw = review.createdAt;
+                                        const d =
+                                          typeof raw.toDate === "function"
+                                            ? raw.toDate()
+                                            : raw instanceof Date
+                                              ? raw
+                                              : new Date(raw as string | number);
+                                        if (Number.isNaN(d.getTime())) return null;
+                                        return formatDistanceToNow(d, { addSuffix: true });
+                                      })()}
                                     </span>
                                   </div>
                                 </div>
@@ -1170,7 +1179,7 @@ export default function EditVenue({ venueId: propVenueId }: EditVenuePageProps =
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setLocation("/my-venues")}
+                onClick={() => router.push("/my-venues")}
                 disabled={updateVenueMutation.isPending}
                 data-testid="button-cancel-venue-form"
               >
