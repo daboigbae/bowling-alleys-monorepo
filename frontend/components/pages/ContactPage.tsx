@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/form";
 import { Mail, MessageSquare, HelpCircle, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { api } from "@/lib/api-client";
 
 const contactFormSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -52,25 +53,12 @@ export default function Contact() {
   const onSubmit = async (values: z.infer<typeof contactFormSchema>) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: values.email,
-          subject: values.subject,
-          message: values.message,
-          type: "contact",
-        }),
+      const data = await api.post("/api/contact", {
+        email: values.email,
+        subject: values.subject,
+        message: values.message,
+        type: "contact",
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to send message");
-      }
-
-      const data = await response.json();
 
       toast({
         title: "Message sent successfully!",

@@ -105,6 +105,7 @@ import {
   type Venue,
 } from "@/lib/firestore";
 import { useAuth } from "@/providers/auth-provider";
+import { api } from "@/lib/api-client";
 import { trackEvent } from "@/lib/analytics";
 import { getCityHubUrl } from "@/lib/cityHubMap";
 import { useQueryClient } from "@tanstack/react-query";
@@ -824,27 +825,14 @@ export default function VenueDetail({ venueId, initialVenueData }: VenueDetailPa
   const onClaimSubmit = async (values: z.infer<typeof claimFormSchema>) => {
     setIsSubmittingClaim(true);
     try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: values.email,
-          subject: values.subject,
-          message: values.message,
-          type: "claim-venue",
-          venueId: venue.id,
-          venueName: venue.name,
-        }),
+      const data = await api.post("/api/contact", {
+        email: values.email,
+        subject: values.subject,
+        message: values.message,
+        type: "claim-venue",
+        venueId: venue.id,
+        venueName: venue.name,
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to send claim request");
-      }
-
-      const data = await response.json();
 
       toast({
         title: "Claim request sent successfully!",
