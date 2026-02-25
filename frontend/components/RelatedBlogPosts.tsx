@@ -16,6 +16,7 @@ interface BlogVenuesProps {
   filterBySpecialsUrl?: boolean;
   filterBySeniorDiscount?: boolean;
   filterByState?: string;
+  excludeVenueId?: string;
 }
 
 export default function RelatedBlogPosts({
@@ -25,6 +26,7 @@ export default function RelatedBlogPosts({
   filterBySpecialsUrl = false,
   filterBySeniorDiscount = false,
   filterByState,
+  excludeVenueId,
 }: BlogVenuesProps) {
   const router = useRouter();
   const [venues, setVenues] = useState<Venue[]>([]);
@@ -71,6 +73,10 @@ export default function RelatedBlogPosts({
           );
         }
         
+        if (excludeVenueId) {
+          allVenues = allVenues.filter((v: any) => v.id !== excludeVenueId);
+        }
+        
         setAllVenuesCache(allVenues);
         
         if (useLocationMode && latitude && longitude) {
@@ -102,7 +108,7 @@ export default function RelatedBlogPosts({
     };
 
     fetchVenues();
-  }, [maxResults, filterByLeaguesUrl, filterBySpecialsUrl, filterByState]);
+  }, [maxResults, filterByLeaguesUrl, filterBySpecialsUrl, filterByState, excludeVenueId]);
 
   useEffect(() => {
     // Don't apply location-based sorting when filtering by state

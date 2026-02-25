@@ -112,6 +112,7 @@ import { useQueryClient } from "@tanstack/react-query";
 // Lazy load heavy components to improve initial page load
 const ReviewList = lazy(() => import("@/components/ReviewList"));
 const PeopleAlsoViewed = lazy(() => import("@/components/PeopleAlsoViewed"));
+const RelatedBlogPosts = lazy(() => import("@/components/RelatedBlogPosts"));
 const AuthModal = lazy(() => import("@/components/AuthModal"));
 const ReviewForm = lazy(() => import("@/components/ReviewForm"));
 
@@ -2559,6 +2560,29 @@ export default function VenueDetail({ venueId, initialVenueData }: VenueDetailPa
               />
             </Suspense>
           )}
+
+        {/* Bowling Alleys to Explore - always show when not webview */}
+        {!isWebview && (
+          <Suspense
+            fallback={
+              <div className="mt-12">
+                <div className="h-8 bg-muted animate-pulse rounded w-64 mb-8"></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="bg-muted animate-pulse h-64 rounded-lg"></div>
+                  <div className="bg-muted animate-pulse h-64 rounded-lg"></div>
+                  <div className="bg-muted animate-pulse h-64 rounded-lg"></div>
+                </div>
+              </div>
+            }
+          >
+            <RelatedBlogPosts
+              maxResults={9}
+              title="Bowling Alleys to Explore"
+              filterByState={venue.state}
+              excludeVenueId={venue.id}
+            />
+          </Suspense>
+        )}
 
         {/* Footer Links Section - Hidden in webview */}
         {!isWebview && (
