@@ -8,9 +8,14 @@ declare global {
   }
 }
 
+const isLocalDev = () =>
+  typeof window !== "undefined" &&
+  (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+
 // Initialize Google Analytics — always define gtag so it's never undefined
 export const initGA = () => {
   if (typeof window === 'undefined') return;
+  if (isLocalDev()) return;
 
   // Define dataLayer and gtag immediately (no-op until GA script loads)
   window.dataLayer = window.dataLayer || [];
@@ -38,7 +43,7 @@ export const initGA = () => {
 // Track page views - useful for single-page applications
 // Note: For SPA navigation, use the useAnalytics hook which waits for title updates
 export const trackPageView = (url: string, title?: string) => {
-  if (typeof window === 'undefined' || !window.gtag) return;
+  if (typeof window === 'undefined' || !window.gtag || isLocalDev()) return;
   
   const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
   if (!measurementId) return;
@@ -56,7 +61,7 @@ export const trackEvent = (
   label?: string, 
   value?: number
 ) => {
-  if (typeof window === 'undefined' || !window.gtag) return;
+  if (typeof window === 'undefined' || !window.gtag || isLocalDev()) return;
   
   window.gtag('event', action, {
     event_category: category,
@@ -74,7 +79,7 @@ export const trackEventWithUser = (
   label?: string,
   value?: number
 ) => {
-  if (typeof window === 'undefined' || !window.gtag) return;
+  if (typeof window === 'undefined' || !window.gtag || isLocalDev()) return;
   
   window.gtag('event', action, {
     event_category: category,
