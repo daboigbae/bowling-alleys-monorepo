@@ -45,12 +45,13 @@ import {
   Pencil,
   Trash2,
   Upload,
+  ExternalLink,
 } from "lucide-react";
 import { SiFacebook, SiInstagram, SiX, SiTiktok } from "react-icons/si";
 import { useToast } from "@/hooks/use-toast";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { api } from "@/lib/api-client";
 import {
-  getVenue,
   updateVenue,
   getVenueReviews,
   type Venue,
@@ -142,14 +143,14 @@ export default function EditVenue({ venueId: propVenueId }: EditVenuePageProps =
     }
   }, [user, router]);
 
-  // Fetch venue data (always refetch when opening edit so we see latest after save)
+  // Fetch venue from API only (no client cache) so edits like image URLs show after refresh
   const { data: venue, isLoading: venueLoading } = useQuery({
     queryKey: ["venue", venueId],
     queryFn: async () => {
       if (!venueId) throw new Error("No venue ID");
-      const venueData = await getVenue(venueId);
+      const venueData = await api.get(`/api/venues/${venueId}`);
       if (!venueData) throw new Error("Venue not found");
-      return venueData;
+      return venueData as Venue;
     },
     enabled: !!venueId && !!user,
     staleTime: 0,
@@ -675,8 +676,18 @@ export default function EditVenue({ venueId: propVenueId }: EditVenuePageProps =
           {/* Page Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">{venue.name}</h1>
-            <p className="text-muted-foreground">
-              {venue.city}, {venue.state}
+            <p className="text-muted-foreground flex items-center gap-3 flex-wrap">
+              <span>{venue.city}, {venue.state}</span>
+              <Link
+                href={`/venue/${venue.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+                data-testid="link-view-venue"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                View venue page
+              </Link>
             </p>
           </div>
 
