@@ -4218,7 +4218,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public endpoint: Get single venue by ID (reads from Firestore so edit page always gets fresh data after save)
+  // Public endpoint: Get single venue by ID (reads from Firestore, no cache so owner edits show right away)
   app.get("/api/venues/:id", async (req, res) => {
     try {
       const { id } = req.params;
@@ -4228,7 +4228,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Venue not found" });
       }
       
-      res.setHeader('Cache-Control', 'public, max-age=60');
+      res.setHeader('Cache-Control', 'private, no-cache');
       res.json(venue);
     } catch (error) {
       console.error("Error fetching venue:", error);
