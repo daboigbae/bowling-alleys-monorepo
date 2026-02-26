@@ -5231,14 +5231,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public endpoint: Get venues owned by user
+  // Get venues owned by user (no browser cache so edits show after refresh)
   app.get("/api/users/:userId/venues", async (req, res) => {
     try {
       const { userId } = req.params;
       const venues = await getVenuesForSitemap();
       const ownedVenues = venues.filter(v => v.ownerId === userId && v.isActive !== false);
       
-      res.setHeader('Cache-Control', 'public, max-age=3600');
+      // Short cache so edits show after ~1 min without hammering the server
+      res.setHeader('Cache-Control', 'private, max-age=60');
       res.json(ownedVenues);
     } catch (error) {
       console.error("Error fetching user venues:", error);
