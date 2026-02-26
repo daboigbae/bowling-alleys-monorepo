@@ -50,8 +50,8 @@ import {
 import { SiFacebook, SiInstagram, SiX, SiTiktok } from "react-icons/si";
 import { useToast } from "@/hooks/use-toast";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { api } from "@/lib/api-client";
 import {
+  getVenue,
   updateVenue,
   getVenueReviews,
   type Venue,
@@ -143,18 +143,16 @@ export default function EditVenue({ venueId: propVenueId }: EditVenuePageProps =
     }
   }, [user, router]);
 
-  // Fetch venue from API only (no client cache) so edits like image URLs show after refresh
+  // Fetch venue (uses client cache for fewer reads; changes may take up to 24h to appear)
   const { data: venue, isLoading: venueLoading } = useQuery({
     queryKey: ["venue", venueId],
     queryFn: async () => {
       if (!venueId) throw new Error("No venue ID");
-      const venueData = await api.get(`/api/venues/${venueId}`);
+      const venueData = await getVenue(venueId);
       if (!venueData) throw new Error("Venue not found");
-      return venueData as Venue;
+      return venueData;
     },
     enabled: !!venueId && !!user,
-    staleTime: 0,
-    refetchOnMount: "always",
   });
 
   // Verify owner has permission - redirect if not
@@ -238,7 +236,7 @@ export default function EditVenue({ venueId: propVenueId }: EditVenuePageProps =
     onSuccess: () => {
       toast({
         title: "Venue updated",
-        description: "Your venue has been successfully updated.",
+        description: "Your changes are saved. Updates may take up to 24 hours to appear on the public venue page.",
       });
       queryClient.invalidateQueries({ queryKey: ["venue", venueId] });
       queryClient.invalidateQueries({ queryKey: ["/api/user/venues", user?.uid] });
@@ -1105,11 +1103,12 @@ export default function EditVenue({ venueId: propVenueId }: EditVenuePageProps =
                             <ImageIcon className="h-8 w-8" />
                           </div>
                           {index > 0 && (
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                            <div className="absolute top-2 right-2 flex items-center gap-1.5">
                               <Button
                                 type="button"
                                 variant="secondary"
                                 size="icon"
+                                className="h-9 w-9 rounded-md bg-white border-2 border-gray-300 text-gray-800 shadow-md hover:bg-gray-100 hover:border-gray-400"
                                 onClick={() => openEditImageDialog(index)}
                                 aria-label={`Edit image ${index + 1}`}
                                 data-testid={`button-edit-image-${index}`}
@@ -1120,6 +1119,7 @@ export default function EditVenue({ venueId: propVenueId }: EditVenuePageProps =
                                 type="button"
                                 variant="secondary"
                                 size="icon"
+                                className="h-9 w-9 rounded-md bg-white border-2 border-gray-300 text-gray-800 shadow-md hover:bg-gray-100 hover:border-gray-400"
                                 onClick={() => removeImage(index)}
                                 aria-label={`Remove image ${index + 1}`}
                                 data-testid={`button-remove-image-${index}`}

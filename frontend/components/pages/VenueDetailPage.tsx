@@ -96,6 +96,7 @@ import StarRating from "@/components/StarRating";
 
 import { PricingDisplay } from "@/components/PricingDisplay";
 import {
+  getVenue,
   getUserProfile,
   isAlleySaved,
   addSavedAlley,
@@ -284,7 +285,7 @@ export default function VenueDetail({ venueId, initialVenueData }: VenueDetailPa
     };
   }, [backPath]);
 
-  // Fetch from API only (no client cache) so updated images and details show correctly
+  // Fetch venue (uses client cache for fewer reads; changes may take up to 24h to appear)
   const {
     data: venue,
     isLoading,
@@ -292,11 +293,7 @@ export default function VenueDetail({ venueId, initialVenueData }: VenueDetailPa
     refetch: refetchVenue,
   } = useQuery({
     queryKey: ["venue", venueId],
-    queryFn: async () => {
-      const data = await api.get(`/api/venues/${venueId}`);
-      if (!data) throw new Error("Venue not found");
-      return data as Venue;
-    },
+    queryFn: () => getVenue(venueId!),
     enabled: !!venueId,
     initialData: initialVenueData !== undefined ? initialVenueData : undefined,
   });
