@@ -1,16 +1,24 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -34,9 +42,13 @@ import {
   X,
   Plus,
   Lightbulb,
+  Pencil,
+  Trash2,
+  Upload,
 } from "lucide-react";
 import { SiFacebook, SiInstagram, SiX, SiTiktok } from "react-icons/si";
 import { useToast } from "@/hooks/use-toast";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import {
   getVenue,
   updateVenue,
@@ -93,6 +105,7 @@ export default function EditVenue({ venueId: propVenueId }: EditVenuePageProps =
       latitude: 0,
       longitude: 0,
     },
+    coverImageUrl: "",
     imageUrls: [] as string[],
     weekdayText: ["", "", "", "", "", "", ""] as string[],
     pricing: {
@@ -115,6 +128,13 @@ export default function EditVenue({ venueId: propVenueId }: EditVenuePageProps =
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingPeriod, setEditingPeriod] = useState<PricingPeriod | null>(null);
 
+  // Image dialog: null = add, number = edit at index
+  const [imageDialogOpen, setImageDialogOpen] = useState(false);
+  const [imageDialogIndex, setImageDialogIndex] = useState<number | null>(null);
+  const [imageDialogUrl, setImageDialogUrl] = useState("");
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const imageFileInputRef = useRef<HTMLInputElement>(null);
+
   // Redirect if not authenticated
   useEffect(() => {
     if (!user) {
@@ -122,7 +142,7 @@ export default function EditVenue({ venueId: propVenueId }: EditVenuePageProps =
     }
   }, [user, router]);
 
-  // Fetch venue data
+  // Fetch venue data (always refetch when opening edit so we see latest after save)
   const { data: venue, isLoading: venueLoading } = useQuery({
     queryKey: ["venue", venueId],
     queryFn: async () => {
@@ -132,6 +152,8 @@ export default function EditVenue({ venueId: propVenueId }: EditVenuePageProps =
       return venueData;
     },
     enabled: !!venueId && !!user,
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 
   // Verify owner has permission - redirect if not
@@ -169,7 +191,15 @@ export default function EditVenue({ venueId: propVenueId }: EditVenuePageProps =
           latitude: venue.location?.latitude || 0,
           longitude: venue.location?.longitude || 0,
         },
-        imageUrls: venue.imageUrls || [],
+        coverImageUrl: (venue as any).coverImageUrl || "",
+        imageUrls: (() => {
+          const cover = (venue as any).coverImageUrl || "";
+          const gallery = venue.imageUrls || [];
+          const merged = cover
+            ? [cover, ...gallery.filter((u: string) => u && u !== cover)]
+            : gallery.filter((u: string) => u);
+          return merged.slice(0, 10);
+        })(),
         weekdayText: (venue as any).weekdayText || ["", "", "", "", "", "", ""],
         pricing: {
           game: venue.pricing?.game || 0,
@@ -260,6 +290,89 @@ export default function EditVenue({ venueId: propVenueId }: EditVenuePageProps =
       ...prev,
       amenities: prev.amenities.filter((a) => a !== amenity),
     }));
+  };
+
+  const MAX_IMAGES = 10;
+
+  const openAddImageDialog = () => {
+    setImageDialogIndex(null);
+    setImageDialogUrl("");
+    setImageDialogOpen(true);
+  };
+
+  const openEditImageDialog = (index: number) => {
+    if (index === 0) return; // Cover is read-only
+    setImageDialogIndex(index);
+    setImageDialogUrl(formData.imageUrls[index] || "");
+    setImageDialogOpen(true);
+  };
+
+  const saveImageDialog = () => {
+    const url = imageDialogUrl.trim();
+    if (!url) {
+      setImageDialogOpen(false);
+      return;
+    }
+    if (imageDialogIndex === null) {
+      if (formData.imageUrls.length >= MAX_IMAGES) return;
+      setFormData((prev) => ({ ...prev, imageUrls: [...prev.imageUrls, url] }));
+    } else {
+      setFormData((prev) => {
+        const next = [...prev.imageUrls];
+        next[imageDialogIndex] = url;
+        return { ...prev, imageUrls: next };
+      });
+    }
+    setImageDialogOpen(false);
+    setImageDialogUrl("");
+  };
+
+  const removeImage = (index: number) => {
+    if (index === 0) return; // Cover is read-only
+    setFormData((prev) => ({
+      ...prev,
+      imageUrls: prev.imageUrls.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleImageFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !venueId || !user) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Error", description: "Please select a valid image file.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: "Error", description: "Image must be under 10MB.", variant: "destructive" });
+      return;
+    }
+    setIsUploadingImage(true);
+    try {
+      const storage = getStorage();
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `venue-images/${venueId}/${nanoid()}.${ext}`;
+      const storageRef = ref(storage, path);
+      await uploadBytes(storageRef, file, { contentType: file.type });
+      const url = await getDownloadURL(storageRef);
+      if (imageDialogIndex === null) {
+        if (formData.imageUrls.length >= MAX_IMAGES) return;
+        setFormData((prev) => ({ ...prev, imageUrls: [...prev.imageUrls, url] }));
+        toast({ title: "Added", description: "Image added." });
+      } else {
+        setFormData((prev) => {
+          const next = [...prev.imageUrls];
+          next[imageDialogIndex] = url;
+          return { ...prev, imageUrls: next };
+        });
+        toast({ title: "Updated", description: "Image replaced." });
+      }
+      setImageDialogOpen(false);
+    } catch (err: any) {
+      toast({ title: "Upload failed", description: err?.message || "Try again.", variant: "destructive" });
+    } finally {
+      setIsUploadingImage(false);
+      if (imageFileInputRef.current) imageFileInputRef.current.value = "";
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -441,9 +554,10 @@ export default function EditVenue({ venueId: propVenueId }: EditVenuePageProps =
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Ensure proper data types for submission
+    // Ensure proper data types for submission (first image = cover)
     const submissionData = {
       ...formData,
+      coverImageUrl: formData.imageUrls[0] || "",
       lanes: parseInt(formData.lanes.toString()) || 1,
       location: {
         latitude: parseFloat(formData.location.latitude.toString()) || 0,
@@ -576,6 +690,13 @@ export default function EditVenue({ venueId: propVenueId }: EditVenuePageProps =
                   className="text-sm font-semibold py-3"
                 >
                   Venue Info
+                </TabsTrigger>
+                <TabsTrigger
+                  value="images"
+                  data-testid="tab-venue-images"
+                  className="text-sm font-semibold py-3"
+                >
+                  Venue Images
                 </TabsTrigger>
                 <TabsTrigger
                   value="hours"
@@ -938,6 +1059,123 @@ export default function EditVenue({ venueId: propVenueId }: EditVenuePageProps =
                     </div>
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              {/* Tab: Venue Images */}
+              <TabsContent value="images" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <ImageIcon className="h-5 w-5" />
+                      Venue Images
+                    </CardTitle>
+                    <CardDescription>
+                      Up to {MAX_IMAGES} images. The cover (first image) is set by the team and cannot be edited here. You can add, edit, and remove gallery images only.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                      {formData.imageUrls.map((url, index) => (
+                        <div
+                          key={`${index}-${url}`}
+                          className="group relative aspect-square rounded-lg overflow-hidden border bg-muted/30"
+                        >
+                          <img
+                            src={url}
+                            alt={index === 0 ? "Cover image" : `Venue image ${index + 1}`}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none";
+                              const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                              if (fallback) fallback.classList.remove("hidden");
+                            }}
+                          />
+                          <div className="hidden absolute inset-0 flex items-center justify-center text-muted-foreground text-sm bg-muted/50" aria-hidden>
+                            <ImageIcon className="h-8 w-8" />
+                          </div>
+                          {index > 0 && (
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                              <Button
+                                type="button"
+                                variant="secondary"
+                                size="icon"
+                                onClick={() => openEditImageDialog(index)}
+                                aria-label={`Edit image ${index + 1}`}
+                                data-testid={`button-edit-image-${index}`}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="secondary"
+                                size="icon"
+                                onClick={() => removeImage(index)}
+                                aria-label={`Remove image ${index + 1}`}
+                                data-testid={`button-remove-image-${index}`}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )}
+                          {index === 0 ? (
+                            <span className="absolute bottom-1 left-1 text-[10px] font-medium bg-black/60 text-white px-1.5 py-0.5 rounded">
+                              Cover (read-only)
+                            </span>
+                          ) : null}
+                        </div>
+                      ))}
+                      {formData.imageUrls.length < MAX_IMAGES && (
+                        <button
+                          type="button"
+                          onClick={openAddImageDialog}
+                          className="aspect-square rounded-lg border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 hover:bg-muted/30 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                          data-testid="button-add-image"
+                        >
+                          <Plus className="h-10 w-10" />
+                        </button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>{imageDialogIndex === null ? "Add image" : "Replace image"}</DialogTitle>
+                      <DialogDescription>
+                        {imageDialogIndex === null ? "Choose an image from your device." : "Choose a new image to replace this one."}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <input
+                        ref={imageFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageFileSelect}
+                        className="hidden"
+                        data-testid="input-venue-image-file"
+                      />
+                      <Button
+                        type="button"
+                        className="w-full gap-2 h-12"
+                        disabled={isUploadingImage}
+                        onClick={() => imageFileInputRef.current?.click()}
+                        data-testid="button-upload-venue-image"
+                      >
+                        <Upload className="h-5 w-5" />
+                        {isUploadingImage ? "Uploading…" : "Choose image"}
+                      </Button>
+                      <p className="text-xs text-muted-foreground text-center">
+                        PNG, JPG, GIF up to 10MB.
+                      </p>
+                    </div>
+                    <DialogFooter>
+                      <Button type="button" variant="outline" onClick={() => setImageDialogOpen(false)} disabled={isUploadingImage}>
+                        Cancel
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </TabsContent>
 
               {/* Tab 2: Venue Hours */}
