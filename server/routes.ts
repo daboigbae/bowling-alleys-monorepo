@@ -2433,6 +2433,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       smStream.write({
+        url: "/city-guides",
+        changefreq: "weekly",
+        priority: 0.9,
+        lastmod: new Date().toISOString(),
+      });
+
+      smStream.write({
         url: "/blog",
         changefreq: "daily",
         priority: 0.8,

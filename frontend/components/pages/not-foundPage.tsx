@@ -131,7 +131,7 @@ export default function NotFound() {
             ))}
           </div>
           <div className="text-center mt-10">
-            <Link href="/locations">
+            <Link href="/city-guides">
               <Button variant="outline" size="lg" data-testid="button-view-all-cities">
                 View All Cities
               </Button>
