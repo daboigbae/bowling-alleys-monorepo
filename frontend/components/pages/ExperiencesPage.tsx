@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Link } from "wouter";
+import NextLink from "next/link";
 import {
   Card,
   CardContent,
@@ -278,8 +278,8 @@ const faqs = [
 export default function Experiences() {
   useEffect(() => {
     // SEO - Title
-    const title =
-      "Bowling Experiences – Cosmic, Parties, Costs, Arcades (2025)";
+    const year = new Date().getFullYear();
+    const title = `Bowling Experiences – Cosmic, Parties, Costs, Arcades (${year})`;
     document.title = title;
 
     // SEO - Meta Description
@@ -354,7 +354,7 @@ export default function Experiences() {
             {experiences.map((experience) => {
               const Icon = experience.icon;
               return (
-                <Link key={experience.href} href={experience.href}>
+                <NextLink key={experience.href} href={experience.href}>
                   <Card
                     className="h-full hover-elevate active-elevate-2 transition-all cursor-pointer"
                     data-testid={`card-experience-${experience.title.toLowerCase().replace(/\s+/g, "-")}`}
@@ -373,7 +373,7 @@ export default function Experiences() {
                       </CardDescription>
                     </CardContent>
                   </Card>
-                </Link>
+                </NextLink>
               );
             })}
           </div>
@@ -412,11 +412,11 @@ export default function Experiences() {
               Or start with the full Bowling Alleys Directory to browse all
               venues nationwide.
             </p>
-            <Link href="/locations">
+            <NextLink href="/locations">
               <Button data-testid="button-view-directory">
                 View Full Directory
               </Button>
-            </Link>
+            </NextLink>
           </div>
         </div>
       </div>

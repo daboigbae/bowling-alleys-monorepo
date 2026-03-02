@@ -369,13 +369,13 @@ export default function Home() {
         <meta property="og:site_name" content="BowlingAlleys.io" />
         <meta
           property="og:image"
-          content={`${origin}/attached_assets/stock_images/modern_bowling_alley_cf3b2379.jpg`}
+          content={`${origin}/attached_assets/G-Jrpdja0AITdmi.jpeg`}
         />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="800" />
         <meta
           property="og:image:alt"
-          content="Modern bowling alley with colorful lanes"
+          content="Thank you from the BowlingAlleys.io cat mascot"
         />
 
         {/* Twitter */}
@@ -390,11 +390,11 @@ export default function Home() {
         />
         <meta
           name="twitter:image"
-          content={`${origin}/attached_assets/stock_images/modern_bowling_alley_cf3b2379.jpg`}
+          content={`${origin}/attached_assets/G-Jrpdja0AITdmi.jpeg`}
         />
         <meta
           name="twitter:image:alt"
-          content="Modern bowling alley with colorful lanes"
+          content="Thank you from the BowlingAlleys.io cat mascot"
         />
       </Helmet>
 
