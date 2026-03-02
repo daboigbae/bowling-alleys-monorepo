@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useLocation, useRoute, Link } from "wouter";
+import NextLink from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { DollarSign, ArrowLeft, TrendingUp, TrendingDown, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import StateSelector from "@/components/StateSelector";
 import CityMap from "@/components/CityMap";
 import VenueCard from "@/components/VenueCard";
-import { getCityHubUrl, hasCityHub } from "@/lib/cityHubMap";
+import { useCityHubMap } from "@/lib/cityHubMap";
 import {
   getUSAPricing,
   getStatePricing,
@@ -52,6 +53,7 @@ const formatCurrency = (amount: number | null | undefined) => {
 
 interface BowlingCostPageProps { state?: string; city?: string; }
 export default function BowlingCost({ state: propState, city: propCity }: BowlingCostPageProps = {}) {
+  const cityHubMap = useCityHubMap();
   const [cityMatch, cityParams] = useRoute("/bowling-cost/:state/:city");
   const [stateMatch, stateParams] = useRoute("/bowling-cost/:state");
   const [baseMatch] = useRoute("/bowling-cost");
@@ -437,7 +439,7 @@ export default function BowlingCost({ state: propState, city: propCity }: Bowlin
                         >
                           <div className="flex items-center gap-2 w-full">
                             <span className="font-medium flex-1">{city}</span>
-                            {hasCityHub(city) && (
+                            {cityHubMap[city?.toLowerCase().trim() ?? ""] && (
                               <Badge
                                 variant="secondary"
                                 className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 text-xs shrink-0"
@@ -491,17 +493,17 @@ export default function BowlingCost({ state: propState, city: propCity }: Bowlin
             </div>
 
             {/* City Hub Guide Banner */}
-            {displayCity && getCityHubUrl(displayCity) && (
+            {displayCity && cityHubMap[displayCity?.toLowerCase().trim() ?? ""] && (
               <Alert className="mb-6 bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
                 <AlertDescription className="text-sm">
                   Want to find the best bowling alleys in {displayCity}?{" "}
-                  <Link
-                    to={getCityHubUrl(displayCity)!}
+                  <NextLink
+                    href={cityHubMap[displayCity?.toLowerCase().trim() ?? ""]!}
                     className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline"
                     data-testid="link-city-guide-banner"
                   >
                     Check the city guide here
-                  </Link>
+                  </NextLink>
                 </AlertDescription>
               </Alert>
             )}

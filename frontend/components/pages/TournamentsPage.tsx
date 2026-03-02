@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useLocation, useRoute, Link } from "wouter";
+import NextLink from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Search, ArrowLeft } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,7 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import VenueCard from "@/components/VenueCard";
 import StateSelector from "@/components/StateSelector";
 import CityMap from "@/components/CityMap";
-import { getCityHubUrl } from "@/lib/cityHubMap";
+import { useCityHubMap } from "@/lib/cityHubMap";
 import {
   getTournamentsStates,
   getTournamentsVenuesByState,
@@ -66,6 +67,7 @@ const formatDisplayName = (slug: string) => {
 
 interface TournamentsPageProps { state?: string; city?: string; }
 export default function Tournaments({ state: propState, city: propCity }: TournamentsPageProps = {}) {
+  const cityHubMap = useCityHubMap();
   const [cityMatch, cityParams] = useRoute("/tournaments/:state/:city");
   const [stateMatch, stateParams] = useRoute("/tournaments/:state");
   const [baseMatch] = useRoute("/tournaments");
@@ -411,17 +413,17 @@ export default function Tournaments({ state: propState, city: propCity }: Tourna
         )}
       </div>
 
-      {selectedCity && displayCity && getCityHubUrl(displayCity) && (
+      {selectedCity && displayCity && cityHubMap[displayCity?.toLowerCase().trim() ?? ""] && (
         <Alert className="mb-6 bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
           <AlertDescription className="text-sm">
             Want to find the best bowling alleys in {displayCity}?{" "}
-            <Link
-              to={getCityHubUrl(displayCity)!}
+            <NextLink
+              href={cityHubMap[displayCity?.toLowerCase().trim() ?? ""]!}
               className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline"
               data-testid="link-city-guide-banner"
             >
               Check the city guide here
-            </Link>
+            </NextLink>
           </AlertDescription>
         </Alert>
       )}
@@ -517,9 +519,9 @@ export default function Tournaments({ state: propState, city: propCity }: Tourna
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-semibold text-lg">{city.name}</h3>
-                        {getCityHubUrl(city.name) && (
-                          <Link
-                            to={getCityHubUrl(city.name)!}
+                        {cityHubMap[city.name?.toLowerCase().trim() ?? ""] && (
+                          <NextLink
+                            href={cityHubMap[city.name?.toLowerCase().trim() ?? ""]!}
                             onClick={(e) => e.stopPropagation()}
                             data-testid={`badge-city-hub-${city.slug}`}
                           >
@@ -529,7 +531,7 @@ export default function Tournaments({ state: propState, city: propCity }: Tourna
                             >
                               City Guide
                             </Badge>
-                          </Link>
+                          </NextLink>
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground">

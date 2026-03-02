@@ -26,7 +26,8 @@ import VenueCard from "@/components/VenueCard";
 import AuthModal from "@/components/AuthModal";
 import StateSelector from "@/components/StateSelector";
 import CityMap from "@/components/CityMap";
-import { getCityHubUrl } from "@/lib/cityHubMap";
+import { useCityHubMap } from "@/lib/cityHubMap";
+import { getHubs, getCityFromHubTitle } from "@/lib/firestore";
 import RelatedBlogPosts from "@/components/RelatedBlogPosts";
 
 
@@ -92,6 +93,13 @@ export default function Locations({ state: propState, city: propCity }: Location
     queryFn: getTotalVenueCount,
     enabled: !selectedState,
   });
+
+  // Query for hubs (city guides)
+  const { data: hubs = [] } = useQuery({
+    queryKey: ["hubs"],
+    queryFn: getHubs,
+  });
+  const cityHubMap = useCityHubMap();
 
   // Detect user's likely state from geolocation
   const suggestedState = useMemo((): StateVenueCount | null => {
@@ -472,14 +480,14 @@ export default function Locations({ state: propState, city: propCity }: Location
               })()}
             </p>
             {/* City Guide Banner */}
-            {getCityHubUrl(canonicalCity) && (
+            {canonicalCity && cityHubMap[canonicalCity.toLowerCase().trim()] && (
               <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
                 <MapPin className="h-4 w-4" />
                 <AlertDescription>
                   <span className="text-sm">
                     Want to find the best bowling alleys in {canonicalCity}?{" "}
                     <Link
-                      href={getCityHubUrl(canonicalCity)!}
+                      href={cityHubMap[canonicalCity.toLowerCase().trim()]}
                       className="font-semibold text-primary hover:underline"
                       data-testid="link-city-guide-banner"
                     >
@@ -657,23 +665,19 @@ export default function Locations({ state: propState, city: propCity }: Location
           <div className="mt-12 pt-8 border-t">
             <h2 className="text-2xl font-bold mb-6 text-center">Popular City Guides</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-              {[
-                { city: "Denver", state: "CO", url: "/best-bowling-in-denver" },
-                { city: "Chicago", state: "IL", url: "/best-bowling-in-chicago" },
-                { city: "El Paso", state: "TX", url: "/best-bowling-in-el-paso" },
-                { city: "Charleston", state: "SC", url: "/best-bowling-in-charleston-sc" },
-                { city: "Houston", state: "TX", url: "/best-bowling-in-houston" },
-                { city: "Los Angeles", state: "CA", url: "/best-bowling-in-los-angeles" },
-              ].map((item) => (
-                <Link key={item.city} href={item.url} data-testid={`link-city-${item.city.toLowerCase().replace(/\s+/g, "-")}`}>
-                  <Card className="hover-elevate cursor-pointer h-full">
-                    <CardContent className="p-3 text-center">
-                      <p className="font-medium text-sm">{item.city}</p>
-                      <p className="text-xs text-muted-foreground">{item.state}</p>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
+              {hubs.map((hub) => {
+                const city = hub.city ?? getCityFromHubTitle(hub.title);
+                return (
+                  <Link key={hub.slug} href={`/${hub.slug}`} data-testid={`link-city-${city.toLowerCase().replace(/\s+/g, "-")}`}>
+                    <Card className="hover-elevate cursor-pointer h-full">
+                      <CardContent className="p-3 text-center">
+                        <p className="font-medium text-sm">{city}</p>
+                        <p className="text-xs text-muted-foreground">{hub.stateCode ?? ""}</p>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
+              })}
             </div>
           </div>
 
@@ -1046,9 +1050,9 @@ export default function Locations({ state: propState, city: propCity }: Location
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="text-xl font-semibold">{city}</h3>
-                        {getCityHubUrl(city) && (
+                        {cityHubMap[city.toLowerCase().trim()] && (
                           <Link
-                            href={getCityHubUrl(city)!}
+                            href={cityHubMap[city.toLowerCase().trim()]}
                             onClick={(e) => e.stopPropagation()}
                             data-testid={`badge-city-hub-${city.toLowerCase().replace(/\s+/g, "-")}`}
                           >

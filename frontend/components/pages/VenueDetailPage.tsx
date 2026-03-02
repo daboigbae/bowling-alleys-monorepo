@@ -107,7 +107,7 @@ import {
 import { useAuth } from "@/providers/auth-provider";
 import { api } from "@/lib/api-client";
 import { trackEvent } from "@/lib/analytics";
-import { getCityHubUrl } from "@/lib/cityHubMap";
+import { useCityHubUrl } from "@/lib/cityHubMap";
 import { useQueryClient } from "@tanstack/react-query";
 
 // Lazy load heavy components to improve initial page load
@@ -297,6 +297,8 @@ export default function VenueDetail({ venueId, initialVenueData }: VenueDetailPa
     enabled: !!venueId,
     initialData: initialVenueData !== undefined ? initialVenueData : undefined,
   });
+
+  const cityHubUrl = useCityHubUrl(venue?.city);
 
   // Fetch owner profile if venue has ownerId
   const { data: owner } = useQuery({
@@ -1429,9 +1431,9 @@ export default function VenueDetail({ venueId, initialVenueData }: VenueDetailPa
                 {venue.city && venue.state && (
                   <>
                     ,{" "}
-                    {getCityHubUrl(venue.city) ? (
+                    {cityHubUrl ? (
                       <Link
-                        href={getCityHubUrl(venue.city)!}
+                        href={cityHubUrl}
                         className="text-primary hover:underline"
                         data-testid="link-city-hub"
                       >

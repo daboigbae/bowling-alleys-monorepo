@@ -115,6 +115,17 @@ export default function Header() {
                   Explore
                 </Link>
                 <Link
+                  href="/city-guides"
+                  className={`text-sm font-medium transition-all relative pb-1 ${
+                    isActive('/city-guides') 
+                      ? 'text-[#0d3149] border-b-2 border-[#d52231] font-semibold' 
+                      : 'text-gray-700 hover:text-[#0d3149]'
+                  }`}
+                  data-testid="link-city-guides"
+                >
+                  City Guides
+                </Link>
+                <Link
                   href="/bowling-leagues"
                   className={`text-sm font-medium transition-all relative pb-1 ${
                     isActive('/bowling-leagues') 
@@ -219,6 +230,18 @@ export default function Header() {
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           Explore
+                        </Link>
+                        <Link
+                          href="/city-guides"
+                          className={`text-base font-medium transition-all py-2 px-3 rounded-md ${
+                            isActive('/city-guides')
+                              ? 'text-[#0d3149] bg-red-50 border-l-4 border-[#d52231] font-semibold'
+                              : 'text-gray-700 hover:text-[#0d3149] hover:bg-gray-50'
+                          }`}
+                          data-testid="link-mobile-city-guides"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          City Guides
                         </Link>
                         <Link
                           href="/bowling-leagues"

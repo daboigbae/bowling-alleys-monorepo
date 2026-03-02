@@ -54,29 +54,7 @@ const routeMap = {
   'WheelchairAccessible': 'wheelchair-accessible/[[...params]]',
   'EscapeRooms': 'escape-rooms/[[...params]]',
   'Tournaments': 'tournaments/[[...params]]',
-  
-  // City hub pages
-  'BestBowlingElPaso': 'best-bowling-in-el-paso',
-  'BestBowlingCharleston': 'best-bowling-in-charleston-sc',
-  'BestBowlingSummerville': 'best-bowling-in-summerville-sc',
-  'BestBowlingDenver': 'best-bowling-in-denver',
-  'BestBowlingElCajon': 'best-bowling-alleys-in-el-cajon',
-  'BestBowlingAshburn': 'best-bowling-in-ashburn-va',
-  'BestBowlingAtlanta': 'best-bowling-in-atlanta',
-  'BestBowlingHouston': 'best-bowling-in-houston',
-  'BestBowlingChicago': 'best-bowling-in-chicago',
-  'BestBowlingLosAngeles': 'best-bowling-in-los-angeles',
-  'BestBowlingBaltimore': 'best-bowling-in-baltimore',
-  'BestBowlingBoston': 'best-bowling-in-boston',
-  'BestBowlingLasVegas': 'best-bowling-in-las-vegas',
-  'BestBowlingNewYork': 'best-bowling-in-new-york',
-  'BestBowlingPhoenix': 'best-bowling-in-phoenix',
-  'BestBowlingSanFrancisco': 'best-bowling-in-san-francisco',
-  'BestBowlingSanDiego': 'best-bowling-in-san-diego',
-  'BestBowlingSeattle': 'best-bowling-in-seattle',
-  'BestBowlingMiami': 'best-bowling-in-miami',
-  'BestBowlingColoradoSprings': 'best-bowling-in-colorado-springs',
-  'BestBowlingDallasFortWorth': 'best-bowling-in-dallas-fort-worth',
+  // City hubs: from Firebase hubs collection, app/[slug]/page.tsx
 };
 
 // Routes that already exist (don't regenerate)
