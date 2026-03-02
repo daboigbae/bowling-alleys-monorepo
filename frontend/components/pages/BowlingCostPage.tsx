@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useLocation, useRoute, Link } from "wouter";
+import NextLink from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { DollarSign, ArrowLeft, TrendingUp, TrendingDown, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -496,13 +497,13 @@ export default function BowlingCost({ state: propState, city: propCity }: Bowlin
               <Alert className="mb-6 bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
                 <AlertDescription className="text-sm">
                   Want to find the best bowling alleys in {displayCity}?{" "}
-                  <Link
-                    to={cityHubMap[displayCity?.toLowerCase().trim() ?? ""]!}
+                  <NextLink
+                    href={cityHubMap[displayCity?.toLowerCase().trim() ?? ""]!}
                     className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline"
                     data-testid="link-city-guide-banner"
                   >
                     Check the city guide here
-                  </Link>
+                  </NextLink>
                 </AlertDescription>
               </Alert>
             )}

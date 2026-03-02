@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useLocation, useRoute, Link } from "wouter";
+import NextLink from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, Search, Plus, ArrowLeft, Mail, Navigation, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -591,13 +592,13 @@ export default function BowlingLeagues({ state: propState, city: propCity }: Bow
         <Alert className="mb-6 bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
           <AlertDescription className="text-sm">
             Want to find the best bowling alleys in {displayCity}?{" "}
-            <Link
-              to={cityHubMap[displayCity?.toLowerCase().trim() ?? ""]!}
+            <NextLink
+              href={cityHubMap[displayCity?.toLowerCase().trim() ?? ""]!}
               className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline"
               data-testid="link-city-guide-banner"
             >
               Check the city guide here
-            </Link>
+            </NextLink>
           </AlertDescription>
         </Alert>
       )}
@@ -698,8 +699,8 @@ export default function BowlingLeagues({ state: propState, city: propCity }: Bow
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-semibold text-lg">{city.name}</h3>
                         {cityHubMap[city.name?.toLowerCase().trim() ?? ""] && (
-                          <Link
-                            to={cityHubMap[city.name?.toLowerCase().trim() ?? ""]!}
+                          <NextLink
+                            href={cityHubMap[city.name?.toLowerCase().trim() ?? ""]!}
                             onClick={(e) => e.stopPropagation()}
                             data-testid={`badge-city-hub-${city.slug}`}
                           >
@@ -709,7 +710,7 @@ export default function BowlingLeagues({ state: propState, city: propCity }: Bow
                             >
                               📍 City Guide
                             </Badge>
-                          </Link>
+                          </NextLink>
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground">
