@@ -3,7 +3,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Venue } from "@/lib/firestore";
-import { Sparkles, Trophy, PartyPopper, MapPin, Star, Accessibility, Beer } from "lucide-react";
+import { Sparkles, Trophy, PartyPopper, MapPin, Accessibility, Beer } from "lucide-react";
 import { getCityHubUrl } from "@/lib/cityHubMap";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
@@ -20,7 +20,7 @@ interface VenueCardProps {
 export default function VenueCard({
   venue,
   onViewDetails,
-  showRating = false,
+  showRating: _showRating = false,
   showPrice = false,
   priceType,
 }: VenueCardProps) {
@@ -271,15 +271,6 @@ export default function VenueCard({
                 <MapPin className="w-3.5 h-3.5" style={{ color: '#0d3149' }} />
                 <span data-testid={`text-venue-location-${venue.id}`}>
                   {venue.city}, {venue.state}
-                </span>
-              </div>
-            )}
-            {showRating && (
-              <div className="flex items-center gap-1 text-sm text-neutral-600 dark:text-neutral-400">
-                <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                <span data-testid={`text-venue-rating-${venue.id}`}>
-                  {venue.avgRating ? venue.avgRating.toFixed(1) : "0.0"} (
-                  {venue.reviewCount || 0})
                 </span>
               </div>
             )}
