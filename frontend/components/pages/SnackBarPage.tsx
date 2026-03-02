@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import VenueCard from "@/components/VenueCard";
 import StateSelector from "@/components/StateSelector";
 import CityMap from "@/components/CityMap";
-import { getCityHubUrl, hasCityHub } from "@/lib/cityHubMap";
+import { useCityHubMap } from "@/lib/cityHubMap";
 import {
   getSnackBarStates,
   getSnackBarVenuesByState,
@@ -67,6 +67,7 @@ const formatDisplayName = (slug: string) => {
 
 interface SnackBarPageProps { state?: string; city?: string; }
 export default function SnackBar({ state: propState, city: propCity }: SnackBarPageProps = {}) {
+  const cityHubMap = useCityHubMap();
   const [cityMatch, cityParams] = useRoute("/snack-bar/:state/:city");
   const [stateMatch, stateParams] = useRoute("/snack-bar/:state");
   const [baseMatch] = useRoute("/snack-bar");
@@ -369,7 +370,7 @@ export default function SnackBar({ state: propState, city: propCity }: SnackBarP
               </div>
             </div>
 
-            {hasCityHub(displayCity) && (
+            {cityHubMap[displayCity?.toLowerCase().trim() ?? ""] && (
               <Alert className="bg-primary/5 border-primary/20">
                 <AlertDescription>
                   <div className="flex items-center justify-between">
@@ -382,7 +383,7 @@ export default function SnackBar({ state: propState, city: propCity }: SnackBarP
                       asChild
                       className="ml-4"
                     >
-                      <Link href={getCityHubUrl(displayCity)!}>
+                      <Link href={cityHubMap[displayCity?.toLowerCase().trim() ?? ""]!}>
                         View City Guide
                       </Link>
                     </Button>

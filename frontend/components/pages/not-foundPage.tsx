@@ -14,10 +14,9 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import VenueCard from "@/components/VenueCard";
-import { getVenues, abbreviationToState } from "@/lib/firestore";
+import { getVenues, getHubs, getCityFromHubTitle, abbreviationToState } from "@/lib/firestore";
 import { trackEvent } from "@/lib/analytics";
 import { Search, Home, MapPin } from "lucide-react";
-import { CITY_HUBS } from "@/lib/cityHubsConfig";
 
 export default function NotFound() {
   const router = useRouter();
@@ -30,6 +29,11 @@ export default function NotFound() {
   } = useQuery({
     queryKey: ["venues"],
     queryFn: getVenues,
+  });
+
+  const { data: hubs = [] } = useQuery({
+    queryKey: ["hubs"],
+    queryFn: getHubs,
   });
 
   const handleVenueClick = (venueId: string) => {
@@ -107,28 +111,33 @@ export default function NotFound() {
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {CITY_HUBS.map((hub) => (
-              <Link key={hub.slug} href={`/${hub.slug}`} data-testid={`link-hub-${hub.slug.replace(/^best-bowling-in-|^best-bowling-alleys-in-/, "").replace(/-/g, "-")}`}>
-                <Card
-                  className="p-6 hover-elevate active-elevate-2 transition-all cursor-pointer h-full"
-                >
-                  <div className="space-y-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <MapPin className="w-6 h-6 text-primary" />
+            {hubs.slice(0, 12).map((hub) => {
+              const city = hub.city ?? getCityFromHubTitle(hub.title);
+              const state = hub.stateCode ?? "";
+              const cardDesc = hub.description || hub.subtitle || `Bowling guide for ${city}`;
+              return (
+                <Link key={hub.slug} href={`/${hub.slug}`} data-testid={`link-hub-${hub.slug}`}>
+                  <Card
+                    className="p-6 hover-elevate active-elevate-2 transition-all cursor-pointer h-full"
+                  >
+                    <div className="space-y-4">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <MapPin className="w-6 h-6 text-primary" />
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold mb-2">{city}, {abbreviationToState[state] || state}</h3>
+                        <p className="text-sm text-muted-foreground mb-3">{cardDesc}</p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span className="bg-primary/10 text-primary px-2 py-1 rounded">Guide Available</span>
+                        </div>
                       </div>
                     </div>
-                    <div>
-                      <h3 className="text-xl font-bold mb-2">{hub.city}, {abbreviationToState[hub.state] || hub.state}</h3>
-                      <p className="text-sm text-muted-foreground mb-3">{hub.cardDesc}</p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span className="bg-primary/10 text-primary px-2 py-1 rounded">Guide Available</span>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </Link>
-            ))}
+                  </Card>
+                </Link>
+              );
+            })}
           </div>
           <div className="text-center mt-10">
             <Link href="/city-guides">

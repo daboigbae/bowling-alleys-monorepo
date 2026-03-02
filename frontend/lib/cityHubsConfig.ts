@@ -1,8 +1,6 @@
 /**
- * City hub configuration. Add new cities here — no new files needed.
- * Slug = URL path (e.g. /best-bowling-in-el-paso)
- *
- * Use createCityHub() for quick adds — only city, state, and optional overrides needed.
+ * @deprecated City hubs are now loaded from Firebase (hubs collection).
+ * This file is kept for reference only. Add new hubs via Firebase console.
  */
 export type CityHubConfig = {
   slug: string;

@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import VenueCard from "@/components/VenueCard";
 import StateSelector from "@/components/StateSelector";
 import CityMap from "@/components/CityMap";
-import { getCityHubUrl, hasCityHub } from "@/lib/cityHubMap";
+import { useCityHubMap } from "@/lib/cityHubMap";
 import {
   getBilliardsStates,
   getBilliardsVenuesByState,
@@ -72,6 +72,7 @@ const formatDisplayName = (slug: string) => {
 
 interface BowlingBilliardsPageProps { state?: string; city?: string; }
 export default function BowlingBilliards({ state: propState, city: propCity }: BowlingBilliardsPageProps = {}) {
+  const cityHubMap = useCityHubMap();
   const [cityMatch, cityParams] = useRoute("/bowling-billiards/:state/:city");
   const [stateMatch, stateParams] = useRoute("/bowling-billiards/:state");
   const [baseMatch] = useRoute("/bowling-billiards");
@@ -442,12 +443,12 @@ export default function BowlingBilliards({ state: propState, city: propCity }: B
       </div>
 
       {/* City Hub Guide Banner */}
-      {selectedCity && displayCity && getCityHubUrl(displayCity) && (
+      {selectedCity && displayCity && cityHubMap[displayCity?.toLowerCase().trim() ?? ""] && (
         <Alert className="mb-6 bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
           <AlertDescription className="text-sm">
             Want to find the best bowling alleys in {displayCity}?{" "}
             <Link
-              to={getCityHubUrl(displayCity)!}
+              to={cityHubMap[displayCity?.toLowerCase().trim() ?? ""]!}
               className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline"
               data-testid="link-city-guide-banner"
             >
@@ -552,9 +553,9 @@ export default function BowlingBilliards({ state: propState, city: propCity }: B
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-semibold text-lg">{city.name}</h3>
-                        {getCityHubUrl(city.name) && (
+                        {cityHubMap[city.name?.toLowerCase().trim() ?? ""] && (
                           <Link
-                            to={getCityHubUrl(city.name)!}
+                            to={cityHubMap[city.name?.toLowerCase().trim() ?? ""]!}
                             onClick={(e) => e.stopPropagation()}
                             data-testid={`badge-city-hub-${city.slug}`}
                           >

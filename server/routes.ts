@@ -28,6 +28,78 @@ const sitemapVenueCache: {
   promise: null,
 };
 
+// Server-side hubs cache (same pattern as venues - refreshes daily at midnight)
+interface HubData {
+  id: string;
+  slug?: string;
+  stateCode?: string;
+  title?: string;
+  topic?: string;
+  description?: string;
+  subtitle?: string;
+  faq?: Array<{ q: string; a: string }>;
+  featuredCitySlugs?: string[];
+  featuredVenueIds?: string[];
+  canonicalPath?: string;
+  heroOgImageUrl?: string;
+  [key: string]: any;
+}
+
+const hubsCache: {
+  hubs: HubData[];
+  timestamp: number;
+  promise: Promise<HubData[]> | null;
+} = {
+  hubs: [],
+  timestamp: 0,
+  promise: null,
+};
+
+function isHubsCacheExpired(): boolean {
+  if (hubsCache.hubs.length === 0) return true;
+  const now = new Date();
+  const lastUpdate = new Date(hubsCache.timestamp);
+  const midnightToday = new Date(now);
+  midnightToday.setHours(0, 0, 0, 0);
+  return lastUpdate < midnightToday;
+}
+
+async function getCachedHubs(): Promise<HubData[]> {
+  if (!isHubsCacheExpired()) {
+    console.log("Server cache: Using cached hubs");
+    return hubsCache.hubs;
+  }
+  if (hubsCache.promise) {
+    console.log("Server cache: Waiting for in-flight hubs fetch");
+    return hubsCache.promise;
+  }
+  hubsCache.promise = (async () => {
+    try {
+      console.log("Server cache: Fetching hubs from Firestore");
+      const db = admin.firestore();
+      const snapshot = await db.collection("hubs").get();
+      const hubs = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as HubData[];
+      hubsCache.hubs = hubs;
+      hubsCache.timestamp = Date.now();
+      hubsCache.promise = null;
+      console.log(`Server cache: Cached ${hubs.length} hubs`);
+      return hubs;
+    } catch (error) {
+      console.error("Server cache: Error fetching hubs:", error);
+      hubsCache.promise = null;
+      if (hubsCache.hubs.length > 0) {
+        console.log("Server cache: Using stale hubs cache due to fetch error");
+        return hubsCache.hubs;
+      }
+      return [];
+    }
+  })();
+  return hubsCache.promise;
+}
+
 // Check if cache should refresh (past midnight since last update)
 function isCacheExpired(): boolean {
   if (sitemapVenueCache.venues.length === 0) return true;
@@ -2542,152 +2614,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lastmod: new Date().toISOString(),
       });
 
-      // City hub pages
-      smStream.write({
-        url: "/best-bowling-in-el-paso",
-        changefreq: "weekly",
-        priority: 0.8,
-        lastmod: new Date().toISOString(),
-      });
-
-      smStream.write({
-        url: "/best-bowling-in-charleston-sc",
-        changefreq: "weekly",
-        priority: 0.8,
-        lastmod: new Date().toISOString(),
-      });
-
-      smStream.write({
-        url: "/best-bowling-in-summerville-sc",
-        changefreq: "weekly",
-        priority: 0.8,
-        lastmod: new Date().toISOString(),
-      });
-
-      smStream.write({
-        url: "/best-bowling-in-denver",
-        changefreq: "weekly",
-        priority: 0.8,
-        lastmod: new Date().toISOString(),
-      });
-
-      smStream.write({
-        url: "/best-bowling-alleys-in-el-cajon",
-        changefreq: "weekly",
-        priority: 0.8,
-        lastmod: new Date().toISOString(),
-      });
-
-      smStream.write({
-        url: "/best-bowling-in-ashburn-va",
-        changefreq: "weekly",
-        priority: 0.8,
-        lastmod: new Date().toISOString(),
-      });
-
-      smStream.write({
-        url: "/best-bowling-in-atlanta",
-        changefreq: "weekly",
-        priority: 0.8,
-        lastmod: new Date().toISOString(),
-      });
-
-      smStream.write({
-        url: "/best-bowling-in-houston",
-        changefreq: "weekly",
-        priority: 0.8,
-        lastmod: new Date().toISOString(),
-      });
-
-      smStream.write({
-        url: "/best-bowling-in-chicago",
-        changefreq: "weekly",
-        priority: 0.8,
-        lastmod: new Date().toISOString(),
-      });
-
-      smStream.write({
-        url: "/best-bowling-in-los-angeles",
-        changefreq: "weekly",
-        priority: 0.8,
-        lastmod: new Date().toISOString(),
-      });
-
-      smStream.write({
-        url: "/best-bowling-in-baltimore",
-        changefreq: "weekly",
-        priority: 0.8,
-        lastmod: new Date().toISOString(),
-      });
-
-      smStream.write({
-        url: "/best-bowling-in-boston",
-        changefreq: "weekly",
-        priority: 0.8,
-        lastmod: new Date().toISOString(),
-      });
-
-      smStream.write({
-        url: "/best-bowling-in-las-vegas",
-        changefreq: "weekly",
-        priority: 0.8,
-        lastmod: new Date().toISOString(),
-      });
-
-      smStream.write({
-        url: "/best-bowling-in-new-york",
-        changefreq: "weekly",
-        priority: 0.8,
-        lastmod: new Date().toISOString(),
-      });
-
-      smStream.write({
-        url: "/best-bowling-in-phoenix",
-        changefreq: "weekly",
-        priority: 0.8,
-        lastmod: new Date().toISOString(),
-      });
-
-      smStream.write({
-        url: "/best-bowling-in-san-francisco",
-        changefreq: "weekly",
-        priority: 0.8,
-        lastmod: new Date().toISOString(),
-      });
-
-      smStream.write({
-        url: "/best-bowling-in-san-diego",
-        changefreq: "weekly",
-        priority: 0.8,
-        lastmod: new Date().toISOString(),
-      });
-
-      smStream.write({
-        url: "/best-bowling-in-seattle",
-        changefreq: "weekly",
-        priority: 0.8,
-        lastmod: new Date().toISOString(),
-      });
-
-      smStream.write({
-        url: "/best-bowling-in-miami",
-        changefreq: "weekly",
-        priority: 0.8,
-        lastmod: new Date().toISOString(),
-      });
-
-      smStream.write({
-        url: "/best-bowling-in-colorado-springs",
-        changefreq: "weekly",
-        priority: 0.8,
-        lastmod: new Date().toISOString(),
-      });
-
-      smStream.write({
-        url: "/best-bowling-in-dallas-fort-worth",
-        changefreq: "weekly",
-        priority: 0.8,
-        lastmod: new Date().toISOString(),
+      // City hub pages (from Firebase)
+      const hubs = await getCachedHubs();
+      hubs.forEach((hub) => {
+        const path = hub.canonicalPath || (hub.slug ? `/${hub.slug}` : null);
+        if (path) {
+          smStream.write({
+            url: path.startsWith("/") ? path : `/${path}`,
+            changefreq: "weekly",
+            priority: 0.8,
+            lastmod: new Date().toISOString(),
+          });
+        }
       });
 
       // Venue pages
@@ -5645,21 +5583,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public endpoint: Get hub by slug
+  // Public endpoint: Get all hubs (server-side cached)
+  app.get("/api/hubs", async (req, res) => {
+    try {
+      const hubs = await getCachedHubs();
+      res.json(hubs);
+    } catch (error) {
+      console.error("Error fetching hubs:", error);
+      res.status(500).json({ error: "Failed to fetch hubs" });
+    }
+  });
+
+  // Public endpoint: Get hub by slug (uses cache)
   app.get("/api/hubs/:slug", async (req, res) => {
     try {
       const { slug } = req.params;
-      const db = admin.firestore();
-      const hubsRef = db.collection("hubs");
-      const query = hubsRef.where("slug", "==", slug).limit(1);
-      const snapshot = await query.get();
-      
-      if (snapshot.empty) {
+      const hubs = await getCachedHubs();
+      const hub = hubs.find((h) => h.slug === slug);
+      if (!hub) {
         return res.status(404).json({ error: "Hub not found" });
       }
-      
-      const hubDoc = snapshot.docs[0];
-      res.json({ id: hubDoc.id, ...hubDoc.data() });
+      res.json(hub);
     } catch (error) {
       console.error("Error fetching hub:", error);
       res.status(500).json({ error: "Failed to fetch hub" });

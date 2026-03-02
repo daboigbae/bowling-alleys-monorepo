@@ -1,39 +1,25 @@
-'use client';
+import { notFound } from "next/navigation";
+import { serverApiRequest } from "@/lib/api-client";
+import { hubToPageProps } from "@/lib/firestore";
+import CityHubPage from "@/components/CityHubPage";
 
-import dynamic from 'next/dynamic';
-import { useParams } from 'next/navigation';
-import { notFound } from 'next/navigation';
-import { getCityHubBySlug } from '@/lib/cityHubsConfig';
+export default async function CityHubRoute({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const { slug } = params;
+  if (!slug) notFound();
 
-const CityHubPage = dynamic(() => import('@/components/CityHubPage'), {
-  ssr: true,
-});
-
-export default function CityHubRoute() {
-  const params = useParams();
-  const slug = params?.slug as string | undefined;
-
-  if (!slug) {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) {
     notFound();
   }
-
-  const config = getCityHubBySlug(slug);
-  if (!config) {
+  try {
+    const hub = await serverApiRequest(`/api/hubs/${slug}`);
+    const props = hubToPageProps(hub);
+    return <CityHubPage {...props} />;
+  } catch {
     notFound();
   }
-
-  return (
-    <CityHubPage
-      titleTag={config.titleTag}
-      metaDesc={config.metaDesc}
-      h1={config.h1}
-      intro={config.intro}
-      city={config.city}
-      state={config.state}
-      year={config.year}
-      stateSlug={config.stateSlug}
-      slug={config.slug}
-      faqs={config.faqs}
-    />
-  );
 }

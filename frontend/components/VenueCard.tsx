@@ -4,7 +4,6 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Venue } from "@/lib/firestore";
 import { Sparkles, Trophy, PartyPopper, MapPin, Accessibility, Beer } from "lucide-react";
-import { getCityHubUrl } from "@/lib/cityHubMap";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
