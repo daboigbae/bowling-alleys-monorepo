@@ -9,6 +9,7 @@ import { ThemeProvider } from "next-themes";
 import { HelmetProvider } from "react-helmet-async";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { HubsInitializer } from "@/components/HubsInitializer";
 import ScrollToTop from "@/components/ScrollToTop";
 import { Analytics } from "@/components/Analytics";
 import type { FooterVenue } from "@/lib/footer-venues-types";
@@ -34,6 +35,7 @@ export function Providers({ children, initialTopAlleys, initialSponsorVenues }: 
           <TooltipProvider>
             <AuthProvider>
               <GeolocationProvider>
+                <HubsInitializer />
                 <ScrollToTop />
                 <div className="min-h-screen bg-white flex flex-col">
                   <Header />

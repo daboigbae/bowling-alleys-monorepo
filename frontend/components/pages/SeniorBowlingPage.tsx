@@ -11,7 +11,7 @@ import VenueCard from "@/components/VenueCard";
 import StateSelector from "@/components/StateSelector";
 import RelatedBlogPosts from "@/components/RelatedBlogPosts";
 import CityMap from "@/components/CityMap";
-import { getCityHubUrl } from "@/lib/cityHubMap";
+import { useCityHubMap } from "@/lib/cityHubMap";
 import {
   getSeniorStates,
   getSeniorVenuesByState,
@@ -67,6 +67,7 @@ const formatDisplayName = (slug: string) => {
 
 interface SeniorBowlingPageProps { state?: string; city?: string; }
 export default function SeniorBowling({ state: propState, city: propCity }: SeniorBowlingPageProps = {}) {
+  const cityHubMap = useCityHubMap();
   const [cityMatch, cityParams] = useRoute("/senior-bowling/:state/:city");
   const [stateMatch, stateParams] = useRoute("/senior-bowling/:state");
   const [baseMatch] = useRoute("/senior-bowling");
@@ -408,13 +409,13 @@ export default function SeniorBowling({ state: propState, city: propCity }: Seni
         )}
       </div>
 
-      {selectedCity && displayCity && getCityHubUrl(displayCity) && (
+      {selectedCity && displayCity && cityHubMap[displayCity?.toLowerCase().trim() ?? ""] && (
         <Alert className="mb-6 bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
           <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
           <AlertDescription className="text-blue-800 dark:text-blue-200">
             Looking for more bowling info?{" "}
             <Link
-              href={getCityHubUrl(displayCity) || "#"}
+              href={cityHubMap[displayCity?.toLowerCase().trim() ?? ""] || "#"}
               className="underline font-medium hover:text-blue-600"
               data-testid="link-city-guide"
             >

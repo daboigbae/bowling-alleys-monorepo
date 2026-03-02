@@ -1840,29 +1840,174 @@ export interface HubFAQ {
 
 export interface Hub {
   id: string;
-  stateCode: string;
-  topic: string;
+  stateCode?: string;
+  topic?: string;
   slug: string;
   title: string;
   subtitle?: string;
   description?: string;
   heroOgImageUrl?: string;
-  canonicalPath: string;
+  canonicalPath?: string;
   featuredCitySlugs?: string[];
   featuredVenueIds?: string[];
   faq?: HubFAQ[];
-  createdAt: any;
-  updatedAt: any;
+  city?: string; // Optional - derived from title if missing
+  createdAt?: any;
+  updatedAt?: any;
+}
+
+// ============================================================================
+// HUBS CACHE - Same pattern as venues (memory + localStorage, 8hr TTL)
+// ============================================================================
+const HUBS_CACHE_VERSION = "v1";
+const HUBS_CACHE_KEY = `bowlingalleys_hubs_cache_${HUBS_CACHE_VERSION}`;
+const HUBS_CACHE_TTL = 8 * 60 * 60 * 1000; // 8 hours
+
+interface HubsCache {
+  hubs: Hub[];
+  timestamp: number;
+  isLoading: boolean;
+  promise: Promise<Hub[]> | null;
+}
+
+const hubsCache: HubsCache = {
+  hubs: [],
+  timestamp: 0,
+  isLoading: false,
+  promise: null,
+};
+
+const loadHubsFromLocalStorage = (): { hubs: Hub[]; timestamp: number } | null => {
+  try {
+    const stored = localStorage.getItem(HUBS_CACHE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed.hubs && parsed.timestamp) return parsed;
+    }
+  } catch (e) {
+    /* ignore */
+  }
+  return null;
+};
+
+const saveHubsToLocalStorage = (hubs: Hub[], timestamp: number): void => {
+  try {
+    localStorage.setItem(HUBS_CACHE_KEY, JSON.stringify({ hubs, timestamp }));
+  } catch (e) {
+    /* ignore */
+  }
+};
+
+const getCachedHubs = async (): Promise<Hub[]> => {
+  const now = Date.now();
+  if (hubsCache.hubs.length > 0 && now - hubsCache.timestamp < HUBS_CACHE_TTL) {
+    return hubsCache.hubs;
+  }
+  const stored = loadHubsFromLocalStorage();
+  if (stored?.hubs?.length && now - stored.timestamp < HUBS_CACHE_TTL) {
+    hubsCache.hubs = stored.hubs;
+    hubsCache.timestamp = stored.timestamp;
+    return stored.hubs;
+  }
+  if (hubsCache.isLoading && hubsCache.promise) {
+    return hubsCache.promise;
+  }
+  hubsCache.isLoading = true;
+  hubsCache.promise = (async () => {
+    try {
+      const hubs = (await api.get("/api/hubs")) as Hub[];
+      const timestamp = Date.now();
+      hubsCache.hubs = hubs;
+      hubsCache.timestamp = timestamp;
+      saveHubsToLocalStorage(hubs, timestamp);
+      return hubs;
+    } catch (error) {
+      console.error("Failed to load hubs:", error);
+      if (hubsCache.hubs.length > 0) return hubsCache.hubs;
+      const stale = loadHubsFromLocalStorage();
+      if (stale?.hubs?.length) return stale.hubs;
+      return [];
+    } finally {
+      hubsCache.isLoading = false;
+      hubsCache.promise = null;
+    }
+  })();
+  return hubsCache.promise;
+};
+
+export const invalidateHubsCache = (): void => {
+  hubsCache.hubs = [];
+  hubsCache.timestamp = 0;
+  try {
+    localStorage.removeItem(HUBS_CACHE_KEY);
+  } catch (e) {
+    /* ignore */
+  }
+};
+
+// Get all hubs (cached)
+export const getHubs = async (): Promise<Hub[]> => getCachedHubs();
+
+// Derive city name from hub title (e.g. "Best Bowling In San Francisco" -> "San Francisco")
+export function getCityFromHubTitle(title: string): string {
+  const match = title?.match(/Best Bowling (?:Alleys )?In (.+)/i);
+  if (!match) return title || "";
+  const part = match[1].trim();
+  return part.replace(/, [A-Z]{2}$/, "").trim();
 }
 
 // Hub CRUD operations
 export const getHubBySlug = async (slug: string): Promise<Hub | null> => {
   try {
+    const hubs = await getCachedHubs();
+    const hub = hubs.find((h) => h.slug === slug);
+    if (hub) return hub;
     return await api.get(`/api/hubs/${slug}`);
   } catch (error) {
     return null;
   }
 };
+
+// Transform Hub to CityHubPage props format
+export interface CityHubPageProps {
+  titleTag: string;
+  metaDesc: string;
+  h1: string;
+  intro: string;
+  city: string;
+  state: string;
+  year: string;
+  faqs: { q: string; a: string }[];
+  stateSlug: string;
+  slug: string;
+}
+
+export function hubToPageProps(hub: Hub): CityHubPageProps {
+  const city = hub.city ?? getCityFromHubTitle(hub.title);
+  const state = hub.stateCode ?? "";
+  const stateSlug = state.toLowerCase();
+  const year = new Date().getFullYear().toString();
+  const titleTag = hub.title
+    ? `${hub.title} (${year}) | Prices, Hours & Reviews - BowlingAlleys.io`
+    : `Best Bowling | BowlingAlleys.io`;
+  const metaDesc =
+    hub.description ||
+    hub.subtitle ||
+    `Discover the top bowling alleys — compare prices, hours, cosmic nights, and leagues. Find the perfect bowling spot.`;
+  const faqs = (hub.faq ?? []).map((f) => ({ q: f.q, a: f.a }));
+  return {
+    titleTag,
+    metaDesc,
+    h1: hub.title || `Best Bowling`,
+    intro: hub.description || hub.subtitle || "",
+    city,
+    state,
+    year,
+    faqs,
+    stateSlug,
+    slug: hub.slug,
+  };
+}
 
 // ============ AMENITIES COLLECTION ============
 

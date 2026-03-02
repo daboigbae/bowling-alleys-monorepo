@@ -54,7 +54,7 @@ const routeMap = {
   'WheelchairAccessible': 'wheelchair-accessible/[[...params]]',
   'EscapeRooms': 'escape-rooms/[[...params]]',
   'Tournaments': 'tournaments/[[...params]]',
-  // City hubs: handled by app/[slug]/page.tsx + lib/cityHubsConfig.ts (add new cities there)
+  // City hubs: from Firebase hubs collection, app/[slug]/page.tsx
 };
 
 // Routes that already exist (don't regenerate)
