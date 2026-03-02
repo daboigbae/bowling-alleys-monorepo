@@ -27,6 +27,7 @@ import AuthModal from "@/components/AuthModal";
 import StateSelector from "@/components/StateSelector";
 import CityMap from "@/components/CityMap";
 import { getCityHubUrl } from "@/lib/cityHubMap";
+import { CITY_HUBS } from "@/lib/cityHubsConfig";
 import RelatedBlogPosts from "@/components/RelatedBlogPosts";
 
 
@@ -657,19 +658,12 @@ export default function Locations({ state: propState, city: propCity }: Location
           <div className="mt-12 pt-8 border-t">
             <h2 className="text-2xl font-bold mb-6 text-center">Popular City Guides</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-              {[
-                { city: "Denver", state: "CO", url: "/best-bowling-in-denver" },
-                { city: "Chicago", state: "IL", url: "/best-bowling-in-chicago" },
-                { city: "El Paso", state: "TX", url: "/best-bowling-in-el-paso" },
-                { city: "Charleston", state: "SC", url: "/best-bowling-in-charleston-sc" },
-                { city: "Houston", state: "TX", url: "/best-bowling-in-houston" },
-                { city: "Los Angeles", state: "CA", url: "/best-bowling-in-los-angeles" },
-              ].map((item) => (
-                <Link key={item.city} href={item.url} data-testid={`link-city-${item.city.toLowerCase().replace(/\s+/g, "-")}`}>
+              {CITY_HUBS.map((hub) => (
+                <Link key={hub.slug} href={`/${hub.slug}`} data-testid={`link-city-${hub.city.toLowerCase().replace(/\s+/g, "-")}`}>
                   <Card className="hover-elevate cursor-pointer h-full">
                     <CardContent className="p-3 text-center">
-                      <p className="font-medium text-sm">{item.city}</p>
-                      <p className="text-xs text-muted-foreground">{item.state}</p>
+                      <p className="font-medium text-sm">{hub.city}</p>
+                      <p className="text-xs text-muted-foreground">{hub.state}</p>
                     </CardContent>
                   </Card>
                 </Link>
