@@ -34,6 +34,18 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'bowlingalleys.io',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.bowlingalleys.io',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };

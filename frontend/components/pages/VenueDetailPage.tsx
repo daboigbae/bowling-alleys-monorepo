@@ -285,6 +285,7 @@ export default function VenueDetail({ venueId, initialVenueData }: VenueDetailPa
     };
   }, [backPath]);
 
+  // Fetch venue (uses client cache for fewer reads; changes may take up to 24h to appear)
   const {
     data: venue,
     isLoading,

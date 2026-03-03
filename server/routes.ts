@@ -166,6 +166,19 @@ async function getVenuesForSitemap(): Promise<VenueData[]> {
   return sitemapVenueCache.promise;
 }
 
+// Fetch a single venue by ID directly from Firestore (no cache) so edit page always gets fresh data after save
+async function getVenueById(id: string): Promise<VenueData | null> {
+  try {
+    const db = admin.firestore();
+    const doc = await db.collection("venues").doc(id).get();
+    if (!doc.exists) return null;
+    return { id: doc.id, ...doc.data() } as VenueData;
+  } catch (error) {
+    console.error("getVenueById error:", error);
+    return null;
+  }
+}
+
 // Server-side reviews cache (refreshes daily at midnight, per venue)
 interface ReviewData {
   id: string;
@@ -4150,12 +4163,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public endpoint: Get single venue by ID
+  // Public endpoint: Get single venue by ID (reads from Firestore)
   app.get("/api/venues/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      const venues = await getVenuesForSitemap();
-      const venue = venues.find(v => v.id === id);
+      const venue = await getVenueById(id);
       
       if (!venue) {
         return res.status(404).json({ error: "Venue not found" });
@@ -5164,14 +5176,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public endpoint: Get venues owned by user
+  // Get venues owned by user (no browser cache so edits show after refresh)
   app.get("/api/users/:userId/venues", async (req, res) => {
     try {
       const { userId } = req.params;
       const venues = await getVenuesForSitemap();
       const ownedVenues = venues.filter(v => v.ownerId === userId && v.isActive !== false);
       
-      res.setHeader('Cache-Control', 'public, max-age=3600');
+      // Short cache so edits show after ~1 min without hammering the server
+      res.setHeader('Cache-Control', 'private, max-age=60');
       res.json(ownedVenues);
     } catch (error) {
       console.error("Error fetching user venues:", error);

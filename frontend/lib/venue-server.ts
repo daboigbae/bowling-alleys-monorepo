@@ -8,7 +8,7 @@ const getApiUrl = () => process.env.NEXT_PUBLIC_API_URL || 'http://localhost:500
 async function fetchVenue(id: string) {
   try {
     const response = await fetch(`${getApiUrl()}/api/venues/${id}`, {
-      next: { revalidate: 3600 }, // Revalidate every hour
+      next: { revalidate: 3600 }, // 1 hour cache (fewer reads; venue changes may take up to 24h)
     });
 
     if (!response.ok) {
