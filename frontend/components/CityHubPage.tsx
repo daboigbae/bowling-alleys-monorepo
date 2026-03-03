@@ -145,16 +145,6 @@ export default function CityHubPage({
       document.head.appendChild(meta);
     }
 
-    const faqLd = {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      mainEntity: faqs.map(({ q, a }) => ({
-        "@type": "Question",
-        name: q,
-        acceptedAnswer: { "@type": "Answer", text: a },
-      })),
-    };
-
     const existingScript = document.querySelector(
       'script[type="application/ld+json"][data-city-hub]',
     );
@@ -162,17 +152,29 @@ export default function CityHubPage({
       existingScript.remove();
     }
 
-    const script = document.createElement("script");
-    script.type = "application/ld+json";
-    script.setAttribute("data-city-hub", "true");
-    script.textContent = JSON.stringify(faqLd);
-    document.head.appendChild(script);
+    if (faqs.length > 0) {
+      const faqLd = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: faqs.map(({ q, a }) => ({
+          "@type": "Question",
+          name: q,
+          acceptedAnswer: { "@type": "Answer", text: a },
+        })),
+      };
 
-    return () => {
-      if (script.parentNode) {
-        script.parentNode.removeChild(script);
-      }
-    };
+      const script = document.createElement("script");
+      script.type = "application/ld+json";
+      script.setAttribute("data-city-hub", "true");
+      script.textContent = JSON.stringify(faqLd);
+      document.head.appendChild(script);
+
+      return () => {
+        if (script.parentNode) {
+          script.parentNode.removeChild(script);
+        }
+      };
+    }
   }, [titleTag, metaDesc, faqs]);
 
   if (isLoading) {
@@ -402,21 +404,23 @@ export default function CityHubPage({
           )}
         </section>
 
-        <section className="mb-12">
-          <h2 className="text-2xl font-semibold mb-6">
-            Frequently Asked Questions
-          </h2>
-          <div className="space-y-4">
-            {faqs.map((f, i) => (
-              <Card key={i} className="p-6" data-testid={`card-faq-${i}`}>
-                <details className="cursor-pointer">
-                  <summary className="font-semibold text-lg">{f.q}</summary>
-                  <p className="mt-3 text-muted-foreground">{f.a}</p>
-                </details>
-              </Card>
-            ))}
-          </div>
-        </section>
+        {faqs.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-2xl font-semibold mb-6">
+              Frequently Asked Questions
+            </h2>
+            <div className="space-y-4">
+              {faqs.map((f, i) => (
+                <Card key={i} className="p-6" data-testid={`card-faq-${i}`}>
+                  <details className="cursor-pointer">
+                    <summary className="font-semibold text-lg">{f.q}</summary>
+                    <p className="mt-3 text-muted-foreground">{f.a}</p>
+                  </details>
+                </Card>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Footer Navigation Section */}
         <section className="mb-12 bg-muted/30 p-8 rounded-lg">
@@ -490,124 +494,46 @@ export default function CityHubPage({
               </ul>
             </div>
 
-            {/* Bowling Experiences Column */}
+            {/* Bowling Specials Column */}
             <div>
-              <h3 className="font-semibold mb-3">Bowling Experiences</h3>
+              <h3 className="font-semibold mb-3">Bowling Specials</h3>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link
-                    href="/locations"
-                    className="text-muted-foreground hover:text-primary"
-                  >
-                    All Bowling Experiences
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/wheelchair-accessible"
+                    href="/specials"
                     className="text-muted-foreground hover:text-primary transition-colors"
-                    data-testid="link-wheelchair-accessible"
+                    data-testid="link-all-specials"
                   >
-                    Wheelchair Accessible Alleys
+                    All Bowling Specials
                   </Link>
                 </li>
-                <li>
-                  <Link
-                    href="/cosmic-bowling"
-                    className="text-muted-foreground hover:text-primary"
-                  >
-                    Cosmic Bowling
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/bowling-birthday-party"
-                    className="text-muted-foreground hover:text-primary"
-                  >
-                    Birthday Parties
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/arcade-bowling"
-                    className="text-muted-foreground hover:text-primary"
-                  >
-                    Arcade Bowling
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/bowling-restaurant"
-                    className="text-muted-foreground hover:text-primary"
-                  >
-                    Bowling Restaurants
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/bowling-bar"
-                    className="text-muted-foreground hover:text-primary"
-                  >
-                    Bowling Bars
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/bowling-and-pool"
-                    className="text-muted-foreground hover:text-primary"
-                  >
-                    Bowling And Pool
-                  </Link>
-                </li>
-
-                <li>
-                  <Link
-                    href="/pro-shop"
-                    className="text-muted-foreground hover:text-primary transition-colors"
-                    data-testid="link-bowling-pro-shop"
-                  >
-                    Bowling Pro Shops
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/laser-tag"
-                    className="text-muted-foreground hover:text-primary transition-colors"
-                    data-testid="link-bowling-laser-tag"
-                  >
-                    Bowling And Laser Tag
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/duckpin-bowling"
-                    className="text-muted-foreground hover:text-primary transition-colors"
-                    data-testid="link-bowling-laser-tag"
-                  >
-                    Duckpin Bowling
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/candlepin-bowling"
-                    className="text-muted-foreground hover:text-primary transition-colors"
-                    data-testid="link-candlepin-bowling"
-                  >
-                    Candlepin Bowling
-                  </Link>
-                </li>
+                {city && state && (
+                  <li>
+                    <Link
+                      href={`/specials/${state.replace(/\s+/g, "-")}/${city.toLowerCase().replace(/\s+/g, "-")}`}
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                      data-testid="link-city-bowling-specials"
+                    >
+                      Bowling Specials in {city}
+                    </Link>
+                  </li>
+                )}
+                {state && (
+                  <li>
+                    <Link
+                      href={`/specials/${state.replace(/\s+/g, "-")}`}
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                      data-testid="link-state-bowling-specials"
+                    >
+                      Bowling Specials in {state}
+                    </Link>
+                  </li>
+                )}
               </ul>
             </div>
           </div>
         </section>
-
-        <footer className="text-xs text-muted-foreground border-t pt-6">
-          Updated {year}. We refresh city guides regularly as prices and hours
-          change.
-        </footer>
       </main>
-
-      <Footer />
     </>
   );
 }
