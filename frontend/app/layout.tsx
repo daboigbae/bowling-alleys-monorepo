@@ -27,6 +27,27 @@ export const metadata: Metadata = {
   title: "Find Bowling Alleys: Reviews & Locations - BowlingAlleys.io",
   description: "Discover the best bowling alleys near you. Read reviews, compare prices, and find cosmic bowling, leagues, birthday parties, and more.",
   keywords: "bowling alleys, bowling reviews, find bowling alleys, local bowling centers, bowling ratings",
+  openGraph: {
+    title: "Find Bowling Alleys: Reviews & Locations - BowlingAlleys.io",
+    description: "Discover the best bowling alleys near you. Read reviews, compare prices, and find cosmic bowling, leagues, birthday parties, and more.",
+    url: "https://bowlingalleys.io",
+    siteName: "BowlingAlleys.io",
+    images: [
+      {
+        url: "/attached_assets/G-Jrpdja0AITdmi.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "Thank you from the BowlingAlleys.io cat mascot",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Find Bowling Alleys: Reviews & Locations - BowlingAlleys.io",
+    description: "Discover the best bowling alleys near you. Read reviews, compare prices, and find cosmic bowling, leagues, birthday parties, and more.",
+    images: ["/attached_assets/G-Jrpdja0AITdmi.jpeg"],
+  },
 };
 
 export default async function RootLayout({
