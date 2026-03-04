@@ -44,6 +44,20 @@ import {
   findCityInVenues,
 } from "@/lib/location-search";
 
+function stripMarkdownForPreview(raw: string): string {
+  if (!raw) return "";
+  return raw
+    .replace(/#{1,6}\s*/g, "")
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/\*([^*]+)\*/g, "$1")
+    .replace(/__([^_]+)__/g, "$1")
+    .replace(/_([^_]+)_/g, "$1")
+    .replace(/\n+/g, " ")
+    .trim();
+}
+
 export default function Home() {
   const router = useRouter();
   const { user } = useAuth();
@@ -416,6 +430,9 @@ export default function Home() {
                     href={`/blog/${post.slug}`}
                     className="absolute inset-0 z-10 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     aria-labelledby={`featured-title-${post.slug}`}
+                    onClick={() =>
+                      trackEvent("home_featured_post_click", "engagement", post.slug)
+                    }
                   />
                   <CardHeader>
                     <CardTitle
@@ -450,7 +467,8 @@ export default function Home() {
                       ))}
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-2">
-                      {(post.content ?? "").slice(0, 100)}...
+                      {stripMarkdownForPreview(post.content ?? "").slice(0, 120)}
+                      {stripMarkdownForPreview(post.content ?? "").length > 120 ? "…" : ""}
                     </p>
                   </CardContent>
                 </Card>
@@ -463,7 +481,14 @@ export default function Home() {
                 className="border-gray-300 hover:bg-gray-50"
                 style={{ borderColor: "#d1d5db", color: "#0d3149" }}
               >
-                <Link href="/blog">View all posts</Link>
+                <Link
+                  href="/blog"
+                  onClick={() =>
+                    trackEvent("home_featured_view_all_posts", "engagement", "View all posts")
+                  }
+                >
+                  View all posts
+                </Link>
               </Button>
             </div>
           </div>
