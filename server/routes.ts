@@ -344,6 +344,24 @@ const pricingReportCache: {
   promise: null,
 };
 
+// Test helper: clears all in-memory caches so tests don't leak state across runs.
+export function resetServerCachesForTests(): void {
+  sitemapVenueCache.venues = [];
+  sitemapVenueCache.timestamp = 0;
+  sitemapVenueCache.promise = null;
+
+  hubsCache.hubs = [];
+  hubsCache.timestamp = 0;
+  hubsCache.promise = null;
+
+  reviewsCache.byVenue.clear();
+  reviewsCache.timestamp = 0;
+  reviewsCache.promise = null;
+
+  pricingReportCache.data = null;
+  pricingReportCache.promise = null;
+}
+
 function isPricingCacheExpired(): boolean {
   if (!pricingReportCache.data) return true;
   const now = new Date();
