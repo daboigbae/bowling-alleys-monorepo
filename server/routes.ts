@@ -1,4 +1,4 @@
-import type { Express, Response, Request as ExpressRequest } from "express";
+import type { Express, Response, Request as ExpressRequest, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { SitemapStream, streamToPromise } from "sitemap";
 import { createGzip } from "zlib";
@@ -4200,9 +4200,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Public endpoint: Get single venue by ID (reads from Firestore)
-  app.get("/api/venues/:id", async (req, res) => {
+  app.get("/api/venues/:id", async (req, res, next: NextFunction) => {
     try {
       const { id } = req.params;
+      // Keep single-segment venue utility routes reachable even though :id is declared first.
+      if (id === "top-alleys" || id === "founding-partners" || id === "by-proximity") {
+        return next();
+      }
       const venue = await getVenueById(id);
       
       if (!venue) {
