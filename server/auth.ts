@@ -1,5 +1,13 @@
+import dotenv from "dotenv";
+dotenv.config(); // Load .env before reading process.env (auth loads before index.ts runs)
+
 import type { Request, Response, NextFunction } from "express";
 import admin from "firebase-admin";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Initialize Firebase Admin if not already initialized
 if (!admin.apps.length) {
@@ -9,16 +17,43 @@ if (!admin.apps.length) {
       || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID 
       || 'bowling-alleys-io';
     
-    // Initialize with environment variables or service account
-    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-      // Strip surrounding quotes (dotenv/Railway can include them)
+    let serviceAccount: admin.ServiceAccount | null = null;
+
+    // Option 1: Path to JSON file (e.g. FIREBASE_SERVICE_ACCOUNT_PATH=./service-account.json)
+    const keyPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH?.trim();
+    if (keyPath) {
+      const tryPaths = path.isAbsolute(keyPath)
+        ? [keyPath]
+        : [
+            path.resolve(process.cwd(), keyPath),
+            path.resolve(__dirname, "..", keyPath),
+          ];
+      let resolvedPath: string | null = null;
+      for (const p of tryPaths) {
+        if (fs.existsSync(p)) {
+          resolvedPath = p;
+          break;
+        }
+      }
+      if (resolvedPath) {
+        const raw = fs.readFileSync(resolvedPath, "utf-8");
+        serviceAccount = JSON.parse(raw) as admin.ServiceAccount;
+        console.log(`[Firebase Admin] Loaded service account from ${resolvedPath}`);
+      } else {
+        console.warn(`[Firebase Admin] FIREBASE_SERVICE_ACCOUNT_PATH set but file not found. Tried: ${tryPaths.join(", ")}`);
+      }
+    }
+    // Option 2: Inline JSON string (for Railway etc.)
+    else if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
       let keyStr = process.env.FIREBASE_SERVICE_ACCOUNT_KEY.trim();
       if ((keyStr.startsWith("'") && keyStr.endsWith("'")) || (keyStr.startsWith('"') && keyStr.endsWith('"'))) {
         keyStr = keyStr.slice(1, -1);
       }
-      // Fix literal newlines (Railway/env paste can introduce these; JSON requires \n)
       keyStr = keyStr.replace(/\r\n/g, "\\n").replace(/\n/g, "\\n").replace(/\r/g, "\\n");
-      const serviceAccount = JSON.parse(keyStr);
+      serviceAccount = JSON.parse(keyStr) as admin.ServiceAccount;
+    }
+
+    if (serviceAccount) {
       admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
         projectId: projectId,
@@ -36,7 +71,7 @@ if (!admin.apps.length) {
     console.error("Firebase Admin initialization failed:", error);
     console.error("Make sure you have:");
     console.error("  1. FIREBASE_PROJECT_ID or NEXT_PUBLIC_FIREBASE_PROJECT_ID set");
-    console.error("  2. FIREBASE_SERVICE_ACCOUNT_KEY (minified JSON string) in your .env");
+    console.error("  2. FIREBASE_SERVICE_ACCOUNT_PATH (path to JSON file) or FIREBASE_SERVICE_ACCOUNT_KEY (minified JSON string) in your .env");
     console.error("  3. Or run: gcloud auth application-default login (local dev only)");
   }
 }

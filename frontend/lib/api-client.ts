@@ -2,11 +2,6 @@ import { auth } from "./firebase";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-// Debug logging
-if (typeof window !== 'undefined') {
-  console.log('API Client initialized with URL:', API_URL);
-}
-
 // Server-side API client (for Next.js Server Components - no auth)
 export async function serverApiRequest(endpoint: string, options: RequestInit = {}) {
   const response = await fetch(`${API_URL}${endpoint}`, {

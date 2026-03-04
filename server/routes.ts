@@ -2484,7 +2484,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
-  
+
+  // Dev diagnostic: which Firestore project/database and how many venues the server sees
+  app.get("/api/dev/firestore-check", async (req, res) => {
+    try {
+      const projectId = admin.app().options.projectId ?? null;
+      const db = admin.firestore();
+      const snapshot = await db.collection("venues").get();
+      const venueCount = snapshot.size;
+      res.json({
+        projectId,
+        venueCount,
+        hint: "If venueCount is 0 but you see data in Firebase Console, confirm (1) you are viewing project '" + projectId + "' and (2) data is in the default Firestore database, not a named one.",
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      res.status(500).json({ error: message, projectId: admin.app()?.options?.projectId ?? null });
+    }
+  });
+
   // Sitemap.xml route
   app.get("/sitemap.xml", async (req, res) => {
     try {

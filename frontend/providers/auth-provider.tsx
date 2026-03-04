@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import {
-  User,
+  type User,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
@@ -47,16 +47,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
+    if (!auth) {
+      setLoading(false);
+      return;
+    }
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setUser(firebaseUser);
       setLoading(false);
 
-      if (user) {
-        // Create or update user document in Firestore
+      if (firebaseUser) {
         await createUser(
-          user.uid,
-          user.displayName || "Anonymous",
-          user.photoURL || undefined,
+          firebaseUser.uid,
+          firebaseUser.displayName || "Anonymous",
+          firebaseUser.photoURL || undefined,
         );
       }
     });
@@ -65,6 +68,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [toast]);
 
   const signInWithEmail = async (email: string, password: string) => {
+    if (!auth) throw new Error("Firebase is not configured. Add NEXT_PUBLIC_FIREBASE_* to .env.local.");
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast({
@@ -86,6 +90,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     password: string,
     displayName: string,
   ) => {
+    if (!auth) throw new Error("Firebase is not configured. Add NEXT_PUBLIC_FIREBASE_* to .env.local.");
     try {
       const result = await createUserWithEmailAndPassword(
         auth,
@@ -114,6 +119,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const logout = async () => {
+    if (!auth) return;
     try {
       await signOut(auth);
       toast({
@@ -131,6 +137,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const deleteAccount = async () => {
+    if (!auth) throw new Error("Firebase is not configured.");
     try {
       if (!user) throw new Error("No user logged in");
 
@@ -174,6 +181,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const verifyCodeAndSignIn = async (email: string, code: string) => {
+    if (!auth) throw new Error("Firebase is not configured. Add NEXT_PUBLIC_FIREBASE_* to .env.local.");
     try {
       const response = await apiRequest("POST", "/api/auth/verify-code", { email, code });
 
@@ -183,7 +191,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw new Error("No authentication token received");
       }
 
-      // Sign in with the custom token
       await signInWithCustomToken(auth, data.customToken);
       
       toast({
