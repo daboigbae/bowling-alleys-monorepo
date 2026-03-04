@@ -1,10 +1,20 @@
 import { auth } from "./firebase";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const FIREBASE_NOT_CONFIGURED_ERROR =
+  "Firebase is not configured. Add NEXT_PUBLIC_FIREBASE_* to .env.local.";
 
-// Debug logging
-if (typeof window !== 'undefined') {
-  console.log('API Client initialized with URL:', API_URL);
+async function getAuthToken(): Promise<string> {
+  if (!auth) {
+    throw new Error(FIREBASE_NOT_CONFIGURED_ERROR);
+  }
+
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  return user.getIdToken();
 }
 
 // Server-side API client (for Next.js Server Components - no auth)
@@ -33,11 +43,7 @@ export async function clientApiRequest(
   };
   
   if (requireAuth) {
-    const user = auth.currentUser;
-    if (!user) {
-      throw new Error('Not authenticated');
-    }
-    const token = await user.getIdToken();
+    const token = await getAuthToken();
     headers['Authorization'] = `Bearer ${token}`;
   }
   
@@ -96,11 +102,7 @@ export async function apiRequest(
     endpoint.includes('/suggestions/user/');
   
   if (authRequired) {
-    const user = auth.currentUser;
-    if (!user) {
-      throw new Error('Not authenticated');
-    }
-    const token = await user.getIdToken();
+    const token = await getAuthToken();
     headers['Authorization'] = `Bearer ${token}`;
   }
   
