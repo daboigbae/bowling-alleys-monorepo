@@ -2,30 +2,23 @@
 
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { getTopAlleys, getSponsorVenues } from "@/lib/firestore";
+import { getTopAlleys } from "@/lib/firestore";
 import Image from "next/image";
 import { SiFacebook, SiReddit, SiCrunchbase } from "react-icons/si";
-import { Crown, DollarSign } from "lucide-react";
+import { Crown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import SuggestLocationBanner from "@/components/SuggestLocationBanner";
 import type { FooterVenue } from "@/lib/footer-venues-types";
 
 interface FooterProps {
   initialTopAlleys?: FooterVenue[];
-  initialSponsorVenues?: FooterVenue[];
 }
 
-export default function Footer({ initialTopAlleys, initialSponsorVenues }: FooterProps) {
+export default function Footer({ initialTopAlleys }: FooterProps) {
   const { data: topAlleys } = useQuery({
     queryKey: ["/top-alleys"],
     queryFn: getTopAlleys,
     initialData: initialTopAlleys,
-  });
-
-  const { data: sponsorVenues } = useQuery({
-    queryKey: ["/sponsor-venues"],
-    queryFn: getSponsorVenues,
-    initialData: initialSponsorVenues,
   });
 
   return (
@@ -37,54 +30,6 @@ export default function Footer({ initialTopAlleys, initialSponsorVenues }: Foote
           <div className="mb-8">
             <SuggestLocationBanner />
           </div>
-          {/* Sponsors Section */}
-          {sponsorVenues && sponsorVenues.length > 0 && (
-            <div className="mb-16">
-              <h3
-                className="text-xl font-bold mb-6 flex items-center gap-2"
-                style={{ color: "#0d3149" }}
-              >
-                <DollarSign className="h-5 w-5" style={{ color: "#0d3149" }} />
-                Our Sponsors
-              </h3>
-              <div className="flex flex-wrap items-center justify-center gap-10 md:gap-16 py-8">
-                {sponsorVenues
-                  .filter((venue) => venue.logoUrl)
-                  .map((venue) => (
-                    <Link
-                      key={venue.id}
-                      href={`/venue/${venue.id}`}
-                      className="group flex items-center justify-center"
-                      data-testid={`link-sponsor-${venue.id}`}
-                    >
-                      <img
-                        src={venue.logoUrl}
-                        alt={venue.name}
-                        className="h-32 w-auto max-w-[280px] object-contain opacity-70 hover:opacity-100 transition-opacity grayscale hover:grayscale-0 duration-300"
-                        data-testid={`img-sponsor-logo-${venue.id}`}
-                        title={venue.name}
-                        loading="eager"
-                        referrerPolicy="no-referrer"
-                        onError={(e) => {
-                          console.error(
-                            `❌ Failed to load sponsor logo for ${venue.name}:`,
-                            venue.logoUrl,
-                          );
-                          const target = e.currentTarget;
-                          // Replace with fallback text
-                          const fallback = document.createElement("div");
-                          fallback.className =
-                            "h-32 flex items-center justify-center px-6 text-xl font-bold text-foreground/70 hover:text-foreground transition-colors border-2 border-border rounded-md";
-                          fallback.textContent = venue.name;
-                          target.parentElement?.appendChild(fallback);
-                          target.remove();
-                        }}
-                      />
-                    </Link>
-                  ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 

@@ -59,7 +59,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="light">
       <body className={`${montserrat.variable} ${publicSans.variable} ${csGordon.variable} bg-white`}>
-        <Providers initialTopAlleys={footerVenues.topAlleys} initialSponsorVenues={footerVenues.sponsorVenues}>
+        <Providers initialTopAlleys={footerVenues.topAlleys}>
           {children}
         </Providers>
       </body>

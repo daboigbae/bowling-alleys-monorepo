@@ -55,6 +55,7 @@ lerna-debug.log*
 server/config/firebase-service-account.json
 **/firebase-service-account.json
 *.service-account.json
+service-account.json
 
 # Environment variables (contain sensitive credentials)
 .env

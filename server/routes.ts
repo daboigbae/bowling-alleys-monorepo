@@ -1,4 +1,4 @@
-import type { Express, Response, Request as ExpressRequest } from "express";
+import type { Express, Response, Request as ExpressRequest, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { SitemapStream, streamToPromise } from "sitemap";
 import { createGzip } from "zlib";
@@ -343,6 +343,24 @@ const pricingReportCache: {
   data: null,
   promise: null,
 };
+
+// Test helper: clears all in-memory caches so tests don't leak state across runs.
+export function resetServerCachesForTests(): void {
+  sitemapVenueCache.venues = [];
+  sitemapVenueCache.timestamp = 0;
+  sitemapVenueCache.promise = null;
+
+  hubsCache.hubs = [];
+  hubsCache.timestamp = 0;
+  hubsCache.promise = null;
+
+  reviewsCache.byVenue.clear();
+  reviewsCache.timestamp = 0;
+  reviewsCache.promise = null;
+
+  pricingReportCache.data = null;
+  pricingReportCache.promise = null;
+}
 
 function isPricingCacheExpired(): boolean {
   if (!pricingReportCache.data) return true;
@@ -2484,7 +2502,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
-  
+
+  // Dev diagnostic: which Firestore project/database and how many venues the server sees
+  app.get("/api/dev/firestore-check", async (req, res) => {
+    try {
+      const projectId = admin.app().options.projectId ?? null;
+      const db = admin.firestore();
+      const snapshot = await db.collection("venues").get();
+      const venueCount = snapshot.size;
+      res.json({
+        projectId,
+        venueCount,
+        hint: "If venueCount is 0 but you see data in Firebase Console, confirm (1) you are viewing project '" + projectId + "' and (2) data is in the default Firestore database, not a named one.",
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      res.status(500).json({ error: message, projectId: admin.app()?.options?.projectId ?? null });
+    }
+  });
+
   // Sitemap.xml route
   app.get("/sitemap.xml", async (req, res) => {
     try {
@@ -4164,9 +4200,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Public endpoint: Get single venue by ID (reads from Firestore)
-  app.get("/api/venues/:id", async (req, res) => {
+  app.get("/api/venues/:id", async (req, res, next: NextFunction) => {
     try {
       const { id } = req.params;
+      // Keep single-segment venue utility routes reachable even though :id is declared first.
+      if (id === "top-alleys" || id === "founding-partners" || id === "by-proximity") {
+        return next();
+      }
       const venue = await getVenueById(id);
       
       if (!venue) {
