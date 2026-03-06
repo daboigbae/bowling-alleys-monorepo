@@ -17,10 +17,9 @@ import type { FooterVenue } from "@/lib/footer-venues-types";
 interface ProvidersProps {
   children: React.ReactNode;
   initialTopAlleys?: FooterVenue[];
-  initialSponsorVenues?: FooterVenue[];
 }
 
-export function Providers({ children, initialTopAlleys, initialSponsorVenues }: ProvidersProps) {
+export function Providers({ children, initialTopAlleys }: ProvidersProps) {
   return (
     <HelmetProvider>
       <Analytics />
@@ -40,10 +39,7 @@ export function Providers({ children, initialTopAlleys, initialSponsorVenues }: 
                 <div className="min-h-screen bg-white flex flex-col">
                   <Header />
                   <main className="flex-grow bg-white">{children}</main>
-                  <Footer
-                    initialTopAlleys={initialTopAlleys}
-                    initialSponsorVenues={initialSponsorVenues}
-                  />
+                  <Footer initialTopAlleys={initialTopAlleys} />
                 </div>
                 <Toaster />
               </GeolocationProvider>

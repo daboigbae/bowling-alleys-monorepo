@@ -285,8 +285,8 @@ export default function BlogListPage({ initialPosts }: BlogListPageProps) {
                         </CardDescription>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Calendar className="w-3 h-3" />
-                          <time dateTime={post.updated ?? ""}>
-                            {post.updated ? new Date(post.updated).toLocaleDateString() : "—"}
+                          <time dateTime={post.updated ?? post.date ?? ""}>
+                            {(post.updated || post.date) ? new Date(post.updated || post.date || "").toLocaleDateString() : "—"}
                           </time>
                         </div>
                       </CardHeader>
@@ -362,8 +362,8 @@ export default function BlogListPage({ initialPosts }: BlogListPageProps) {
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <div className="flex items-center gap-1">
                             <Calendar className="w-4 h-4" />
-                            <time dateTime={post.updated ?? ""}>
-                              {post.updated ? new Date(post.updated).toLocaleDateString() : "—"}
+                            <time dateTime={post.updated ?? post.date ?? ""}>
+                              {(post.updated || post.date) ? new Date(post.updated || post.date || "").toLocaleDateString() : "—"}
                             </time>
                           </div>
                         </div>
