@@ -43,6 +43,8 @@ export interface Venue {
   priceLevel?: number | null;
   avgRating: number;
   reviewCount: number;
+  googleRating?: number;
+  googleUserRatingCount?: number;
   createdAt: any;
   updatedAt: any;
   // CRM fields for outreach tracking

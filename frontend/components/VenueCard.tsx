@@ -3,7 +3,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Venue } from "@/lib/firestore";
-import { Sparkles, Trophy, PartyPopper, MapPin, Accessibility, Beer } from "lucide-react";
+import { Sparkles, Trophy, PartyPopper, MapPin, Accessibility, Beer, Star } from "lucide-react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
@@ -264,15 +264,37 @@ export default function VenueCard({
           )}
 
           {/* Location and Rating Row */}
-          <div className="flex flex-wrap items-center gap-2 mb-2">
+          <div className="flex flex-wrap items-center gap-3 mb-2">
             {hasLocation && (
               <div className="flex items-center gap-1 text-sm text-[#0d3149] dark:text-neutral-300" style={{ color: '#0d3149' }}>
-                <MapPin className="w-3.5 h-3.5" style={{ color: '#0d3149' }} />
+                <MapPin className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#0d3149' }} />
                 <span data-testid={`text-venue-location-${venue.id}`}>
                   {venue.city}, {venue.state}
                 </span>
               </div>
             )}
+            {(() => {
+              const rating = venue.googleRating ?? venue.avgRating;
+              const count = venue.googleUserRatingCount ?? venue.reviewCount;
+              const hasRating = typeof rating === "number" && rating > 0;
+              const hasCount = typeof count === "number" && count > 0;
+              if (!hasRating && !hasCount) return null;
+              return (
+                <div
+                  className="flex items-center gap-1.5 text-sm text-[#0d3149] dark:text-neutral-300"
+                  style={{ color: '#0d3149' }}
+                  data-testid={`text-venue-rating-${venue.id}`}
+                >
+                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 flex-shrink-0" />
+                  <span>{hasRating ? Number(rating).toFixed(1) : "—"}</span>
+                  {hasCount && (
+                    <span className="text-neutral-500 dark:text-neutral-400">
+                      ({Number(count).toLocaleString()} review{Number(count) !== 1 ? "s" : ""})
+                    </span>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Address */}

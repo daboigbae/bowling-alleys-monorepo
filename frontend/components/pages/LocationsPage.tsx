@@ -21,7 +21,7 @@ import {
   type StateVenueCount,
 } from "@/lib/firestore";
 import Image from "next/image";
-import { MapPin, Search, ArrowLeft, Trophy, Star, Sparkles, Users, Cake, Image as ImageIcon, ChevronRight, MessageSquare, Navigation } from "lucide-react";
+import { MapPin, Search, ArrowLeft, Trophy, Star, Sparkles, Users, Cake, Image as ImageIcon, ChevronRight, Navigation } from "lucide-react";
 import VenueCard from "@/components/VenueCard";
 import AuthModal from "@/components/AuthModal";
 import StateSelector from "@/components/StateSelector";
@@ -199,9 +199,13 @@ export default function Locations({ state: propState, city: propCity }: Location
       grouped[city].push(venue);
     });
 
-    // Sort venues within each city by rating
+    // Sort venues within each city by rating (prefer Google rating when available)
     Object.keys(grouped).forEach((city) => {
-      grouped[city].sort((a, b) => b.avgRating - a.avgRating);
+      grouped[city].sort((a, b) => {
+        const ratingA = a.googleRating ?? a.avgRating ?? 0;
+        const ratingB = b.googleRating ?? b.avgRating ?? 0;
+        return ratingB - ratingA;
+      });
     });
 
     return grouped;
@@ -337,25 +341,6 @@ export default function Locations({ state: propState, city: propCity }: Location
     });
     
     return photos.slice(0, 6); // Limit to 6 photos for gallery
-  }, [canonicalCity, venuesByCity]);
-
-  // Reviews summary stats for the city
-  const reviewsStats = useMemo(() => {
-    if (!canonicalCity) return null;
-    const cityVenues = venuesByCity[canonicalCity] || [];
-    const totalReviews = cityVenues.reduce((sum, v) => sum + (v.reviewCount || 0), 0);
-    const venuesWithRatings = cityVenues.filter(v => v.avgRating > 0);
-    const avgRating = venuesWithRatings.length > 0
-      ? venuesWithRatings.reduce((sum, v) => sum + v.avgRating, 0) / venuesWithRatings.length
-      : 0;
-    const highestRated = cityVenues.length > 0 ? cityVenues[0] : null; // Already sorted by rating
-    
-    return {
-      totalReviews,
-      avgRating,
-      venueCount: cityVenues.length,
-      highestRated
-    };
   }, [canonicalCity, venuesByCity]);
 
   // Check which experiences are available in this city based on amenities
@@ -789,7 +774,7 @@ export default function Locations({ state: propState, city: propCity }: Location
                   Top {Math.min(5, top5Venues.length)} Bowling Alleys in {canonicalCity}
                 </h2>
                 <p className="text-muted-foreground mb-6">
-                  The highest-rated bowling centers based on community reviews
+                  The highest-rated bowling centers based on Google reviews
                 </p>
                 <div className="space-y-4">
                   {top5Venues.map((venue, idx) => (
@@ -825,11 +810,25 @@ export default function Locations({ state: propState, city: propCity }: Location
                           <p className="text-sm text-muted-foreground truncate">{venue.address}</p>
                         </div>
                         <div className="flex-shrink-0 text-right">
-                          <div className="flex items-center gap-1 text-yellow-500">
-                            <Star className="h-5 w-5 fill-current" />
-                            <span className="font-bold text-lg">{venue.avgRating.toFixed(1)}</span>
-                          </div>
-                          <p className="text-xs text-muted-foreground">{venue.reviewCount} reviews</p>
+                          {(() => {
+                            const rating = venue.googleRating ?? venue.avgRating;
+                            const count = venue.googleUserRatingCount ?? venue.reviewCount;
+                            const hasRating = typeof rating === "number" && rating > 0;
+                            const hasCount = typeof count === "number" && count >= 0;
+                            return (
+                              <>
+                                <div className="flex items-center gap-1 text-yellow-500">
+                                  <Star className="h-5 w-5 fill-current" />
+                                  <span className="font-bold text-lg">
+                                    {hasRating ? Number(rating).toFixed(1) : "0.0"}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                  {hasCount ? Number(count).toLocaleString() : "0"} reviews
+                                </p>
+                              </>
+                            );
+                          })()}
                         </div>
                         <ChevronRight className="h-5 w-5 text-muted-foreground" />
                       </CardContent>
@@ -914,55 +913,6 @@ export default function Locations({ state: propState, city: propCity }: Location
                 )}
               </div>
             </section>
-
-            {/* Reviews Summary Section */}
-            {reviewsStats && (
-              <section data-testid="section-reviews-summary">
-                <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                  <MessageSquare className="h-6 w-6 text-green-500" />
-                  Reviews Summary for {canonicalCity}
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <Card>
-                    <CardContent className="p-6 text-center">
-                      <p className="text-4xl font-bold text-primary">{reviewsStats.venueCount}</p>
-                      <p className="text-sm text-muted-foreground">Bowling Alleys</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-6 text-center">
-                      <p className="text-4xl font-bold text-yellow-500">{reviewsStats.avgRating.toFixed(1)}</p>
-                      <p className="text-sm text-muted-foreground">Average Rating</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-6 text-center">
-                      <p className="text-4xl font-bold text-green-500">{reviewsStats.totalReviews}</p>
-                      <p className="text-sm text-muted-foreground">Total Reviews</p>
-                    </CardContent>
-                  </Card>
-                  {reviewsStats.highestRated && (
-                    <Card
-                      className="hover-elevate cursor-pointer"
-                      onClick={() => {
-                        sessionStorage.setItem("venueBackPath", pathname);
-                        router.push(`/venue/${reviewsStats.highestRated!.id}`);
-                      }}
-                    >
-                      <CardContent className="p-6 text-center">
-                        <div className="flex items-center justify-center gap-1 text-yellow-500 mb-1">
-                          <Trophy className="h-5 w-5" />
-                          <Star className="h-4 w-4 fill-current" />
-                          <span className="font-bold">{reviewsStats.highestRated.avgRating.toFixed(1)}</span>
-                        </div>
-                        <p className="text-sm font-medium truncate">{reviewsStats.highestRated.name}</p>
-                        <p className="text-xs text-muted-foreground">Highest Rated</p>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
-              </section>
-            )}
 
             {/* Map Section */}
             {Object.keys(filteredVenuesByCity).length > 0 && (
