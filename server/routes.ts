@@ -4580,6 +4580,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public endpoint: Newsletter signup (Bowling Bits)
+  app.post("/api/newsletter", async (req, res) => {
+    try {
+      const raw = req.body?.email;
+      if (typeof raw !== "string" || !raw.trim()) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+      const email = raw.trim().toLowerCase();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: "Invalid email format" });
+      }
+
+      const db = admin.firestore();
+      const newslettersRef = db.collection("newsletters");
+      const existing = await newslettersRef.where("email", "==", email).limit(1).get();
+
+      if (!existing.empty) {
+        return res.json({ duplicate: true });
+      }
+
+      await newslettersRef.add({
+        email,
+        subscribedAt: admin.firestore.FieldValue.serverTimestamp(),
+        source: "homepage",
+      });
+
+      res.status(201).json({ success: true });
+    } catch (error) {
+      console.error("Newsletter signup error:", error);
+      res.status(500).json({ error: "Something went wrong. Try again." });
+    }
+  });
+
   // Public endpoint: Get user's reviews
   app.get("/api/reviews/user/:userId", async (req, res) => {
     try {

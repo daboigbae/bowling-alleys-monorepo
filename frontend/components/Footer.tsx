@@ -1,14 +1,16 @@
 'use client';
 
+import { useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { getTopAlleys } from "@/lib/firestore";
 import Image from "next/image";
 import { SiFacebook, SiReddit, SiCrunchbase } from "react-icons/si";
-import { Crown } from "lucide-react";
+import { Crown, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import SuggestLocationBanner from "@/components/SuggestLocationBanner";
 import type { FooterVenue } from "@/lib/footer-venues-types";
+import { api } from "@/lib/api-client";
 
 interface FooterProps {
   initialTopAlleys?: FooterVenue[];
@@ -21,13 +23,84 @@ export default function Footer({ initialTopAlleys }: FooterProps) {
     initialData: initialTopAlleys,
   });
 
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterStatus, setNewsletterStatus] = useState<"idle" | "loading" | "success" | "duplicate" | "error">("idle");
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = newsletterEmail.trim().toLowerCase();
+    if (!trimmed) return;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmed)) return;
+    setNewsletterStatus("loading");
+    try {
+      const res = await api.post("/api/newsletter", { email: trimmed });
+      if (res.duplicate) {
+        setNewsletterStatus("duplicate");
+      } else {
+        setNewsletterStatus("success");
+        setNewsletterEmail("");
+      }
+    } catch {
+      setNewsletterStatus("error");
+    }
+  };
+
   return (
     <div className="bg-white">
-      {/* Upper Footer Section - White Background */}
-      <div className="py-16 mt-8" style={{ backgroundColor: "#ffffff" }}>
+      {/* Upper Footer - Suggest Location then Bowling Bits, no gap */}
+      <div className="py-16 mt-8 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Suggest Location Banner */}
-          <div className="mb-8">
+          {/* Bowling Bits first */}
+          <div className="max-w-2xl mx-auto text-center">
+            <h2 className="text-xl font-semibold mb-1 text-[#0d3149]">
+              🎳 Bowling Bits
+            </h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Weekly bowling news. No spam. Ever.
+            </p>
+            <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-2 justify-center">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={newsletterEmail}
+                onChange={(e) => {
+                  setNewsletterEmail(e.target.value);
+                  if (newsletterStatus !== "idle") setNewsletterStatus("idle");
+                }}
+                disabled={newsletterStatus === "loading"}
+                className="h-11 px-4 flex-1 min-w-0 max-w-sm mx-auto sm:mx-0 rounded border border-gray-300 bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0d3149] focus:border-transparent"
+                aria-label="Email for Bowling Bits newsletter"
+              />
+              <button
+                type="submit"
+                disabled={newsletterStatus === "loading"}
+                className="h-11 px-6 shrink-0 bg-[#d52231] hover:bg-[#b91d2a] text-white font-medium rounded transition-colors disabled:opacity-70 flex items-center justify-center mx-auto sm:mx-0"
+              >
+                {newsletterStatus === "loading" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Join Bowling Bits"
+                )}
+              </button>
+            </form>
+            {newsletterStatus === "success" && (
+              <p className="text-sm text-green-700 mt-3" role="status">
+                You&apos;re on the list! Bowling Bits launching soon. 🎳
+              </p>
+            )}
+            {newsletterStatus === "duplicate" && (
+              <p className="text-sm text-amber-700 mt-3" role="status">
+                You&apos;re already on the list!
+              </p>
+            )}
+            {newsletterStatus === "error" && (
+              <p className="text-sm text-red-600 mt-3" role="alert">
+                Something went wrong. Try again.
+              </p>
+            )}
+          </div>
+          <div className="mt-8">
             <SuggestLocationBanner />
           </div>
         </div>

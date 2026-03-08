@@ -83,6 +83,7 @@ export default function Home() {
   const [locationSearchError, setLocationSearchError] = useState<string | null>(null);
   const [locationSearchLoading, setLocationSearchLoading] = useState(false);
 
+
   const handleLocationSearch = async () => {
     const trimmed = locationInput.trim();
     if (!trimmed) return;
