@@ -67,7 +67,16 @@ export default function BlogListPage({ initialPosts }: BlogListPageProps) {
     }
   }, []);
 
-  const posts = initialPosts;
+  // Sort by date (newest first); use updated ?? date for consistent ordering
+  const posts = useMemo(() => {
+    if (!initialPosts?.length) return initialPosts ?? [];
+    return [...initialPosts].sort((a, b) => {
+      const dateA = new Date(a.updated ?? a.date ?? 0).getTime();
+      const dateB = new Date(b.updated ?? b.date ?? 0).getTime();
+      return dateB - dateA;
+    });
+  }, [initialPosts]);
+
   const isLoading = false;
   const error = null;
 
@@ -137,6 +146,13 @@ export default function BlogListPage({ initialPosts }: BlogListPageProps) {
       ];
       filtered = filtered.filter((post) => !pinnedSlugs.includes(post.slug));
     }
+
+    // Sort by date (newest first) so filtered/search results stay in date order
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.updated ?? a.date ?? 0).getTime();
+      const dateB = new Date(b.updated ?? b.date ?? 0).getTime();
+      return dateB - dateA;
+    });
 
     return filtered;
   }, [posts, searchTerm, selectedCategory]);
