@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { getTopAlleys } from "@/lib/firestore";
@@ -24,7 +24,8 @@ export default function Footer({ initialTopAlleys }: FooterProps) {
   });
 
   const [newsletterEmail, setNewsletterEmail] = useState("");
-  const [newsletterStatus, setNewsletterStatus] = useState<"idle" | "loading" | "success" | "duplicate" | "error">("idle");
+  const [newsletterStatus, setNewsletterStatus] = useState<"idle" | "loading" | "success" | "duplicate" | "error" | "rateLimit">("idle");
+  const honeypotRef = useRef<HTMLInputElement>(null);
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,15 +35,17 @@ export default function Footer({ initialTopAlleys }: FooterProps) {
     if (!emailRegex.test(trimmed)) return;
     setNewsletterStatus("loading");
     try {
-      const res = await api.post("/api/newsletter", { email: trimmed });
+      const website = honeypotRef.current?.value ?? "";
+      const res = await api.post("/api/newsletter", { email: trimmed, website, source: "footer" });
       if (res.duplicate) {
         setNewsletterStatus("duplicate");
       } else {
         setNewsletterStatus("success");
         setNewsletterEmail("");
       }
-    } catch {
-      setNewsletterStatus("error");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "";
+      setNewsletterStatus(message.includes("Too many") ? "rateLimit" : "error");
     }
   };
 
@@ -60,6 +63,16 @@ export default function Footer({ initialTopAlleys }: FooterProps) {
               Weekly bowling news. No spam. Ever.
             </p>
             <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-2 justify-center">
+              {/* Honeypot: hidden from users, bots often fill it */}
+              <input
+                type="text"
+                name="website"
+                ref={honeypotRef}
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden={true}
+                className="absolute opacity-0 pointer-events-none h-0 w-0 overflow-hidden"
+              />
               <input
                 type="email"
                 placeholder="Enter your email"
@@ -97,6 +110,11 @@ export default function Footer({ initialTopAlleys }: FooterProps) {
             {newsletterStatus === "error" && (
               <p className="text-sm text-red-600 mt-3" role="alert">
                 Something went wrong. Try again.
+              </p>
+            )}
+            {newsletterStatus === "rateLimit" && (
+              <p className="text-sm text-amber-700 mt-3" role="alert">
+                Too many signup attempts. Please try again later.
               </p>
             )}
           </div>

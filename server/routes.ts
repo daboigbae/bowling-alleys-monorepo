@@ -55,6 +55,17 @@ const hubsCache: {
   promise: null,
 };
 
+// Newsletter signup rate limit: 5 attempts per 15 min per IP (in-memory)
+const newsletterRateLimit = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+const RATE_LIMIT_MAX = 5;
+
+function getClientIp(req: ExpressRequest): string {
+  const xff = req.headers["x-forwarded-for"];
+  if (typeof xff === "string") return xff.split(",")[0].trim();
+  return req.ip ?? "unknown";
+}
+
 function isHubsCacheExpired(): boolean {
   if (hubsCache.hubs.length === 0) return true;
   const now = new Date();
@@ -4583,6 +4594,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Public endpoint: Newsletter signup (Bowling Bits)
   app.post("/api/newsletter", async (req, res) => {
     try {
+      // Honeypot: reject if bot filled the hidden field
+      const honeypot = req.body?.website;
+      if (honeypot !== undefined && honeypot !== null && String(honeypot).trim() !== "") {
+        return res.status(400).json({ error: "Invalid request" });
+      }
+
+      // Rate limit by IP
+      const ip = getClientIp(req);
+      const now = Date.now();
+      let entry = newsletterRateLimit.get(ip);
+      if (!entry || now > entry.resetAt) {
+        entry = { count: 0, resetAt: now + RATE_LIMIT_WINDOW_MS };
+        newsletterRateLimit.set(ip, entry);
+      }
+      entry.count += 1;
+      if (entry.count > RATE_LIMIT_MAX) {
+        res.setHeader("Retry-After", String(Math.ceil((entry.resetAt - now) / 1000)));
+        return res.status(429).json({ error: "Too many signup attempts. Please try again later." });
+      }
+
       const raw = req.body?.email;
       if (typeof raw !== "string" || !raw.trim()) {
         return res.status(400).json({ error: "Email is required" });
@@ -4601,10 +4632,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json({ duplicate: true });
       }
 
+      const source = typeof req.body?.source === "string" && req.body.source.trim() ? req.body.source.trim() : "footer";
       await newslettersRef.add({
         email,
         subscribedAt: admin.firestore.FieldValue.serverTimestamp(),
-        source: "homepage",
+        source,
       });
 
       res.status(201).json({ success: true });
