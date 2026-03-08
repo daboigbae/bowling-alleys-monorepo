@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useLocation, useRoute, Link } from "wouter";
+import { useRouter } from "next/navigation";
 import NextLink from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, Search, Plus, ArrowLeft, Mail } from "lucide-react";
@@ -73,6 +74,7 @@ export default function BattingCages({ state: propState, city: propCity }: Batti
   const [stateMatch, stateParams] = useRoute("/batting-cages/:state");
   const [baseMatch] = useRoute("/batting-cages");
   const [location, setLocation] = useLocation();
+  const router = useRouter();
 
   const selectedState = propState ?? (cityMatch ? decodeURIComponent(cityParams!.state) : stateMatch ? decodeURIComponent(stateParams!.state) : null);
   const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
@@ -293,7 +295,7 @@ export default function BattingCages({ state: propState, city: propCity }: Batti
     const venue = stateVenues.find((v) => v.id === venueId);
     trackEvent("batting_cages_venue_click", "navigation", venue?.name || venueId);
 
-    setLocation(`/venue/${venueId}`);
+    router.push(`/venue/${venueId}`);
   };
 
   return (

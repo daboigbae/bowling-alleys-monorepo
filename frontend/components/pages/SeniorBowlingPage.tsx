@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useLocation, useRoute, Link } from "wouter";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Search, ArrowLeft, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -72,6 +73,7 @@ export default function SeniorBowling({ state: propState, city: propCity }: Seni
   const [stateMatch, stateParams] = useRoute("/senior-bowling/:state");
   const [baseMatch] = useRoute("/senior-bowling");
   const [location, setLocation] = useLocation();
+  const router = useRouter();
 
   const selectedState = propState ?? (cityMatch ? decodeURIComponent(cityParams!.state) : stateMatch ? decodeURIComponent(stateParams!.state) : null);
   const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
@@ -285,7 +287,7 @@ export default function SeniorBowling({ state: propState, city: propCity }: Seni
     const venue = stateVenues.find((v) => v.id === venueId);
     trackEvent("senior_venue_click", "navigation", venue?.name || venueId);
 
-    setLocation(`/venue/${venueId}`);
+    router.push(`/venue/${venueId}`);
   };
 
   return (

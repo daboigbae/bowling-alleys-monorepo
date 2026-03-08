@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useLocation, useRoute, Link } from "wouter";
+import { useRouter } from "next/navigation";
 import NextLink from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Search, ArrowLeft, Briefcase } from "lucide-react";
@@ -72,6 +73,7 @@ export default function CorporateEvents({ state: propState, city: propCity }: Co
   const [stateMatch, stateParams] = useRoute("/corporate-events/:state");
   const [baseMatch] = useRoute("/corporate-events");
   const [location, setLocation] = useLocation();
+  const router = useRouter();
 
   const selectedState = propState ?? (cityMatch ? decodeURIComponent(cityParams!.state) : stateMatch ? decodeURIComponent(stateParams!.state) : null);
   const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
@@ -283,7 +285,7 @@ export default function CorporateEvents({ state: propState, city: propCity }: Co
     sessionStorage.setItem("venueBackPath", location);
     const venue = stateVenues.find((v) => v.id === venueId);
     trackEvent("corporate_venue_click", "navigation", venue?.name || venueId);
-    setLocation(`/venue/${venueId}`);
+    router.push(`/venue/${venueId}`);
   };
 
   return (

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useLocation, useRoute, Link } from "wouter";
+import { useRouter } from "next/navigation";
 import NextLink from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { DollarSign, ArrowLeft, TrendingUp, TrendingDown, Calendar } from "lucide-react";
@@ -58,6 +59,7 @@ export default function BowlingCost({ state: propState, city: propCity }: Bowlin
   const [stateMatch, stateParams] = useRoute("/bowling-cost/:state");
   const [baseMatch] = useRoute("/bowling-cost");
   const [location, setLocation] = useLocation();
+  const router = useRouter();
 
   const selectedState = propState ?? (cityMatch ? decodeURIComponent(cityParams!.state) : stateMatch ? decodeURIComponent(stateParams!.state) : null);
   const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
@@ -529,7 +531,7 @@ export default function BowlingCost({ state: propState, city: propCity }: Bowlin
                 <CityMap
                   venues={cityVenues}
                   onVenueClick={(venueId) => {
-                    setLocation(`/venue/${venueId}`);
+                    router.push(`/venue/${venueId}`);
                   }}
                 />
               </div>
@@ -550,7 +552,7 @@ export default function BowlingCost({ state: propState, city: propCity }: Bowlin
                     <VenueCard
                       key={venue.id}
                       venue={venue}
-                      onViewDetails={(venueId) => setLocation(`/venue/${venueId}`)}
+                      onViewDetails={(venueId) => router.push(`/venue/${venueId}`)}
                       showRating={true}
                       showPrice={true}
                     />

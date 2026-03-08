@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useLocation, useRoute, Link } from "wouter";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, Search, Plus, ArrowLeft, Mail } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -75,6 +76,7 @@ export default function SportsBar({ state: propState, city: propCity }: SportsBa
   const [stateMatch, stateParams] = useRoute("/sports-bar/:state");
   const [baseMatch] = useRoute("/sports-bar");
   const [location, setLocation] = useLocation();
+  const router = useRouter();
 
   const selectedState = propState ?? (cityMatch ? decodeURIComponent(cityParams!.state) : stateMatch ? decodeURIComponent(stateParams!.state) : null);
   const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
@@ -416,7 +418,7 @@ export default function SportsBar({ state: propState, city: propCity }: SportsBa
                   <VenueCard
                     key={venue.id}
                     venue={venue}
-                    onViewDetails={(venueId) => setLocation(`/venue/${venueId}`)}
+                    onViewDetails={(venueId) => router.push(`/venue/${venueId}`)}
                   />
                 ))}
               </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useLocation, useRoute, Link } from "wouter";
+import { useRouter } from "next/navigation";
 import NextLink from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, Search, Plus, ArrowLeft, Mail, Tag, Navigation, ChevronRight } from "lucide-react";
@@ -74,6 +75,7 @@ export default function Specials({ state: propState, city: propCity }: SpecialsP
   const [stateMatch, stateParams] = useRoute("/specials/:state");
   const [baseMatch] = useRoute("/specials");
   const [location, setLocation] = useLocation();
+  const router = useRouter();
 
   const selectedState = propState ?? (cityMatch ? decodeURIComponent(cityParams!.state) : stateMatch ? decodeURIComponent(stateParams!.state) : null);
   const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
@@ -383,12 +385,12 @@ export default function Specials({ state: propState, city: propCity }: SpecialsP
     : stateVenues.length;
 
   const handleVenueClick = (venueId: string) => {
-    sessionStorage.setItem("venueBackPath", location);
+    if (typeof window !== "undefined") sessionStorage.setItem("venueBackPath", window.location.pathname);
 
     const venue = stateVenues.find((v) => v.id === venueId);
     trackEvent("specials_venue_click", "navigation", venue?.name || venueId);
 
-    setLocation(`/venue/${venueId}`);
+    router.push(`/venue/${venueId}`);
   };
 
   return (

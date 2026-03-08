@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useLocation, useRoute, Link } from "wouter";
+import { useRouter } from "next/navigation";
 import NextLink from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, Search, Plus, ArrowLeft, Mail } from "lucide-react";
@@ -83,6 +84,7 @@ export default function ArcadeBowling({ state: propState, city: propCity }: Arca
   const [stateMatch, stateParams] = useRoute("/arcade-bowling/:state");
   const [baseMatch] = useRoute("/arcade-bowling");
   const [location, setLocation] = useLocation();
+  const router = useRouter();
 
   // Use props from Next.js when provided, otherwise fall back to wouter
   const selectedState = propState ?? (cityMatch
@@ -329,7 +331,7 @@ export default function ArcadeBowling({ state: propState, city: propCity }: Arca
     const venue = stateVenues.find((v) => v.id === venueId);
     trackEvent("arcade_venue_click", "navigation", venue?.name || venueId);
 
-    setLocation(`/venue/${venueId}`);
+    router.push(`/venue/${venueId}`);
   };
 
   return (

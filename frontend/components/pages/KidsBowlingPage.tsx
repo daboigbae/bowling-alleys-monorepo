@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useLocation, useRoute, Link } from "wouter";
+import { useRouter } from "next/navigation";
 import NextLink from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, Search, Plus, ArrowLeft, Mail } from "lucide-react";
@@ -76,6 +77,7 @@ export default function KidsBowling({ state: propState, city: propCity }: KidsBo
   const [stateMatch, stateParams] = useRoute("/kids-bowling/:state");
   const [baseMatch] = useRoute("/kids-bowling");
   const [location, setLocation] = useLocation();
+  const router = useRouter();
 
   const selectedState = propState ?? (cityMatch ? decodeURIComponent(cityParams!.state) : stateMatch ? decodeURIComponent(stateParams!.state) : null);
   const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
@@ -294,7 +296,7 @@ export default function KidsBowling({ state: propState, city: propCity }: KidsBo
     sessionStorage.setItem("venueBackPath", location);
     const venue = stateVenues.find((v) => v.id === venueId);
     trackEvent("kids_bowling_venue_click", "navigation", venue?.name || venueId);
-    setLocation(`/venue/${venueId}`);
+    router.push(`/venue/${venueId}`);
   };
 
   return (

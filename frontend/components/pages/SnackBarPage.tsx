@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useLocation, useRoute, Link } from "wouter";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, Search, Plus, ArrowLeft, Mail } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -72,6 +73,7 @@ export default function SnackBar({ state: propState, city: propCity }: SnackBarP
   const [stateMatch, stateParams] = useRoute("/snack-bar/:state");
   const [baseMatch] = useRoute("/snack-bar");
   const [location, setLocation] = useLocation();
+  const router = useRouter();
 
   const selectedState = propState ?? (cityMatch ? decodeURIComponent(cityParams!.state) : stateMatch ? decodeURIComponent(stateParams!.state) : null);
   const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
@@ -412,7 +414,7 @@ export default function SnackBar({ state: propState, city: propCity }: SnackBarP
                   <VenueCard
                     key={venue.id}
                     venue={venue}
-                    onViewDetails={(venueId) => setLocation(`/venue/${venueId}`)}
+                    onViewDetails={(venueId) => router.push(`/venue/${venueId}`)}
                   />
                 ))}
               </div>

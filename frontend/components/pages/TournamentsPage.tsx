@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useLocation, useRoute, Link } from "wouter";
+import { useRouter } from "next/navigation";
 import NextLink from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Search, ArrowLeft } from "lucide-react";
@@ -72,6 +73,7 @@ export default function Tournaments({ state: propState, city: propCity }: Tourna
   const [stateMatch, stateParams] = useRoute("/tournaments/:state");
   const [baseMatch] = useRoute("/tournaments");
   const [location, setLocation] = useLocation();
+  const router = useRouter();
 
   const selectedState = propState ?? (cityMatch ? decodeURIComponent(cityParams!.state) : stateMatch ? decodeURIComponent(stateParams!.state) : null);
   const selectedCity = propCity ?? (cityMatch ? decodeURIComponent(cityParams!.city) : null);
@@ -290,7 +292,7 @@ export default function Tournaments({ state: propState, city: propCity }: Tourna
     sessionStorage.setItem("venueBackPath", location);
     const venue = stateVenues.find((v) => v.id === venueId);
     trackEvent("tournaments_venue_click", "navigation", venue?.name || venueId);
-    setLocation(`/venue/${venueId}`);
+    router.push(`/venue/${venueId}`);
   };
 
   return (

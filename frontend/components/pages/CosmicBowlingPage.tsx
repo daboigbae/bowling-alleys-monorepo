@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useLocation, useRoute, Link } from "wouter";
+import { useRouter } from "next/navigation";
 import NextLink from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, Search, Plus, ArrowLeft, Mail } from "lucide-react";
@@ -310,15 +311,14 @@ export default function CosmicBowling({ state: propState, city: propCity }: Cosm
     ? Object.values(filteredVenuesByCity).reduce((total, venues) => total + venues.length, 0)
     : stateVenues.length;
 
+  const router = useRouter();
   const handleVenueClick = (venueId: string) => {
-    // Store cosmic bowling back path for the back button
-    sessionStorage.setItem("venueBackPath", location);
+    if (typeof window !== "undefined") sessionStorage.setItem("venueBackPath", window.location.pathname);
 
-    // Find venue details for tracking
     const venue = stateVenues.find((v) => v.id === venueId);
     trackEvent("cosmic_venue_click", "navigation", venue?.name || venueId);
 
-    setLocation(`/venue/${venueId}`);
+    router.push(`/venue/${venueId}`);
   };
 
   return (
