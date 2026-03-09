@@ -34,10 +34,10 @@ export const metadata: Metadata = {
     siteName: "BowlingAlleys.io",
     images: [
       {
-        url: "/attached_assets/G-Jrpdja0AITdmi.jpeg",
-        width: 1200,
-        height: 630,
-        alt: "Thank you from the BowlingAlleys.io cat mascot",
+        url: "/attached_assets/find-your-lane.png",
+        width: 1024,
+        height: 537,
+        alt: "BowlingAlleys.io cat mascot with the slogan Find Your Lane",
       },
     ],
     type: "website",
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Find Bowling Alleys: Reviews & Locations - BowlingAlleys.io",
     description: "Discover the best bowling alleys near you. Read reviews, compare prices, and find cosmic bowling, leagues, birthday parties, and more.",
-    images: ["/attached_assets/G-Jrpdja0AITdmi.jpeg"],
+    images: ["/attached_assets/find-your-lane.png"],
   },
 };
 
