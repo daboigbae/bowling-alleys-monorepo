@@ -1,6 +1,8 @@
 # BowlingAlleys.io
 
-**Live site: [bowlingalleys.io](https://bowlingalleys.io)**
+[![BAIO Bowling Alleys](assets/hero.png)](https://bowlingalleys.io)
+
+**Live site: [bowlingalleys.io](https://bowlingalleys.io)** — *The #1 bowling alley directory in the U.S.*
 
 A comprehensive platform for discovering, rating, and reviewing bowling alleys across the United States. Connect bowlers with venues through interactive maps, detailed venue pages, user-generated reviews, and specialized directory pages.
 
