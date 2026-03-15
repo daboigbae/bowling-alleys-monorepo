@@ -27,7 +27,7 @@ const STATE_TO_ABBR: Record<string, string> = {
   "west virginia": "WV", wyoming: "WY",
 };
 
-function normalizeStateToAbbr(state: string): string {
+export function normalizeStateToAbbr(state: string): string {
   const normalized = state.toLowerCase().trim();
   return STATE_TO_ABBR[normalized] || state.toUpperCase().slice(0, 2);
 }

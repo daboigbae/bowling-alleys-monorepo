@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -42,6 +42,7 @@ import {
   parseCityState,
   parseStateOnly,
   findCityInVenues,
+  normalizeStateToAbbr,
 } from "@/lib/location-search";
 
 function stripMarkdownForPreview(raw: string): string {
@@ -57,6 +58,26 @@ function stripMarkdownForPreview(raw: string): string {
     .replace(/\n+/g, " ")
     .trim();
 }
+
+const BROWSE_CITIES: { city: string; stateAbbr: string }[] = [
+  { city: "New York", stateAbbr: "NY" },
+  { city: "Los Angeles", stateAbbr: "CA" },
+  { city: "Chicago", stateAbbr: "IL" },
+  { city: "Houston", stateAbbr: "TX" },
+  { city: "Phoenix", stateAbbr: "AZ" },
+  { city: "Dallas", stateAbbr: "TX" },
+];
+
+const BROWSE_STATES: { label: string; stateAbbr: string }[] = [
+  { label: "California", stateAbbr: "CA" },
+  { label: "Texas", stateAbbr: "TX" },
+  { label: "Florida", stateAbbr: "FL" },
+  { label: "New York", stateAbbr: "NY" },
+  { label: "Ohio", stateAbbr: "OH" },
+  { label: "Illinois", stateAbbr: "IL" },
+  { label: "Penn.", stateAbbr: "PA" },
+  { label: "Michigan", stateAbbr: "MI" },
+];
 
 export default function Home() {
   const router = useRouter();
@@ -163,6 +184,30 @@ export default function Home() {
   const featuredPosts = featuredBlogSlugs
     .map((slug) => blogPosts.find((p) => p.slug === slug))
     .filter(Boolean) as BlogPost[];
+
+  // Exact cities from design (screenshot), with real venue counts from data
+  const topCities = useMemo(() => {
+    return BROWSE_CITIES.map(({ city, stateAbbr }) => {
+      const count = venues?.length
+        ? venues.filter(
+            (v) =>
+              normalizeStateToAbbr(v.state || "") === stateAbbr &&
+              (v.city || "").trim().toLowerCase() === city.toLowerCase()
+          ).length
+        : 0;
+      return { city, stateAbbr, count };
+    });
+  }, [venues]);
+
+  // Exact states from design (screenshot), with real venue counts from data
+  const topStates = useMemo(() => {
+    return BROWSE_STATES.map(({ label, stateAbbr }) => {
+      const count = venues?.length
+        ? venues.filter((v) => normalizeStateToAbbr(v.state || "") === stateAbbr).length
+        : 0;
+      return { label, stateAbbr, count };
+    });
+  }, [venues]);
 
   // WebSite JSON-LD Structured Data
   const websiteJsonLd = {
@@ -408,6 +453,85 @@ export default function Home() {
                   </p>
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Browse by city */}
+        {topCities.length > 0 && (
+          <section className="py-12 md:py-16 bg-muted/30">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                <h2 className="text-2xl font-bold text-foreground">
+                  Browse by city
+                </h2>
+                <Link
+                  href="/locations"
+                  className="text-primary hover:underline font-medium inline-flex items-center gap-1 shrink-0"
+                >
+                  See all cities
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                {[
+                  "from-slate-800 to-slate-900",
+                  "from-red-900 to-red-950",
+                  "from-emerald-900 to-emerald-950",
+                  "from-amber-800 to-amber-950",
+                  "from-violet-900 to-violet-950",
+                  "from-teal-800 to-teal-950",
+                ].slice(0, topCities.length).map((gradient, i) => (
+                  <Link
+                    key={`${topCities[i].stateAbbr}-${topCities[i].city}`}
+                    href={`/locations/${encodeURIComponent(topCities[i].stateAbbr)}/${encodeURIComponent(topCities[i].city)}`}
+                    className={`rounded-xl bg-gradient-to-br ${gradient} p-6 text-white hover:opacity-95 transition-opacity min-h-[100px] flex flex-col justify-end`}
+                    data-testid={`browse-city-${topCities[i].city.toLowerCase().replace(/\s+/g, "-")}`}
+                  >
+                    <span className="block font-semibold text-lg">
+                      {topCities[i].city}
+                    </span>
+                    <span className="block text-white/90 text-sm">
+                      {topCities[i].count} venue{topCities[i].count !== 1 ? "s" : ""}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Browse by state */}
+        <section className="py-12 md:py-16 bg-background">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+              <h2 className="text-2xl font-bold text-foreground">
+                Browse by state
+              </h2>
+              <Link
+                href="/locations"
+                className="text-primary hover:underline font-medium inline-flex items-center gap-1 shrink-0"
+              >
+                All 50 states
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {topStates.map(({ label, stateAbbr, count }) => (
+                <Link
+                  key={stateAbbr}
+                  href={`/locations/${encodeURIComponent(stateAbbr)}`}
+                  className="rounded-xl border border-border bg-card p-6 text-card-foreground hover:bg-muted/50 transition-colors flex flex-col justify-end min-h-[90px]"
+                  data-testid={`browse-state-${stateAbbr.toLowerCase()}`}
+                >
+                  <span className="block font-semibold text-lg">
+                    {label}
+                  </span>
+                  <span className="block text-muted-foreground text-sm">
+                    {count} venue{count !== 1 ? "s" : ""}
+                  </span>
+                </Link>
+              ))}
             </div>
           </div>
         </section>
