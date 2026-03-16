@@ -1,6 +1,12 @@
 import { fetchGA4Data, type GA4Metrics } from "./ga4.js";
 import { fetchGSCData, type GSCMetrics } from "./gsc.js";
 import { loadExperiments, type Experiment } from "./experiment-tracker.js";
+import {
+  evaluateRunningExperiments,
+  getExperimentTimeline,
+  type EvaluationResult,
+} from "./evaluate-experiments.js";
+import { generateDashboardHTML } from "./generate-html.js";
 import { config } from "dotenv";
 import { format, subDays } from "date-fns";
 import { writeFileSync, readFileSync, existsSync } from "fs";
@@ -23,6 +29,16 @@ export interface WeeklyReport {
   experiments: {
     active: Experiment[];
     recentlyCompleted: Experiment[];
+    evaluations: EvaluationResult[];
+    timeline: Array<{
+      id: string;
+      name: string;
+      startDate: string;
+      minDuration: string;
+      elapsedDays: number;
+      daysRemaining: number;
+      readyForEvaluation: boolean;
+    }>;
   };
   previousWeek: {
     ga4Overview: GA4Metrics["overview"] | null;
@@ -150,8 +166,25 @@ export async function generateWeeklyReport(): Promise<WeeklyReport> {
   const allExperiments = loadExperiments();
   const active = allExperiments.filter((e) => e.status === "running");
   const recentlyCompleted = allExperiments
-    .filter((e) => e.status === "completed" || e.status === "winner" || e.status === "loser")
+    .filter((e) => e.status === "completed" || e.status === "winner" || e.status === "loser" || e.status === "inconclusive")
     .slice(0, 5);
+
+  console.log("Evaluating running experiments...");
+  const evaluations = evaluateRunningExperiments(gsc, ga4);
+  const timeline = getExperimentTimeline();
+
+  if (evaluations.length > 0) {
+    console.log(`  ${evaluations.length} experiment(s) ready for evaluation!`);
+    evaluations.forEach((ev) => {
+      console.log(`    → ${ev.experimentName}: ${ev.status.toUpperCase()} (${ev.summary})`);
+    });
+  } else if (timeline.length > 0) {
+    timeline.forEach((t) => {
+      if (t.daysRemaining > 0) {
+        console.log(`  ${t.name}: ${t.daysRemaining} days remaining before evaluation`);
+      }
+    });
+  }
 
   console.log("Loading previous report for WoW comparison...");
   const prev = loadPreviousReport();
@@ -167,12 +200,27 @@ export async function generateWeeklyReport(): Promise<WeeklyReport> {
 
   const insights = generateInsights(ga4, gsc, weekOverWeek);
 
+  // Add experiment evaluation insights
+  for (const ev of evaluations) {
+    insights.push(
+      `🧪 Experiment "${ev.experimentName}" is ready for evaluation after ${ev.durationWeeks} weeks — ` +
+      `verdict: ${ev.status.toUpperCase()}. ${ev.summary}`
+    );
+  }
+  for (const t of timeline) {
+    if (t.daysRemaining > 0) {
+      insights.push(
+        `⏳ Experiment "${t.name}" has ${t.daysRemaining} days remaining (${t.elapsedDays} of ${t.minDuration} elapsed)`
+      );
+    }
+  }
+
   const report: WeeklyReport = {
     generatedAt: new Date().toISOString(),
     weekOf: format(new Date(), "yyyy-MM-dd"),
     ga4,
     gsc,
-    experiments: { active, recentlyCompleted },
+    experiments: { active, recentlyCompleted, evaluations, timeline },
     previousWeek: {
       ga4Overview: prev?.ga4.overview ?? null,
       gscOverview: prev?.gsc.overview ?? null,
@@ -190,8 +238,15 @@ export async function generateWeeklyReport(): Promise<WeeklyReport> {
 
 if (process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/^file:\/\//, ""))) {
   const report = await generateWeeklyReport();
-  const outPath = resolve(__dirname, `../reports/weekly-${report.weekOf}.json`);
-  writeFileSync(outPath, JSON.stringify(report, null, 2));
+
+  // Write JSON
+  const jsonPath = resolve(__dirname, `../reports/weekly-${report.weekOf}.json`);
+  writeFileSync(jsonPath, JSON.stringify(report, null, 2));
+
+  // Generate HTML dashboard
+  const htmlPath = resolve(__dirname, `../reports/weekly-${report.weekOf}.html`);
+  const html = generateDashboardHTML(report);
+  writeFileSync(htmlPath, html);
 
   console.log(`\n${"=".repeat(60)}`);
   console.log(`WEEKLY REPORT — ${report.weekOf}`);
@@ -226,5 +281,30 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/^file:\
   console.log(`\nActive experiments: ${report.experiments.active.length}`);
   report.experiments.active.forEach((e) => console.log(`  - ${e.name} (started ${e.startDate})`));
 
-  console.log(`\nFull report: ${outPath}`);
+  if (report.experiments.evaluations.length > 0) {
+    console.log("\n🧪 EXPERIMENT EVALUATIONS:");
+    report.experiments.evaluations.forEach((ev) => {
+      console.log(`  [${ev.status.toUpperCase()}] ${ev.experimentName}`);
+      console.log(`    ${ev.summary}`);
+      console.log(`    Recommendation: ${ev.recommendation}`);
+      console.log("    Metric changes:");
+      ev.metricChanges.forEach((m) => {
+        const arrow = m.improved ? "↑" : "↓";
+        console.log(`      ${m.metric}: ${m.baseline} → ${m.current} (${arrow} ${Math.abs(m.changePct).toFixed(1)}%)`);
+      });
+    });
+    console.log("\n  ⚠️  To apply these results, the Sunday task will ask for your approval.");
+  }
+
+  if (report.experiments.timeline.length > 0) {
+    console.log("\nExperiment timeline:");
+    report.experiments.timeline.forEach((t) => {
+      const status = t.readyForEvaluation ? "✅ READY" : `⏳ ${t.daysRemaining}d left`;
+      console.log(`  ${t.name}: ${status} (${t.elapsedDays}d / ${t.minDuration})`);
+    });
+  }
+
+  console.log(`\nOutputs:`);
+  console.log(`  JSON: ${jsonPath}`);
+  console.log(`  HTML: ${htmlPath}`);
 }

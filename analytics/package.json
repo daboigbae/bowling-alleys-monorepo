@@ -7,6 +7,8 @@
     "ga4": "tsx src/ga4.ts",
     "gsc": "tsx src/gsc.ts",
     "experiments": "tsx src/experiment-tracker.ts",
+    "dashboard": "tsx src/generate-html.ts",
+    "evaluate": "tsx src/evaluate-experiments.ts",
     "experiment:new": "tsx src/experiment-tracker.ts --new",
     "experiment:update": "tsx src/experiment-tracker.ts --update"
   },
