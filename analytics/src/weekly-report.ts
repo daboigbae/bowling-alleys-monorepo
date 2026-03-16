@@ -9,8 +9,8 @@ import {
 import { generateDashboardHTML } from "./generate-html.js";
 import { config } from "dotenv";
 import { format, subDays } from "date-fns";
-import { writeFileSync, readFileSync, existsSync } from "fs";
-import { resolve, dirname } from "path";
+import { writeFileSync, readFileSync, existsSync, mkdirSync, readdirSync } from "fs";
+import { resolve, dirname, join } from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -72,12 +72,21 @@ function computeWoW(
 function loadPreviousReport(): WeeklyReport | null {
   const reportsDir = resolve(__dirname, "../reports");
   // Look for the most recent report that isn't today
-  const today = format(new Date(), "yyyy-MM-dd");
   for (let i = 7; i <= 21; i++) {
-    const date = format(subDays(new Date(), i), "yyyy-MM-dd");
-    const path = resolve(reportsDir, `weekly-${date}.json`);
-    if (existsSync(path)) {
-      return JSON.parse(readFileSync(path, "utf-8"));
+    const d = subDays(new Date(), i);
+    const date = format(d, "yyyy-MM-dd");
+    const yyyy = format(d, "yyyy");
+    const mm = format(d, "MM");
+
+    // Check new nested path first, then flat (backwards compat)
+    const nestedPath = resolve(reportsDir, yyyy, mm, `weekly-${date}.json`);
+    const flatPath = resolve(reportsDir, `weekly-${date}.json`);
+
+    if (existsSync(nestedPath)) {
+      return JSON.parse(readFileSync(nestedPath, "utf-8"));
+    }
+    if (existsSync(flatPath)) {
+      return JSON.parse(readFileSync(flatPath, "utf-8"));
     }
   }
   return null;
@@ -233,20 +242,196 @@ export async function generateWeeklyReport(): Promise<WeeklyReport> {
 }
 
 // ---------------------------------------------------------------------------
+// Report Index Generator
+// ---------------------------------------------------------------------------
+
+function generateReportIndex(): void {
+  const reportsDir = resolve(__dirname, "../reports");
+  const reports: Array<{ date: string; path: string }> = [];
+
+  // Scan nested YYYY/MM dirs
+  const years = readdirSync(reportsDir, { withFileTypes: true })
+    .filter((d) => d.isDirectory() && /^\d{4}$/.test(d.name))
+    .map((d) => d.name)
+    .sort()
+    .reverse();
+
+  for (const year of years) {
+    const months = readdirSync(join(reportsDir, year), { withFileTypes: true })
+      .filter((d) => d.isDirectory() && /^\d{2}$/.test(d.name))
+      .map((d) => d.name)
+      .sort()
+      .reverse();
+    for (const month of months) {
+      const files = readdirSync(join(reportsDir, year, month))
+        .filter((f) => f.endsWith(".html"))
+        .sort()
+        .reverse();
+      for (const file of files) {
+        const dateMatch = file.match(/weekly-(\d{4}-\d{2}-\d{2})\.html/);
+        if (dateMatch) {
+          reports.push({ date: dateMatch[1], path: `${year}/${month}/${file}` });
+        }
+      }
+    }
+  }
+
+  // Also check for legacy flat reports
+  const flatFiles = readdirSync(reportsDir)
+    .filter((f) => f.endsWith(".html") && f !== "index.html")
+    .sort()
+    .reverse();
+  for (const file of flatFiles) {
+    const dateMatch = file.match(/weekly-(\d{4}-\d{2}-\d{2})\.html/);
+    if (dateMatch && !reports.find((r) => r.date === dateMatch[1])) {
+      reports.push({ date: dateMatch[1], path: file });
+    }
+  }
+
+  // Sort all by date descending
+  reports.sort((a, b) => b.date.localeCompare(a.date));
+
+  // Group by month for display
+  const grouped = new Map<string, typeof reports>();
+  for (const r of reports) {
+    const monthKey = r.date.slice(0, 7); // "2026-03"
+    if (!grouped.has(monthKey)) grouped.set(monthKey, []);
+    grouped.get(monthKey)!.push(r);
+  }
+
+  const monthSections = Array.from(grouped.entries())
+    .map(([monthKey, items]) => {
+      const [y, m] = monthKey.split("-");
+      const monthName = new Date(Number(y), Number(m) - 1).toLocaleString("en-US", { month: "long", year: "numeric" });
+      const links = items
+        .map((r) => {
+          const d = new Date(r.date + "T00:00:00");
+          const label = d.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric", year: "numeric" });
+          return `        <a href="${r.path}" class="report-link">
+          <span class="report-date">${label}</span>
+          <span class="report-file">${r.path}</span>
+        </a>`;
+        })
+        .join("\n");
+      return `      <div class="month-group">
+        <h3>${monthName}</h3>
+${links}
+      </div>`;
+    })
+    .join("\n");
+
+  const indexHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BowlingAlleys.io — Weekly Reports</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --border: #2d3140;
+      --text: #e4e6ef;
+      --text-dim: #8b8fa3;
+      --accent: #6366f1;
+      --accent-light: #818cf8;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem;
+    }
+    .container { max-width: 800px; margin: 0 auto; }
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    header h1 { font-size: 1.5rem; color: var(--accent-light); }
+    header p { color: var(--text-dim); font-size: 0.9rem; margin-top: 0.25rem; }
+    .month-group { margin-bottom: 2rem; }
+    .month-group h3 {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .report-link {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      text-decoration: none;
+      color: var(--text);
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .report-link:hover {
+      border-color: var(--accent);
+      background: #1e2235;
+    }
+    .report-date { font-weight: 500; }
+    .report-file { color: var(--text-dim); font-size: 0.8rem; font-family: monospace; }
+    .empty { color: var(--text-dim); font-style: italic; padding: 2rem; text-align: center; }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>BowlingAlleys.io Weekly Reports</h1>
+      <p>${reports.length} report${reports.length !== 1 ? "s" : ""} generated</p>
+    </header>
+${monthSections || '    <div class="empty">No reports yet. Run <code>npm run report</code> to generate your first one.</div>'}
+    <footer>BowlingAlleys.io Analytics Pipeline</footer>
+  </div>
+</body>
+</html>`;
+
+  writeFileSync(resolve(reportsDir, "index.html"), indexHtml);
+}
+
+// ---------------------------------------------------------------------------
 // CLI
 // ---------------------------------------------------------------------------
 
 if (process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/^file:\/\//, ""))) {
   const report = await generateWeeklyReport();
 
+  // Build nested output dir: reports/YYYY/MM/
+  const d = new Date();
+  const yyyy = format(d, "yyyy");
+  const mm = format(d, "MM");
+  const weekDir = resolve(__dirname, "../reports", yyyy, mm);
+  mkdirSync(weekDir, { recursive: true });
+
   // Write JSON
-  const jsonPath = resolve(__dirname, `../reports/weekly-${report.weekOf}.json`);
+  const jsonPath = resolve(weekDir, `weekly-${report.weekOf}.json`);
   writeFileSync(jsonPath, JSON.stringify(report, null, 2));
 
   // Generate HTML dashboard
-  const htmlPath = resolve(__dirname, `../reports/weekly-${report.weekOf}.html`);
+  const htmlPath = resolve(weekDir, `weekly-${report.weekOf}.html`);
   const html = generateDashboardHTML(report);
   writeFileSync(htmlPath, html);
+
+  // Regenerate index page
+  generateReportIndex();
 
   console.log(`\n${"=".repeat(60)}`);
   console.log(`WEEKLY REPORT — ${report.weekOf}`);
@@ -305,6 +490,7 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/^file:\
   }
 
   console.log(`\nOutputs:`);
-  console.log(`  JSON: ${jsonPath}`);
-  console.log(`  HTML: ${htmlPath}`);
+  console.log(`  JSON:  ${jsonPath}`);
+  console.log(`  HTML:  ${htmlPath}`);
+  console.log(`  Index: ${resolve(__dirname, "../reports/index.html")}`);
 }
