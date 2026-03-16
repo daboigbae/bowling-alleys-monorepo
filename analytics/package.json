@@ -1,0 +1,24 @@
+{
+  "name": "bowling-alleys-analytics",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "report": "tsx src/weekly-report.ts",
+    "ga4": "tsx src/ga4.ts",
+    "gsc": "tsx src/gsc.ts",
+    "experiments": "tsx src/experiment-tracker.ts",
+    "experiment:new": "tsx src/experiment-tracker.ts --new",
+    "experiment:update": "tsx src/experiment-tracker.ts --update"
+  },
+  "dependencies": {
+    "@google-analytics/data": "^4.8.0",
+    "googleapis": "^144.0.0",
+    "dotenv": "^17.2.3",
+    "date-fns": "^3.6.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.1",
+    "typescript": "5.6.3",
+    "@types/node": "20.16.11"
+  }
+}

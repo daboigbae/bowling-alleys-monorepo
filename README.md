@@ -152,9 +152,48 @@ bowling-alleys-monorepo/
 │   ├── routes.ts      # API route definitions
 │   ├── auth.ts        # Firebase Admin setup
 │   └── config/        # Service account credentials
+├── analytics/         # AI-powered analytics pipeline
+│   ├── src/           # GA4 + GSC data fetching & reporting
+│   ├── reports/       # Generated weekly dashboards (gitignored)
+│   └── data/          # Raw metrics & experiment tracker (gitignored)
 ├── shared/            # Shared TypeScript types (if present)
 └── attached_assets/   # Static assets (logos, images)
 ```
+
+## Analytics Pipeline
+
+An automated analytics pipeline that pulls data from **Google Analytics 4** and **Google Search Console** weekly, generates a visual dashboard, and feeds an experiment tracking system for continuous site improvement.
+
+### How It Works
+
+A scheduled task runs every Sunday evening, pulling the latest GA4 and GSC data via their APIs. The pipeline generates a JSON report with week-over-week comparisons and an HTML dashboard with charts, KPI cards, and actionable insights. Everything runs locally — no analytics data is committed to the repo.
+
+### What It Tracks
+
+- **GA4**: Sessions, users, pageviews, engagement rate, bounce rate, top pages, traffic sources, device breakdown, top cities, and custom events (venue_view, outbound_to_venue, claim_button_click, etc.)
+- **GSC**: Clicks, impressions, CTR, average position, top queries, top pages, and device/country breakdowns
+- **Auto-categorized query groups**: Near-miss queries (position 8–20, close to page 1), low-hanging fruit (page 1 but low CTR), and branded vs. non-branded splits
+
+### Experiment Tracker
+
+The pipeline includes a structured experiment system for running data-driven A/B tests and tracking their outcomes. Each experiment logs a hypothesis, affected pages, baseline/end metric snapshots, and learnings — building an institutional record of what moves the needle.
+
+### Setup
+
+1. Create a GCP service account with **GA4 Viewer** and **GSC Restricted** access
+2. Drop the JSON key into `analytics/` and configure `analytics/.env` (see `.env.example`)
+3. Install and run:
+
+```bash
+cd analytics
+npm install
+npm run report    # Full weekly report (GA4 + GSC + experiments)
+npm run ga4       # GA4 data only
+npm run gsc       # GSC data only
+npm run experiments  # View experiment status
+```
+
+Reports are generated at `analytics/reports/weekly-{date}.html` and `analytics/reports/weekly-{date}.json`.
 
 ## Development
 
@@ -169,6 +208,12 @@ bowling-alleys-monorepo/
 - `cd frontend && npm run dev` - Start Next.js dev server
 - `cd frontend && npm run build` - Build Next.js for production
 - `cd frontend && npm run start` - Start production Next.js server
+
+**Analytics:**
+- `cd analytics && npm run report` - Generate full weekly report
+- `cd analytics && npm run ga4` - Pull GA4 data
+- `cd analytics && npm run gsc` - Pull GSC data
+- `cd analytics && npm run experiments` - View experiment tracker
 
 ## External Dependencies
 
@@ -200,6 +245,7 @@ bowling-alleys-monorepo/
 
 ## Recent Changes
 
+- **Analytics Pipeline**: Added automated GA4 + GSC analytics pipeline with weekly dashboards, experiment tracking, and AI-assisted insights
 - **Migration to Next.js**: Migrated from Vite/React to Next.js App Router for improved SEO and server-side rendering
 - **API Decoupling**: Separated Express API server from frontend for better scalability
 - **Firestore Migration**: Replaced direct Firestore operations with REST API calls

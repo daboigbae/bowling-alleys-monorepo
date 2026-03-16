@@ -1,0 +1,14 @@
+# Credentials — NEVER commit these
+.env
+service-account.json
+bowling-alleys-io-*.json
+*.json.key
+
+# Reports and data — keep local only (contains traffic/SEO data)
+reports/
+data/ga4-*.json
+data/gsc-*.json
+data/experiments.json
+
+node_modules/
+dist/
