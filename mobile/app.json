@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "BAIO",
+    "slug": "baio-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "baio",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "bundleIdentifier": "io.bowlingalleys.mobile",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "io.bowlingalleys.mobile"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font"
+    ]
+  }
+}
