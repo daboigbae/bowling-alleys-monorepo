@@ -1,6 +1,7 @@
 import { View, Text } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';                                                                                                                                       
+import { THEME } from '../../src/constants/theme'   
 
 export default function ExploreScreen() {
   const insets = useSafeAreaInsets();
