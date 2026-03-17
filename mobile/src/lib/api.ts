@@ -9,7 +9,7 @@ import type {
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? '';
 
-async function request<TBody, TResponse>(
+export async function request<TBody, TResponse>(
   method: 'GET' | 'POST',
   path: string,
   body?: TBody,

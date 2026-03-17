@@ -12,11 +12,22 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "io.bowlingalleys.mobile"
+      "package": "io.bowlingalleys.mobile",
+      "config": {
+        "googleMaps": {
+          "apiKey": "ADD_YOUR_GOOGLE_MAPS_API_KEY"
+        }
+      }
     },
     "plugins": [
       "expo-router",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "We use your location to find bowling alleys near you."
+        }
+      ]
     ]
   }
 }
