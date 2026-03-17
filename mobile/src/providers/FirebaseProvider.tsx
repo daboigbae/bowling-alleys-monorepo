@@ -1,12 +1,11 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { type FirebaseApp } from 'firebase/app';
 import {
-  getAuth,
   onAuthStateChanged,
   signOut as firebaseSignOut,
   type User,
 } from 'firebase/auth';
-import { firebaseApp } from '../lib/firebase';
+import { firebaseApp, firebaseAuth } from '../lib/firebase';
 import { AuthContext } from '../contexts/AuthContext';
 
 interface FirebaseContextValue {
@@ -26,8 +25,7 @@ export function FirebaseProvider({ children }: FirebaseProviderProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const auth = getAuth(firebaseApp);
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(firebaseAuth, (firebaseUser) => {
       setUser(firebaseUser);
       setIsLoading(false);
     });
@@ -35,8 +33,7 @@ export function FirebaseProvider({ children }: FirebaseProviderProps) {
   }, []);
 
   async function signOut(): Promise<void> {
-    const auth = getAuth(firebaseApp);
-    await firebaseSignOut(auth);
+    await firebaseSignOut(firebaseAuth);
   }
 
   return (

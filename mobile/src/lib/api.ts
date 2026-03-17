@@ -1,5 +1,4 @@
-import { getAuth } from 'firebase/auth';
-import { firebaseApp } from './firebase';
+import { firebaseAuth } from './firebase';
 import type {
   SendCodeRequest,
   SendCodeResponse,
@@ -10,7 +9,7 @@ import type {
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? '';
 
 export async function request<TBody, TResponse>(
-  method: 'GET' | 'POST',
+  method: 'GET' | 'POST' | 'DELETE',
   path: string,
   body?: TBody,
   authenticated = false,
@@ -20,8 +19,7 @@ export async function request<TBody, TResponse>(
   };
 
   if (authenticated) {
-    const auth = getAuth(firebaseApp);
-    const currentUser = auth.currentUser;
+    const currentUser = firebaseAuth.currentUser;
     if (currentUser) {
       const token = await currentUser.getIdToken();
       headers['Authorization'] = `Bearer ${token}`;
@@ -33,6 +31,14 @@ export async function request<TBody, TResponse>(
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
+
+  // 204 No Content — body is empty, skip JSON parse
+  if (response.status === 204) {
+    if (!response.ok) {
+      throw new Error(`Request failed with status ${response.status}`);
+    }
+    return null as TResponse;
+  }
 
   const data: unknown = await response.json();
 
