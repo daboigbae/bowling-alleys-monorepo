@@ -1,6 +1,13 @@
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { type FirebaseApp } from 'firebase/app';
+import {
+  getAuth,
+  onAuthStateChanged,
+  signOut as firebaseSignOut,
+  type User,
+} from 'firebase/auth';
 import { firebaseApp } from '../lib/firebase';
+import { AuthContext } from '../contexts/AuthContext';
 
 interface FirebaseContextValue {
   app: FirebaseApp;
@@ -13,9 +20,30 @@ interface FirebaseProviderProps {
 }
 
 export function FirebaseProvider({ children }: FirebaseProviderProps) {
+  const [user, setUser] = useState<User | null>(null);
+  // isLoading starts true — remains true until onAuthStateChanged fires at least once,
+  // preventing a flash of unauthenticated UI on launch when the session may still be restoring.
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const auth = getAuth(firebaseApp);
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+      setIsLoading(false);
+    });
+    return unsubscribe;
+  }, []);
+
+  async function signOut(): Promise<void> {
+    const auth = getAuth(firebaseApp);
+    await firebaseSignOut(auth);
+  }
+
   return (
     <FirebaseContext.Provider value={{ app: firebaseApp }}>
-      {children}
+      <AuthContext.Provider value={{ user, isLoading, signOut }}>
+        {children}
+      </AuthContext.Provider>
     </FirebaseContext.Provider>
   );
 }
