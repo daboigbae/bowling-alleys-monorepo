@@ -59,7 +59,7 @@ export function VenueInfoSection({ venue }: VenueInfoSectionProps) {
       {venue.website !== undefined && venue.website.length > 0 && (
         <View className="flex-row items-center mb-3">
           <Ionicons name="globe-outline" size={18} color="#6D6774" />
-          <Text className="text-base text-blue-600 ml-2" numberOfLines={1}>
+          <Text className="text-base text-[#d42330] ml-2" numberOfLines={1}>
             {venue.website}
           </Text>
         </View>

@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -86,11 +87,19 @@ export default function LoginScreen() {
           accessibilityLabel="Cancel sign in"
           onPress={() => router.back()}
         >
-          <Text className="text-base text-blue-600">Cancel</Text>
+          <Text className="text-base text-[#d42330]">Cancel</Text>
         </Pressable>
 
         {step === 'email' ? (
           <View>
+            {/* BAIO logo mark — 80×80pt, centered, §3: non-interactive so no touch target required */}
+            <Image
+              source={require('../../assets/images/icon.png')}
+              // Exception: fixed pixel dimensions for logo image — required for consistent sizing
+              style={{ width: 80, height: 80 }}
+              resizeMode="contain"
+              className="self-center mb-6"
+            />
             <Text className="text-2xl font-bold text-slate-900 mb-2">Sign In</Text>
             <Text className="text-base text-slate-500 mb-8">
               Enter your email to receive a sign-in code.
@@ -119,7 +128,7 @@ export default function LoginScreen() {
             )}
 
             <Pressable
-              className="bg-blue-600 items-center justify-center rounded-xl mt-6 h-12"
+              className="bg-[#d42330] items-center justify-center rounded-xl mt-6 h-12"
               style={({ pressed }) => ({
                 opacity: pressed || emailSendDisabled ? 0.6 : 1,
               })}
@@ -174,14 +183,14 @@ export default function LoginScreen() {
                       setError(null);
                     }}
                   >
-                    <Text className="text-sm font-medium text-blue-600">Resend</Text>
+                    <Text className="text-sm font-medium text-[#d42330]">Resend</Text>
                   </Pressable>
                 )}
               </View>
             )}
 
             <Pressable
-              className="bg-blue-600 items-center justify-center rounded-xl mt-6 h-12"
+              className="bg-[#d42330] items-center justify-center rounded-xl mt-6 h-12"
               style={({ pressed }) => ({
                 opacity: pressed || codeVerifyDisabled ? 0.6 : 1,
               })}
@@ -209,7 +218,7 @@ export default function LoginScreen() {
                 setError(null);
               }}
             >
-              <Text className="text-sm text-blue-600">← Back to email</Text>
+              <Text className="text-sm text-[#d42330]">← Back to email</Text>
             </Pressable>
           </View>
         )}

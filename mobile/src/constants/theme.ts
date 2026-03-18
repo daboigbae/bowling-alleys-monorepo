@@ -19,9 +19,9 @@ export const THEME = {
   },
 
   colors: {
-    // --- Primary (brand blue / main CTA) ---
-    // hsl(221.2 83.2% 53.3%)
-    primary: '#2563EB',
+    // --- Primary (brand red / main CTA) ---
+    // #d42330
+    primary: '#d42330',
     // hsl(210 40% 98%)
     primaryForeground: '#F8FAFC',
 
@@ -66,7 +66,7 @@ export const THEME = {
   },
 
   tabBar: {
-    activeTint: '#2563EB',
+    activeTint: '#d42330',
     inactiveTint: '#94A3B8',
   },
 

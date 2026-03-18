@@ -39,7 +39,7 @@ export function ProfileHeader({ displayName, email, photoURL, onEditPress }: Pro
         />
       ) : (
         <View
-          className="rounded-full bg-blue-600 items-center justify-center"
+          className="rounded-full bg-[#d42330] items-center justify-center"
           style={{ width: 72, height: 72 }}
         >
           <Text className="text-2xl font-bold text-white">{initials}</Text>

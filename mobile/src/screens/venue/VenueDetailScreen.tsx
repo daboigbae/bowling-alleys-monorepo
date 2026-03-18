@@ -93,7 +93,7 @@ export default function VenueDetailScreen({ venueId }: VenueDetailScreenProps) {
           We couldn't load this venue. Please try again.
         </Text>
         <Pressable
-          className="bg-blue-600 px-6 h-12 items-center justify-center rounded-xl"
+          className="bg-[#d42330] px-6 h-12 items-center justify-center rounded-xl"
           style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
           accessibilityRole="button"
           accessibilityLabel="Retry"
@@ -109,7 +109,7 @@ export default function VenueDetailScreen({ venueId }: VenueDetailScreenProps) {
     return (
       <View className="flex-1 bg-white items-center justify-center">
         <StatusBar style="dark" />
-        <ActivityIndicator size="large" color="#2563EB" />
+        <ActivityIndicator size="large" color="#d42330" />
       </View>
     );
   }
@@ -169,7 +169,7 @@ export default function VenueDetailScreen({ venueId }: VenueDetailScreenProps) {
           }}
         >
           <Pressable
-            className="w-14 h-14 rounded-full bg-blue-600 items-center justify-center"
+            className="w-14 h-14 rounded-full bg-[#d42330] items-center justify-center"
             style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
             accessibilityRole="button"
             accessibilityLabel="Write a review"

@@ -36,7 +36,7 @@ export function ReviewsList({
       ListFooterComponent={
         isLoading ? (
           <View className="items-center py-6">
-            <ActivityIndicator size="small" color="#2563EB" />
+            <ActivityIndicator size="small" color="#d42330" />
           </View>
         ) : isError ? (
           <View className="px-5 py-4">

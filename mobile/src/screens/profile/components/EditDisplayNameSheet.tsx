@@ -116,7 +116,7 @@ export function EditDisplayNameSheet({
               </Pressable>
 
               <Pressable
-                className="flex-1 h-12 rounded-xl bg-blue-600 items-center justify-center"
+                className="flex-1 h-12 rounded-xl bg-[#d42330] items-center justify-center"
                 style={({ pressed }) => ({ opacity: pressed ? 0.7 : (canSave ? 1 : 0.4) })}
                 accessibilityRole="button"
                 accessibilityLabel="Save display name"

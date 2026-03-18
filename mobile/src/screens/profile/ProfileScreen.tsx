@@ -96,7 +96,7 @@ export default function ProfileScreen() {
             Sign in to save your favorite alleys and write reviews.
           </Text>
           <Pressable
-            className="w-full h-12 rounded-xl bg-blue-600 items-center justify-center"
+            className="w-full h-12 rounded-xl bg-[#d42330] items-center justify-center"
             style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
             accessibilityRole="button"
             accessibilityLabel="Sign in"

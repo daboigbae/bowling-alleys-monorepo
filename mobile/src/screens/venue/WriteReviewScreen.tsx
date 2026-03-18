@@ -100,14 +100,14 @@ export default function WriteReviewScreen({ venueId }: WriteReviewScreenProps) {
           accessibilityRole="button"
           accessibilityLabel="Submit review"
           accessibilityState={{ disabled: !canSubmit }}
-          className="px-4 py-2 rounded-lg bg-blue-600"
+          className="px-4 py-2 rounded-lg bg-[#d42330]"
         >
           {isSubmitting ? (
             <ActivityIndicator size="small" color="#FFFFFF" />
           ) : (
             <Text
               className="text-sm font-semibold"
-              style={{ color: canSubmit ? '#FFFFFF' : '#93C5FD' }}
+              style={{ color: canSubmit ? '#FFFFFF' : '#f4a0a7' }}
             >
               Submit
             </Text>

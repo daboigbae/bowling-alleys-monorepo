@@ -119,7 +119,7 @@ export const ProfileReviewCard = memo(function ProfileReviewCard({
               accessibilityLabel={expanded ? 'Show less' : 'Show more'}
               onPress={() => setExpanded((prev) => !prev)}
             >
-              <Text className="text-xs font-medium text-blue-600">
+              <Text className="text-xs font-medium text-[#d42330]">
                 {expanded ? 'Show less' : 'Show more'}
               </Text>
             </Pressable>

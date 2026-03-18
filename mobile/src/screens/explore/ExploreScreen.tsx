@@ -103,7 +103,7 @@ function VenueContent({ coords, viewMode }: VenueContentProps): JSX.Element {
           {error?.message ?? 'An unexpected error occurred.'}
         </Text>
         <Pressable
-          className="bg-blue-600 px-6 h-12 items-center justify-center rounded-xl"
+          className="bg-[#d42330] px-6 h-12 items-center justify-center rounded-xl"
           style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
           accessibilityRole="button"
           accessibilityLabel="Retry"
@@ -146,7 +146,7 @@ function VenueContent({ coords, viewMode }: VenueContentProps): JSX.Element {
         <RefreshControl
           refreshing={isRefreshing}
           onRefresh={() => void handleRefresh()}
-          tintColor="#2563EB"
+          tintColor="#d42330"
         />
       }
     />

@@ -28,12 +28,8 @@ export function ExploreHeader({ viewMode, onViewModeChange }: ExploreHeaderProps
         {/* Map / List toggle */}
         <View className="flex-row bg-slate-100 rounded-xl overflow-hidden">
           <Pressable
-            className="w-11 h-11 items-center justify-center"
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.7 : 1,
-              backgroundColor: viewMode === 'list' ? '#2563EB' : 'transparent',
-              borderRadius: 12,
-            })}
+            className={`w-11 h-11 items-center justify-center rounded-xl${viewMode === 'list' ? ' bg-[#d42330]' : ''}`}
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
             accessibilityRole="button"
             accessibilityLabel="List view"
             accessibilityState={{ selected: viewMode === 'list' }}
@@ -47,12 +43,8 @@ export function ExploreHeader({ viewMode, onViewModeChange }: ExploreHeaderProps
           </Pressable>
 
           <Pressable
-            className="w-11 h-11 items-center justify-center"
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.7 : 1,
-              backgroundColor: viewMode === 'map' ? '#2563EB' : 'transparent',
-              borderRadius: 12,
-            })}
+            className={`w-11 h-11 items-center justify-center rounded-xl${viewMode === 'map' ? ' bg-[#d42330]' : ''}`}
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
             accessibilityRole="button"
             accessibilityLabel="Map view"
             accessibilityState={{ selected: viewMode === 'map' }}

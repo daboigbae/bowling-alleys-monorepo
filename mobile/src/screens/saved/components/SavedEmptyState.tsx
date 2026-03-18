@@ -25,7 +25,7 @@ export function SavedEmptyState({ variant }: SavedEmptyStateProps) {
           Sign in to save your favorite alleys and access them anytime.
         </Text>
         <Pressable
-          className="w-full h-12 rounded-xl bg-blue-600 items-center justify-center"
+          className="w-full h-12 rounded-xl bg-[#d42330] items-center justify-center"
           style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
           accessibilityRole="button"
           accessibilityLabel="Sign in"

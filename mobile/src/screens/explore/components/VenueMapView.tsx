@@ -32,8 +32,16 @@ export function VenueMapView({ venues, userLocation }: VenueMapViewProps) {
         if (lat === undefined || lng === undefined) return null;
 
         return (
-          <Marker key={venue.id} coordinate={{ latitude: lat, longitude: lng }}>
-            <Callout onPress={() => router.push(`/venue/${venue.id}`)}>
+          <Marker
+            key={venue.id}
+            coordinate={{ latitude: lat, longitude: lng }}
+            accessibilityLabel={venue.name}
+          >
+            <Callout
+              onPress={() => router.push(`/venue/${venue.id}`)}
+              accessibilityRole="button"
+              accessibilityLabel={`Go to ${venue.name}`}
+            >
               <View style={{ paddingHorizontal: 12, paddingVertical: 8, maxWidth: 200 }}>
                 <Text className="text-sm font-medium text-slate-900">{venue.name}</Text>
                 {(venue.city !== undefined || venue.state !== undefined) && (

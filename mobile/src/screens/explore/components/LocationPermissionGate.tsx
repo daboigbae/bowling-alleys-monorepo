@@ -101,7 +101,7 @@ export function LocationPermissionGate({ children }: LocationPermissionGateProps
           Enable location access in Settings to find bowling alleys near you.
         </Text>
         <Pressable
-          className="bg-blue-600 px-6 h-12 items-center justify-center rounded-xl"
+          className="bg-[#d42330] px-6 h-12 items-center justify-center rounded-xl"
           style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
           accessibilityRole="button"
           accessibilityLabel="Open Settings"
@@ -123,7 +123,7 @@ export function LocationPermissionGate({ children }: LocationPermissionGateProps
         </Text>
         <Text className="text-base text-slate-500 text-center mb-6">{locationError}</Text>
         <Pressable
-          className="bg-blue-600 px-6 h-12 items-center justify-center rounded-xl"
+          className="bg-[#d42330] px-6 h-12 items-center justify-center rounded-xl"
           style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
           accessibilityRole="button"
           accessibilityLabel="Retry"
@@ -143,7 +143,7 @@ export function LocationPermissionGate({ children }: LocationPermissionGateProps
 
   return (
     <View className="flex-1 items-center justify-center">
-      <ActivityIndicator size="large" color="#2563EB" />
+      <ActivityIndicator size="large" color="#d42330" />
       <Text className="text-base text-slate-500 mt-3">
         {status === 'locating' ? 'Getting your location…' : 'Requesting location access…'}
       </Text>
