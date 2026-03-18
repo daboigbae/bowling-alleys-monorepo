@@ -7,6 +7,12 @@
     "scheme": "baio",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "icon": "./assets/images/icon.png",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#E7E1D4"
+    },
     "ios": {
       "bundleIdentifier": "io.bowlingalleys.mobile",
       "supportsTablet": true
