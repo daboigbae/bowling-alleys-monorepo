@@ -1,4 +1,5 @@
 import { View, Text, TextInput } from 'react-native';
+import { THEME } from '../../../constants/theme';
 
 const MIN_CHARS = 10;
 const MAX_CHARS = 500;
@@ -16,15 +17,19 @@ interface ReviewTextInputProps {
 export function ReviewTextInput({ value, onChange }: ReviewTextInputProps) {
   const count = value.length;
   const countColor =
-    count > MAX_CHARS ? '#EF4444' : count < MIN_CHARS && count > 0 ? '#F59E0B' : '#94A3B8';
+    count > MAX_CHARS
+      ? THEME.colors.error
+      : count < MIN_CHARS && count > 0
+      ? THEME.colors.warning
+      : THEME.colors.placeholder;
 
   return (
     <View>
       <TextInput
-        className="border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 bg-white"
+        className="border border-border rounded-xl px-4 py-3 text-base text-foreground bg-card"
         style={{ minHeight: 120, textAlignVertical: 'top' }}
         placeholder="Share your experience at this alley…"
-        placeholderTextColor="#94A3B8"
+        placeholderTextColor={THEME.colors.placeholder}
         value={value}
         onChangeText={(text) => onChange(text.slice(0, MAX_CHARS))}
         multiline

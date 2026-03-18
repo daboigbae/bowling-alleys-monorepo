@@ -2,6 +2,7 @@ import { View, Image, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { THEME } from '../../../constants/theme';
 
 const HERO_HEIGHT = 240;
 
@@ -35,7 +36,7 @@ export function VenueHeroHeader({
 
   return (
     <View style={{ height: HERO_HEIGHT }}>
-      {/* Hero image or gray placeholder — explicit dimensions prevent layout shift (§9) */}
+      {/* Hero image or shimmer placeholder — explicit dimensions prevent layout shift (§9) */}
       {imageUri !== null ? (
         <Image
           source={{ uri: imageUri }}
@@ -43,7 +44,7 @@ export function VenueHeroHeader({
           resizeMode="cover"
         />
       ) : (
-        <View style={{ width: '100%', height: HERO_HEIGHT }} className="bg-slate-300" />
+        <View style={{ width: '100%', height: HERO_HEIGHT }} className="bg-shimmer" />
       )}
 
       {/* Back button wrapper — positions the button absolutely with dynamic inset */}
@@ -60,7 +61,7 @@ export function VenueHeroHeader({
             className="w-11 h-11 items-center justify-center rounded-full"
             style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}
           >
-            <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
+            <Ionicons name="chevron-back" size={22} color={THEME.colors.card} />
           </View>
         </Pressable>
       </View>
@@ -87,7 +88,7 @@ export function VenueHeroHeader({
               <Ionicons
                 name={isSaved ? 'bookmark' : 'bookmark-outline'}
                 size={22}
-                color="#FFFFFF"
+                color={THEME.colors.card}
               />
             </View>
           </Pressable>

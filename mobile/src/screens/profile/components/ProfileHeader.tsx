@@ -1,5 +1,6 @@
 import { View, Text, Image, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { THEME } from '../../../constants/theme';
 
 interface ProfileHeaderProps {
   displayName: string;
@@ -32,17 +33,17 @@ export function ProfileHeader({ displayName, email, photoURL, onEditPress }: Pro
       {photoURL ? (
         <Image
           source={{ uri: photoURL }}
-          className="rounded-full bg-slate-100"
+          className="rounded-full bg-muted"
           // Exception: fixed pixel dimensions for avatar — required for consistent circle (§9)
           style={{ width: 72, height: 72 }}
           resizeMode="cover"
         />
       ) : (
         <View
-          className="rounded-full bg-[#d42330] items-center justify-center"
+          className="rounded-full bg-primary items-center justify-center"
           style={{ width: 72, height: 72 }}
         >
-          <Text className="text-2xl font-bold text-white">{initials}</Text>
+          <Text className="text-2xl font-bold text-primary-foreground">{initials}</Text>
         </View>
       )}
 
@@ -54,15 +55,15 @@ export function ProfileHeader({ displayName, email, photoURL, onEditPress }: Pro
         accessibilityLabel="Edit display name"
         onPress={onEditPress}
       >
-        <Text className="text-xl font-semibold text-slate-900 mr-1" numberOfLines={1}>
+        <Text className="text-xl font-semibold text-foreground mr-1" numberOfLines={1}>
           {displayName || email}
         </Text>
-        <Ionicons name="pencil-outline" size={16} color="#94A3B8" />
+        <Ionicons name="pencil-outline" size={16} color={THEME.colors.placeholder} />
       </Pressable>
 
       {/* Email */}
       {displayName ? (
-        <Text className="text-sm text-slate-400" numberOfLines={1}>
+        <Text className="text-sm text-muted-foreground" numberOfLines={1}>
           {email}
         </Text>
       ) : null}

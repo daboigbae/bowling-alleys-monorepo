@@ -66,7 +66,7 @@ export const SavedVenueCard = memo(function SavedVenueCard({
   return (
     <Swipeable ref={swipeableRef} renderRightActions={renderRightActions} friction={2}>
       <Pressable
-        className="flex-row items-center px-4 py-3 bg-white"
+        className="flex-row items-center px-4 py-3 bg-card"
         style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
         accessibilityRole="button"
         accessibilityLabel={`View ${venue.name}`}
@@ -76,13 +76,13 @@ export const SavedVenueCard = memo(function SavedVenueCard({
         {imageUri ? (
           <Image
             source={{ uri: imageUri }}
-            className="rounded-lg bg-slate-100"
+            className="rounded-lg bg-muted"
             style={{ width: 64, height: 64 }}
             resizeMode="cover"
           />
         ) : (
           <View
-            className="rounded-lg bg-slate-100 items-center justify-center"
+            className="rounded-lg bg-muted items-center justify-center"
             style={{ width: 64, height: 64 }}
           >
             <Text className="text-2xl">🎳</Text>
@@ -91,23 +91,23 @@ export const SavedVenueCard = memo(function SavedVenueCard({
 
         {/* Text content */}
         <View className="flex-1 ml-3">
-          <Text className="text-base font-semibold text-slate-900" numberOfLines={1}>
+          <Text className="text-base font-semibold text-foreground" numberOfLines={1}>
             {venue.name}
           </Text>
           {subtitle.length > 0 && (
-            <Text className="text-sm text-slate-500 mt-0.5" numberOfLines={1}>
+            <Text className="text-sm text-muted-foreground mt-0.5" numberOfLines={1}>
               {subtitle}
             </Text>
           )}
           {venue.avgRating != null && venue.avgRating > 0 && (
-            <Text className="text-xs text-slate-400 mt-0.5">
+            <Text className="text-xs text-muted-foreground mt-0.5">
               {'★ ' + venue.avgRating.toFixed(1)}
             </Text>
           )}
         </View>
 
         {/* Chevron — visual affordance */}
-        <Text className="text-slate-300 text-lg ml-2">›</Text>
+        <Text className="text-border text-lg ml-2">›</Text>
       </Pressable>
     </Swipeable>
   );

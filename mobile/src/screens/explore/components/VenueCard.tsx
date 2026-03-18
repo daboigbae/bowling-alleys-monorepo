@@ -1,5 +1,6 @@
 import { View, Text, Pressable, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { THEME } from '../../../constants/theme';
 import type { Venue } from '../../../types/venue';
 
 const CARD_IMAGE_HEIGHT = 160;
@@ -24,7 +25,7 @@ export function VenueCard({ venue, onPress }: VenueCardProps) {
   return (
     // Outer wrapper: shadow lives here so overflow:hidden on inner doesn't clip it
     <View
-      className="rounded-xl bg-white mb-4"
+      className="rounded-xl bg-card mb-4"
       style={{
         shadowColor: '#000000',
         shadowOffset: { width: 0, height: 1 },
@@ -50,7 +51,7 @@ export function VenueCard({ venue, onPress }: VenueCardProps) {
             />
           ) : (
             // Placeholder block for missing/failed image — §9
-            <View style={{ width: '100%', height: CARD_IMAGE_HEIGHT }} className="bg-slate-200" />
+            <View style={{ width: '100%', height: CARD_IMAGE_HEIGHT }} className="bg-shimmer" />
           )}
 
           {/* Distance badge — top-right overlay */}
@@ -65,21 +66,21 @@ export function VenueCard({ venue, onPress }: VenueCardProps) {
 
         {/* Card body */}
         <View className="p-4">
-          <Text className="text-base font-semibold text-slate-900" numberOfLines={1}>
+          <Text className="text-base font-semibold text-foreground" numberOfLines={1}>
             {venue.name}
           </Text>
 
-          <Text className="text-sm text-slate-500 mt-0.5" numberOfLines={1}>
+          <Text className="text-sm text-muted-foreground mt-0.5" numberOfLines={1}>
             {[venue.city, venue.state].filter(Boolean).join(', ')}
           </Text>
 
           {displayRating !== null && (
             <View className="flex-row items-center mt-2">
-              <Ionicons name="star" size={14} color="#F59E0B" />
-              <Text className="text-sm text-slate-700 ml-1 font-medium">
+              <Ionicons name="star" size={14} color={THEME.colors.warning} />
+              <Text className="text-sm text-foreground ml-1 font-medium">
                 {displayRating.toFixed(1)}
               </Text>
-              <Text className="text-sm text-slate-400 ml-1">({reviewCount})</Text>
+              <Text className="text-sm text-muted-foreground ml-1">({reviewCount})</Text>
             </View>
           )}
         </View>

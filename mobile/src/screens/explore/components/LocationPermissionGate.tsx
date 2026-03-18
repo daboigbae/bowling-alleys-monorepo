@@ -2,6 +2,7 @@ import { useState, useEffect, type ReactNode } from 'react';
 import { View, Text, Pressable, ActivityIndicator, Linking } from 'react-native';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
+import { THEME } from '../../../constants/theme';
 
 export interface Coords {
   lat: number;
@@ -93,21 +94,21 @@ export function LocationPermissionGate({ children }: LocationPermissionGateProps
   if (status === 'denied') {
     return (
       <View className="flex-1 items-center justify-center px-5">
-        <Ionicons name="location-outline" size={48} color="#94A3B8" />
-        <Text className="text-xl font-semibold text-slate-900 mt-4 text-center">
+        <Ionicons name="location-outline" size={48} color={THEME.colors.placeholder} />
+        <Text className="text-xl font-semibold text-foreground mt-4 text-center">
           Location Access Needed
         </Text>
-        <Text className="text-base text-slate-500 mt-2 mb-6 text-center">
+        <Text className="text-base text-muted-foreground mt-2 mb-6 text-center">
           Enable location access in Settings to find bowling alleys near you.
         </Text>
         <Pressable
-          className="bg-[#d42330] px-6 h-12 items-center justify-center rounded-xl"
+          className="bg-primary px-6 h-12 items-center justify-center rounded-xl"
           style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
           accessibilityRole="button"
           accessibilityLabel="Open Settings"
           onPress={() => void Linking.openSettings()}
         >
-          <Text className="text-base font-semibold text-white">Open Settings</Text>
+          <Text className="text-base font-semibold text-primary-foreground">Open Settings</Text>
         </Pressable>
       </View>
     );
@@ -118,12 +119,12 @@ export function LocationPermissionGate({ children }: LocationPermissionGateProps
   if (status === 'error') {
     return (
       <View className="flex-1 items-center justify-center px-5">
-        <Text className="text-xl font-semibold text-slate-900 text-center mb-2">
+        <Text className="text-xl font-semibold text-foreground text-center mb-2">
           Something went wrong
         </Text>
-        <Text className="text-base text-slate-500 text-center mb-6">{locationError}</Text>
+        <Text className="text-base text-muted-foreground text-center mb-6">{locationError}</Text>
         <Pressable
-          className="bg-[#d42330] px-6 h-12 items-center justify-center rounded-xl"
+          className="bg-primary px-6 h-12 items-center justify-center rounded-xl"
           style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
           accessibilityRole="button"
           accessibilityLabel="Retry"
@@ -133,7 +134,7 @@ export function LocationPermissionGate({ children }: LocationPermissionGateProps
             void checkAndRequestPermission();
           }}
         >
-          <Text className="text-base font-semibold text-white">Retry</Text>
+          <Text className="text-base font-semibold text-primary-foreground">Retry</Text>
         </Pressable>
       </View>
     );
@@ -143,8 +144,8 @@ export function LocationPermissionGate({ children }: LocationPermissionGateProps
 
   return (
     <View className="flex-1 items-center justify-center">
-      <ActivityIndicator size="large" color="#d42330" />
-      <Text className="text-base text-slate-500 mt-3">
+      <ActivityIndicator size="large" color={THEME.colors.primary} />
+      <Text className="text-base text-muted-foreground mt-3">
         {status === 'locating' ? 'Getting your location…' : 'Requesting location access…'}
       </Text>
     </View>

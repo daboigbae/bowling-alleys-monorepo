@@ -1,5 +1,6 @@
 import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { THEME } from '../../../constants/theme';
 
 type ViewMode = 'list' | 'map';
 
@@ -16,19 +17,19 @@ interface ExploreHeaderProps {
 export function ExploreHeader({ viewMode, onViewModeChange }: ExploreHeaderProps) {
   return (
     <View className="px-5 pb-3">
-      <Text className="text-2xl font-bold text-slate-900 mb-3">Explore</Text>
+      <Text className="text-2xl font-bold text-foreground mb-3">Explore</Text>
 
       <View className="flex-row items-center" style={{ gap: 12 }}>
         {/* Search placeholder — non-interactive */}
-        <View className="flex-1 flex-row items-center bg-slate-100 rounded-xl h-11 px-3">
-          <Ionicons name="search-outline" size={18} color="#6D6774" />
-          <Text className="ml-2 text-base text-slate-400">Search bowling alleys…</Text>
+        <View className="flex-1 flex-row items-center bg-muted rounded-xl h-11 px-3">
+          <Ionicons name="search-outline" size={18} color={THEME.colors.mutedForeground} />
+          <Text className="ml-2 text-base text-muted-foreground">Search bowling alleys…</Text>
         </View>
 
         {/* Map / List toggle */}
-        <View className="flex-row bg-slate-100 rounded-xl overflow-hidden">
+        <View className="flex-row bg-muted rounded-xl overflow-hidden">
           <Pressable
-            className={`w-11 h-11 items-center justify-center rounded-xl${viewMode === 'list' ? ' bg-[#d42330]' : ''}`}
+            className={`w-11 h-11 items-center justify-center rounded-xl${viewMode === 'list' ? ' bg-primary' : ''}`}
             style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
             accessibilityRole="button"
             accessibilityLabel="List view"
@@ -38,12 +39,12 @@ export function ExploreHeader({ viewMode, onViewModeChange }: ExploreHeaderProps
             <Ionicons
               name="list-outline"
               size={20}
-              color={viewMode === 'list' ? '#FFFFFF' : '#6D6774'}
+              color={viewMode === 'list' ? THEME.colors.card : THEME.colors.mutedForeground}
             />
           </Pressable>
 
           <Pressable
-            className={`w-11 h-11 items-center justify-center rounded-xl${viewMode === 'map' ? ' bg-[#d42330]' : ''}`}
+            className={`w-11 h-11 items-center justify-center rounded-xl${viewMode === 'map' ? ' bg-primary' : ''}`}
             style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
             accessibilityRole="button"
             accessibilityLabel="Map view"
@@ -53,7 +54,7 @@ export function ExploreHeader({ viewMode, onViewModeChange }: ExploreHeaderProps
             <Ionicons
               name="map-outline"
               size={20}
-              color={viewMode === 'map' ? '#FFFFFF' : '#6D6774'}
+              color={viewMode === 'map' ? THEME.colors.card : THEME.colors.mutedForeground}
             />
           </Pressable>
         </View>

@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { THEME } from '../../../constants/theme';
 
 interface EditDisplayNameSheetProps {
   visible: boolean;
@@ -81,23 +82,23 @@ export function EditDisplayNameSheet({
         style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}
       >
         <Animated.View
-          className="bg-white rounded-t-2xl"
+          className="bg-card rounded-t-2xl"
           style={{ transform: [{ translateY: slideAnim }], paddingBottom: insets.bottom + 16 }}
         >
           {/* Handle indicator — §5: 4pt tall, 32pt wide, rounded-full, 8pt from top */}
           <View className="items-center pt-2 pb-4">
-            <View className="bg-slate-200 rounded-full" style={{ width: 32, height: 4 }} />
+            <View className="bg-shimmer rounded-full" style={{ width: 32, height: 4 }} />
           </View>
 
           <View className="px-5">
-            <Text className="text-lg font-semibold text-slate-900 mb-4">Edit Display Name</Text>
+            <Text className="text-lg font-semibold text-foreground mb-4">Edit Display Name</Text>
 
             <TextInput
-              className="border border-slate-200 rounded-xl px-4 h-12 text-base text-slate-900 bg-white mb-4"
+              className="border border-border rounded-xl px-4 h-12 text-base text-foreground bg-card mb-4"
               value={name}
               onChangeText={setName}
               placeholder="Your name"
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor={THEME.colors.placeholder}
               autoFocus
               returnKeyType="done"
               onSubmitEditing={() => { if (canSave) onSave(name.trim()); }}
@@ -106,17 +107,17 @@ export function EditDisplayNameSheet({
 
             <View className="flex-row gap-3">
               <Pressable
-                className="flex-1 h-12 rounded-xl border border-slate-200 items-center justify-center"
+                className="flex-1 h-12 rounded-xl border border-border items-center justify-center"
                 style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
                 accessibilityRole="button"
                 accessibilityLabel="Cancel"
                 onPress={onClose}
               >
-                <Text className="text-base font-medium text-slate-600">Cancel</Text>
+                <Text className="text-base font-medium text-muted-foreground">Cancel</Text>
               </Pressable>
 
               <Pressable
-                className="flex-1 h-12 rounded-xl bg-[#d42330] items-center justify-center"
+                className="flex-1 h-12 rounded-xl bg-primary items-center justify-center"
                 style={({ pressed }) => ({ opacity: pressed ? 0.7 : (canSave ? 1 : 0.4) })}
                 accessibilityRole="button"
                 accessibilityLabel="Save display name"
@@ -125,9 +126,9 @@ export function EditDisplayNameSheet({
                 onPress={() => { if (canSave) onSave(name.trim()); }}
               >
                 {isSaving ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" />
+                  <ActivityIndicator size="small" color={THEME.colors.card} />
                 ) : (
-                  <Text className="text-base font-semibold text-white">Save</Text>
+                  <Text className="text-base font-semibold text-primary-foreground">Save</Text>
                 )}
               </Pressable>
             </View>

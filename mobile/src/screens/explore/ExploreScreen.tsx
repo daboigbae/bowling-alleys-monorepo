@@ -15,6 +15,7 @@ import { LocationPermissionGate, type Coords } from './components/LocationPermis
 import { VenueCard } from './components/VenueCard';
 import { VenueMapView } from './components/VenueMapView';
 import { useNearbyVenues } from '../../hooks/useNearbyVenues';
+import { THEME } from '../../constants/theme';
 import type { Venue } from '../../types/venue';
 
 type ViewMode = 'list' | 'map';
@@ -39,11 +40,11 @@ function SkeletonCard(): JSX.Element {
 
   return (
     <Animated.View style={{ opacity }} className="rounded-xl mb-4 overflow-hidden">
-      <View className="bg-slate-200 rounded-t-xl" style={{ height: 160 }} />
-      <View className="p-4 bg-white rounded-b-xl">
-        <View className="h-4 bg-slate-200 rounded mb-2 w-3/4" />
-        <View className="h-3 bg-slate-200 rounded mb-3 w-1/2" />
-        <View className="h-3 bg-slate-200 rounded w-1/4" />
+      <View className="bg-shimmer rounded-t-xl" style={{ height: 160 }} />
+      <View className="p-4 bg-card rounded-b-xl">
+        <View className="h-4 bg-shimmer rounded mb-2 w-3/4" />
+        <View className="h-3 bg-shimmer rounded mb-3 w-1/2" />
+        <View className="h-3 bg-shimmer rounded w-1/4" />
       </View>
     </Animated.View>
   );
@@ -96,20 +97,20 @@ function VenueContent({ coords, viewMode }: VenueContentProps): JSX.Element {
   if (isError) {
     return (
       <View className="flex-1 items-center justify-center px-5">
-        <Text className="text-xl font-semibold text-slate-900 text-center mb-2">
+        <Text className="text-xl font-semibold text-foreground text-center mb-2">
           Couldn't load alleys
         </Text>
-        <Text className="text-base text-slate-500 text-center mb-6">
+        <Text className="text-base text-muted-foreground text-center mb-6">
           {error?.message ?? 'An unexpected error occurred.'}
         </Text>
         <Pressable
-          className="bg-[#d42330] px-6 h-12 items-center justify-center rounded-xl"
+          className="bg-primary px-6 h-12 items-center justify-center rounded-xl"
           style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
           accessibilityRole="button"
           accessibilityLabel="Retry"
           onPress={() => void refetch()}
         >
-          <Text className="text-base font-semibold text-white">Try Again</Text>
+          <Text className="text-base font-semibold text-primary-foreground">Try Again</Text>
         </Pressable>
       </View>
     );
@@ -119,10 +120,10 @@ function VenueContent({ coords, viewMode }: VenueContentProps): JSX.Element {
   if (venues.length === 0) {
     return (
       <View className="flex-1 items-center justify-center px-5">
-        <Text className="text-xl font-semibold text-slate-900 text-center mb-2">
+        <Text className="text-xl font-semibold text-foreground text-center mb-2">
           No alleys nearby
         </Text>
-        <Text className="text-base text-slate-500 text-center">
+        <Text className="text-base text-muted-foreground text-center">
           No alleys nearby. Try increasing your search radius.
         </Text>
       </View>
@@ -146,7 +147,7 @@ function VenueContent({ coords, viewMode }: VenueContentProps): JSX.Element {
         <RefreshControl
           refreshing={isRefreshing}
           onRefresh={() => void handleRefresh()}
-          tintColor="#d42330"
+          tintColor={THEME.colors.primary}
         />
       }
     />
@@ -162,7 +163,7 @@ export default function ExploreScreen(): JSX.Element {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
 
   return (
-    <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+    <View className="flex-1 bg-card" style={{ paddingTop: insets.top }}>
       <StatusBar style="dark" />
       <ExploreHeader viewMode={viewMode} onViewModeChange={setViewMode} />
       <LocationPermissionGate>

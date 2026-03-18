@@ -86,7 +86,7 @@ export const ProfileReviewCard = memo(function ProfileReviewCard({
           accessibilityLabel={`Go to ${review.venueName}`}
           onPress={() => router.push(`/venue/${review.venueId}`)}
         >
-          <Text className="text-base font-medium text-slate-900" numberOfLines={1}>
+          <Text className="text-base font-medium text-foreground" numberOfLines={1}>
             {review.venueName}
           </Text>
         </Pressable>
@@ -99,14 +99,14 @@ export const ProfileReviewCard = memo(function ProfileReviewCard({
 
       {/* Date */}
       {dateString.length > 0 && (
-        <Text className="text-xs text-slate-400 mb-2">{dateString}</Text>
+        <Text className="text-xs text-muted-foreground mb-2">{dateString}</Text>
       )}
 
       {/* Review text */}
       {reviewText.length > 0 && (
         <>
           <Text
-            className="text-sm text-slate-600 leading-relaxed"
+            className="text-sm text-muted-foreground leading-relaxed"
             numberOfLines={expanded ? undefined : 3}
           >
             {reviewText}
@@ -119,7 +119,7 @@ export const ProfileReviewCard = memo(function ProfileReviewCard({
               accessibilityLabel={expanded ? 'Show less' : 'Show more'}
               onPress={() => setExpanded((prev) => !prev)}
             >
-              <Text className="text-xs font-medium text-[#d42330]">
+              <Text className="text-xs font-medium text-primary">
                 {expanded ? 'Show less' : 'Show more'}
               </Text>
             </Pressable>
@@ -129,7 +129,7 @@ export const ProfileReviewCard = memo(function ProfileReviewCard({
 
       {/* Deleting indicator */}
       {isDeleting && (
-        <Text className="text-xs text-slate-400 mt-1">Deleting…</Text>
+        <Text className="text-xs text-muted-foreground mt-1">Deleting…</Text>
       )}
     </Pressable>
   );

@@ -18,9 +18,9 @@ import type { UserReview } from '../../types/user';
 function ProfileHeaderSkeleton(): JSX.Element {
   return (
     <View className="items-center mt-6 mb-2 px-5">
-      <View className="rounded-full bg-slate-200" style={{ width: 72, height: 72 }} />
-      <View className="h-5 bg-slate-200 rounded mt-4 mb-2 w-40" />
-      <View className="h-3 bg-slate-200 rounded w-32" />
+      <View className="rounded-full bg-shimmer" style={{ width: 72, height: 72 }} />
+      <View className="h-5 bg-shimmer rounded mt-4 mb-2 w-40" />
+      <View className="h-3 bg-shimmer rounded w-32" />
     </View>
   );
 }
@@ -88,21 +88,21 @@ export default function ProfileScreen() {
 
   if (!authLoading && !user) {
     return (
-      <View className="flex-1 bg-white px-5" style={{ paddingTop: insets.top }}>
+      <View className="flex-1 bg-card px-5" style={{ paddingTop: insets.top }}>
         <StatusBar style="dark" />
         <View className="flex-1 items-center justify-center">
-          <Text className="text-2xl font-bold text-slate-900 mb-2 text-center">Profile</Text>
-          <Text className="text-base text-slate-500 mb-8 text-center leading-relaxed">
+          <Text className="text-2xl font-bold text-foreground mb-2 text-center">Profile</Text>
+          <Text className="text-base text-muted-foreground mb-8 text-center leading-relaxed">
             Sign in to save your favorite alleys and write reviews.
           </Text>
           <Pressable
-            className="w-full h-12 rounded-xl bg-[#d42330] items-center justify-center"
+            className="w-full h-12 rounded-xl bg-primary items-center justify-center"
             style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
             accessibilityRole="button"
             accessibilityLabel="Sign in"
             onPress={() => router.push('/auth/login')}
           >
-            <Text className="text-base font-semibold text-white">Sign In</Text>
+            <Text className="text-base font-semibold text-primary-foreground">Sign In</Text>
           </Pressable>
         </View>
       </View>
@@ -113,13 +113,13 @@ export default function ProfileScreen() {
 
   if (authLoading || profileLoading) {
     return (
-      <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+      <View className="flex-1 bg-card" style={{ paddingTop: insets.top }}>
         <StatusBar style="dark" />
         <ProfileHeaderSkeleton />
-        <View className="h-px bg-slate-100 mx-4 my-4" />
+        <View className="h-px bg-muted mx-4 my-4" />
         <View className="px-5 py-4">
-          <View className="h-4 bg-slate-200 rounded w-24 mb-3" />
-          <View className="h-16 bg-slate-100 rounded" />
+          <View className="h-4 bg-shimmer rounded w-24 mb-3" />
+          <View className="h-16 bg-muted rounded" />
         </View>
       </View>
     );
@@ -137,11 +137,11 @@ export default function ProfileScreen() {
       />
 
       {/* Divider */}
-      <View className="h-px bg-slate-100 mx-4 my-4" />
+      <View className="h-px bg-muted mx-4 my-4" />
 
       {/* Reviews section title */}
       <View className="px-5 pb-1">
-        <Text className="text-xl font-semibold text-slate-900">My Reviews</Text>
+        <Text className="text-xl font-semibold text-foreground">My Reviews</Text>
       </View>
     </>
   );
@@ -151,7 +151,7 @@ export default function ProfileScreen() {
       {/* Reviews empty state */}
       {!reviewsLoading && reviews.length === 0 && (
         <View className="px-5 py-6">
-          <Text className="text-base text-slate-400">No reviews yet.</Text>
+          <Text className="text-base text-muted-foreground">No reviews yet.</Text>
         </View>
       )}
 
@@ -171,7 +171,7 @@ export default function ProfileScreen() {
   );
 
   return (
-    <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+    <View className="flex-1 bg-card" style={{ paddingTop: insets.top }}>
       <StatusBar style="dark" />
 
       <FlashList
@@ -185,7 +185,7 @@ export default function ProfileScreen() {
             isDeleting={isDeletingVenueId === item.venueId}
           />
         )}
-        ItemSeparatorComponent={() => <View className="h-px bg-slate-100 mx-5" />}
+        ItemSeparatorComponent={() => <View className="h-px bg-muted mx-5" />}
         ListHeaderComponent={listHeader}
         ListFooterComponent={listFooter}
         onRefresh={() => void handleRefresh()}

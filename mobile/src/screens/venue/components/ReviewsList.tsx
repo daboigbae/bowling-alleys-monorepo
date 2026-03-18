@@ -2,6 +2,7 @@ import { View, Text, ActivityIndicator } from 'react-native';
 import type { ReactElement } from 'react';
 import { FlashList } from '@shopify/flash-list';
 import { ReviewCard } from './ReviewCard';
+import { THEME } from '../../../constants/theme';
 import type { Review } from '../../../types/review';
 
 interface ReviewsListProps {
@@ -30,21 +31,21 @@ export function ReviewsList({
       keyExtractor={(item: Review) => item.id}
       estimatedItemSize={100}
       ListHeaderComponent={ListHeaderComponent}
-      ItemSeparatorComponent={() => <View className="h-px bg-slate-100 mx-5" />}
+      ItemSeparatorComponent={() => <View className="h-px bg-muted mx-5" />}
       contentContainerStyle={{ paddingBottom: 100 }}
       renderItem={({ item }: { item: Review }) => <ReviewCard review={item} />}
       ListFooterComponent={
         isLoading ? (
           <View className="items-center py-6">
-            <ActivityIndicator size="small" color="#d42330" />
+            <ActivityIndicator size="small" color={THEME.colors.primary} />
           </View>
         ) : isError ? (
           <View className="px-5 py-4">
-            <Text className="text-base text-slate-500">Reviews unavailable.</Text>
+            <Text className="text-base text-muted-foreground">Reviews unavailable.</Text>
           </View>
         ) : !isLoading && reviews.length === 0 ? (
           <View className="px-5 py-8 items-center">
-            <Text className="text-base text-slate-500 text-center">
+            <Text className="text-base text-muted-foreground text-center">
               No reviews yet. Be the first!
             </Text>
           </View>

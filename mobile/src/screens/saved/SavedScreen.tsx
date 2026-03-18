@@ -13,10 +13,10 @@ function SavedCardSkeleton(): JSX.Element {
   return (
     <View className="flex-row items-center px-4 py-3">
       {/* Thumbnail placeholder */}
-      <View className="rounded-lg bg-slate-200" style={{ width: 64, height: 64 }} />
+      <View className="rounded-lg bg-shimmer" style={{ width: 64, height: 64 }} />
       <View className="flex-1 ml-3">
-        <View className="h-4 bg-slate-200 rounded mb-2 w-3/4" />
-        <View className="h-3 bg-slate-200 rounded w-1/2" />
+        <View className="h-4 bg-shimmer rounded mb-2 w-3/4" />
+        <View className="h-3 bg-shimmer rounded w-1/2" />
       </View>
     </View>
   );
@@ -32,7 +32,7 @@ export default function SavedScreen() {
 
   const header = (
     <View className="px-5 pt-4 pb-3">
-      <Text className="text-2xl font-bold text-slate-900">Saved</Text>
+      <Text className="text-2xl font-bold text-foreground">Saved</Text>
     </View>
   );
 
@@ -40,7 +40,7 @@ export default function SavedScreen() {
 
   if (!authLoading && !user) {
     return (
-      <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+      <View className="flex-1 bg-card" style={{ paddingTop: insets.top }}>
         <StatusBar style="dark" />
         {header}
         <SavedEmptyState variant="unauthenticated" />
@@ -53,15 +53,15 @@ export default function SavedScreen() {
 
   if (authLoading || isLoading) {
     return (
-      <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+      <View className="flex-1 bg-card" style={{ paddingTop: insets.top }}>
         <StatusBar style="dark" />
         {header}
         <SavedCardSkeleton />
-        <View className="h-px bg-slate-100 mx-4" />
+        <View className="h-px bg-muted mx-4" />
         <SavedCardSkeleton />
-        <View className="h-px bg-slate-100 mx-4" />
+        <View className="h-px bg-muted mx-4" />
         <SavedCardSkeleton />
-        <View className="h-px bg-slate-100 mx-4" />
+        <View className="h-px bg-muted mx-4" />
         <SavedCardSkeleton />
       </View>
     );
@@ -71,21 +71,21 @@ export default function SavedScreen() {
 
   if (isError) {
     return (
-      <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+      <View className="flex-1 bg-card" style={{ paddingTop: insets.top }}>
         <StatusBar style="dark" />
         {header}
         <View className="flex-1 items-center justify-center px-5">
-          <Text className="text-base text-slate-500 text-center mb-4">
+          <Text className="text-base text-muted-foreground text-center mb-4">
             Couldn't load your saved alleys.
           </Text>
           <Pressable
-            className="px-6 h-11 rounded-xl bg-slate-100 items-center justify-center"
+            className="px-6 h-11 rounded-xl bg-muted items-center justify-center"
             style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
             accessibilityRole="button"
             accessibilityLabel="Retry"
             onPress={() => void refetch()}
           >
-            <Text className="text-base font-medium text-slate-700">Try Again</Text>
+            <Text className="text-base font-medium text-foreground">Try Again</Text>
           </Pressable>
         </View>
       </View>
@@ -96,7 +96,7 @@ export default function SavedScreen() {
 
   if (venues.length === 0) {
     return (
-      <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+      <View className="flex-1 bg-card" style={{ paddingTop: insets.top }}>
         <StatusBar style="dark" />
         {header}
         <SavedEmptyState variant="empty" />
@@ -109,7 +109,7 @@ export default function SavedScreen() {
   const userId = user!.uid;
 
   return (
-    <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+    <View className="flex-1 bg-card" style={{ paddingTop: insets.top }}>
       <StatusBar style="dark" />
       {header}
       <FlashList
@@ -119,7 +119,7 @@ export default function SavedScreen() {
         renderItem={({ item }: { item: Venue }) => (
           <SavedVenueCard venue={item} userId={userId} />
         )}
-        ItemSeparatorComponent={() => <View className="h-px bg-slate-100 mx-4" />}
+        ItemSeparatorComponent={() => <View className="h-px bg-muted mx-4" />}
         contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
         refreshControl={
           <RefreshControl

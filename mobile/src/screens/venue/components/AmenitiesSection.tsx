@@ -14,7 +14,7 @@ export function AmenitiesSection({ amenities }: AmenitiesSectionProps) {
 
   return (
     <View className="px-5 pb-4">
-      <Text className="text-base font-semibold text-slate-900 mb-3">Amenities</Text>
+      <Text className="text-base font-semibold text-foreground mb-3">Amenities</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -23,9 +23,9 @@ export function AmenitiesSection({ amenities }: AmenitiesSectionProps) {
         {amenities.map((amenity) => (
           <View
             key={amenity}
-            className="border border-slate-200 rounded-full py-1 px-3"
+            className="border border-border rounded-full py-1 px-3"
           >
-            <Text className="text-xs text-slate-700">{amenity}</Text>
+            <Text className="text-xs text-foreground">{amenity}</Text>
           </View>
         ))}
       </ScrollView>

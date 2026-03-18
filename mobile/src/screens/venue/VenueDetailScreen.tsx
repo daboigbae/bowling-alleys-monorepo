@@ -11,6 +11,7 @@ import { VenueHeroHeader } from './components/VenueHeroHeader';
 import { VenueInfoSection } from './components/VenueInfoSection';
 import { AmenitiesSection } from './components/AmenitiesSection';
 import { ReviewsList } from './components/ReviewsList';
+import { THEME } from '../../constants/theme';
 
 interface VenueDetailScreenProps {
   venueId: string;
@@ -20,11 +21,11 @@ interface VenueDetailScreenProps {
 function VenueInfoSkeleton(): JSX.Element {
   return (
     <View className="px-5 pt-5 pb-3">
-      <View className="h-7 bg-slate-200 rounded mb-2 w-3/4" />
-      <View className="h-4 bg-slate-200 rounded mb-4 w-1/2" />
-      <View className="h-px bg-slate-100 mb-4" />
-      <View className="h-4 bg-slate-200 rounded mb-3 w-full" />
-      <View className="h-4 bg-slate-200 rounded w-2/3" />
+      <View className="h-7 bg-shimmer rounded mb-2 w-3/4" />
+      <View className="h-4 bg-shimmer rounded mb-4 w-1/2" />
+      <View className="h-px bg-muted mb-4" />
+      <View className="h-4 bg-shimmer rounded mb-3 w-full" />
+      <View className="h-4 bg-shimmer rounded w-2/3" />
     </View>
   );
 }
@@ -48,20 +49,20 @@ export default function VenueDetailScreen({ venueId }: VenueDetailScreenProps) {
 
   if (venueError && !venueLoading) {
     return (
-      <View className="flex-1 bg-white items-center justify-center px-5" style={{ paddingTop: insets.top }}>
+      <View className="flex-1 bg-card items-center justify-center px-5" style={{ paddingTop: insets.top }}>
         <StatusBar style="dark" />
-        <Text className="text-xl font-semibold text-slate-900 text-center mb-2">Venue not found</Text>
-        <Text className="text-base text-slate-500 text-center mb-6">
+        <Text className="text-xl font-semibold text-foreground text-center mb-2">Venue not found</Text>
+        <Text className="text-base text-muted-foreground text-center mb-6">
           This alley may have been removed or the link is invalid.
         </Text>
         <Pressable
-          className="h-11 px-5 items-center justify-center rounded-xl bg-slate-100"
+          className="h-11 px-5 items-center justify-center rounded-xl bg-muted"
           style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
           accessibilityRole="button"
           accessibilityLabel="Go back"
           onPress={() => router.back()}
         >
-          <Text className="text-base font-medium text-slate-700">← Back</Text>
+          <Text className="text-base font-medium text-foreground">← Back</Text>
         </Pressable>
       </View>
     );
@@ -71,10 +72,10 @@ export default function VenueDetailScreen({ venueId }: VenueDetailScreenProps) {
 
   if (venueLoading && venue === undefined) {
     return (
-      <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+      <View className="flex-1 bg-card" style={{ paddingTop: insets.top }}>
         <StatusBar style="dark" />
         {/* Hero placeholder */}
-        <View style={{ height: 240 }} className="bg-slate-200" />
+        <View style={{ height: 240 }} className="bg-shimmer" />
         <VenueInfoSkeleton />
       </View>
     );
@@ -84,22 +85,22 @@ export default function VenueDetailScreen({ venueId }: VenueDetailScreenProps) {
 
   if (venueError) {
     return (
-      <View className="flex-1 bg-white items-center justify-center px-5">
+      <View className="flex-1 bg-card items-center justify-center px-5">
         <StatusBar style="dark" />
-        <Text className="text-xl font-semibold text-slate-900 text-center mb-2">
+        <Text className="text-xl font-semibold text-foreground text-center mb-2">
           Something went wrong
         </Text>
-        <Text className="text-base text-slate-500 text-center mb-6">
+        <Text className="text-base text-muted-foreground text-center mb-6">
           We couldn't load this venue. Please try again.
         </Text>
         <Pressable
-          className="bg-[#d42330] px-6 h-12 items-center justify-center rounded-xl"
+          className="bg-primary px-6 h-12 items-center justify-center rounded-xl"
           style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
           accessibilityRole="button"
           accessibilityLabel="Retry"
           onPress={() => void refetchVenue()}
         >
-          <Text className="text-base font-semibold text-white">Try Again</Text>
+          <Text className="text-base font-semibold text-primary-foreground">Try Again</Text>
         </Pressable>
       </View>
     );
@@ -107,9 +108,9 @@ export default function VenueDetailScreen({ venueId }: VenueDetailScreenProps) {
 
   if (venue === undefined) {
     return (
-      <View className="flex-1 bg-white items-center justify-center">
+      <View className="flex-1 bg-card items-center justify-center">
         <StatusBar style="dark" />
-        <ActivityIndicator size="large" color="#d42330" />
+        <ActivityIndicator size="large" color={THEME.colors.primary} />
       </View>
     );
   }
@@ -134,15 +135,15 @@ export default function VenueDetailScreen({ venueId }: VenueDetailScreenProps) {
       <AmenitiesSection amenities={venue.amenities ?? []} />
 
       {/* Divider + Reviews section title */}
-      <View className="h-px bg-slate-100 mx-5" />
+      <View className="h-px bg-muted mx-5" />
       <View className="px-5 pt-4 pb-1">
-        <Text className="text-xl font-semibold text-slate-900">Reviews</Text>
+        <Text className="text-xl font-semibold text-foreground">Reviews</Text>
       </View>
     </>
   );
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-card">
       {/* Light StatusBar — hero image is behind it */}
       <StatusBar style="light" />
 
@@ -169,13 +170,13 @@ export default function VenueDetailScreen({ venueId }: VenueDetailScreenProps) {
           }}
         >
           <Pressable
-            className="w-14 h-14 rounded-full bg-[#d42330] items-center justify-center"
+            className="w-14 h-14 rounded-full bg-primary items-center justify-center"
             style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
             accessibilityRole="button"
             accessibilityLabel="Write a review"
             onPress={() => router.push(`/venue/${venueId}/review`)}
           >
-            <Ionicons name="create-outline" size={26} color="#FFFFFF" />
+            <Ionicons name="create-outline" size={26} color={THEME.colors.card} />
           </Pressable>
         </View>
       )}

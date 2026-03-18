@@ -8,6 +8,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useSubmitReview } from '../../hooks/useSubmitReview';
 import { StarRatingInput } from './components/StarRatingInput';
 import { ReviewTextInput } from './components/ReviewTextInput';
+import { THEME } from '../../constants/theme';
 import type { Venue } from '../../types/venue';
 
 const MIN_CHARS = 10;
@@ -74,7 +75,7 @@ export default function WriteReviewScreen({ venueId }: WriteReviewScreenProps) {
   }, [canSubmit, submitReview, venueId, rating, text, user.displayName]);
 
   return (
-    <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+    <View className="flex-1 bg-card" style={{ paddingTop: insets.top }}>
       <StatusBar style="dark" />
 
       {/* ── Modal header ─────────────────────────────────────────────────── */}
@@ -86,10 +87,10 @@ export default function WriteReviewScreen({ venueId }: WriteReviewScreenProps) {
           accessibilityLabel="Close"
           className="p-1"
         >
-          <Text className="text-base text-slate-500">✕</Text>
+          <Text className="text-base text-muted-foreground">✕</Text>
         </Pressable>
 
-        <Text className="text-base font-semibold text-slate-900" numberOfLines={1}>
+        <Text className="text-base font-semibold text-foreground" numberOfLines={1}>
           Review
         </Text>
 
@@ -100,14 +101,14 @@ export default function WriteReviewScreen({ venueId }: WriteReviewScreenProps) {
           accessibilityRole="button"
           accessibilityLabel="Submit review"
           accessibilityState={{ disabled: !canSubmit }}
-          className="px-4 py-2 rounded-lg bg-[#d42330]"
+          className="px-4 py-2 rounded-lg bg-primary"
         >
           {isSubmitting ? (
-            <ActivityIndicator size="small" color="#FFFFFF" />
+            <ActivityIndicator size="small" color={THEME.colors.card} />
           ) : (
             <Text
               className="text-sm font-semibold"
-              style={{ color: canSubmit ? '#FFFFFF' : '#f4a0a7' }}
+              style={{ color: canSubmit ? THEME.colors.card : THEME.colors.primaryDisabled }}
             >
               Submit
             </Text>
@@ -122,23 +123,23 @@ export default function WriteReviewScreen({ venueId }: WriteReviewScreenProps) {
         keyboardShouldPersistTaps="handled"
       >
         {/* Venue name */}
-        <Text className="text-xl font-semibold text-slate-900 mb-1" numberOfLines={2}>
+        <Text className="text-xl font-semibold text-foreground mb-1" numberOfLines={2}>
           {venueName}
         </Text>
-        <Text className="text-sm text-slate-500 mb-6">Write your review</Text>
+        <Text className="text-sm text-muted-foreground mb-6">Write your review</Text>
 
         {/* Star rating */}
-        <Text className="text-sm font-medium text-slate-700 mb-3">Your rating</Text>
+        <Text className="text-sm font-medium text-foreground mb-3">Your rating</Text>
         <StarRatingInput rating={rating} onChange={setRating} />
         {rating === 0 && (
-          <Text className="text-xs text-slate-400 mt-2">Tap a star to rate</Text>
+          <Text className="text-xs text-muted-foreground mt-2">Tap a star to rate</Text>
         )}
 
         {/* Divider */}
-        <View className="h-px bg-slate-100 my-6" />
+        <View className="h-px bg-muted my-6" />
 
         {/* Review text */}
-        <Text className="text-sm font-medium text-slate-700 mb-3">Your review</Text>
+        <Text className="text-sm font-medium text-foreground mb-3">Your review</Text>
         <ReviewTextInput value={text} onChange={setText} />
         {text.trim().length > 0 && text.trim().length < MIN_CHARS && (
           <Text className="text-xs text-amber-500 mt-1">

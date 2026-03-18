@@ -43,9 +43,9 @@ export function VenueMapView({ venues, userLocation }: VenueMapViewProps) {
               accessibilityLabel={`Go to ${venue.name}`}
             >
               <View style={{ paddingHorizontal: 12, paddingVertical: 8, maxWidth: 200 }}>
-                <Text className="text-sm font-medium text-slate-900">{venue.name}</Text>
+                <Text className="text-sm font-medium text-foreground">{venue.name}</Text>
                 {(venue.city !== undefined || venue.state !== undefined) && (
-                  <Text className="text-xs text-slate-500 mt-0.5">
+                  <Text className="text-xs text-muted-foreground mt-0.5">
                     {[venue.city, venue.state].filter(Boolean).join(', ')}
                   </Text>
                 )}

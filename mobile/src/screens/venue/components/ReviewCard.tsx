@@ -1,5 +1,6 @@
 import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { THEME } from '../../../constants/theme';
 import type { Review } from '../../../types/review';
 
 /** Strip HTML tags from user-submitted review text (Rule 11 / audit W4). */
@@ -43,9 +44,9 @@ export function ReviewCard({ review }: ReviewCardProps) {
     <View className="px-5 py-4">
       {/* Author + date */}
       <View className="flex-row items-center justify-between mb-1">
-        <Text className="text-base font-semibold text-slate-900">{authorName}</Text>
+        <Text className="text-base font-semibold text-foreground">{authorName}</Text>
         {dateStr.length > 0 && (
-          <Text className="text-sm text-slate-400">{dateStr}</Text>
+          <Text className="text-sm text-muted-foreground">{dateStr}</Text>
         )}
       </View>
 
@@ -56,14 +57,14 @@ export function ReviewCard({ review }: ReviewCardProps) {
             key={i}
             name={i < review.rating ? 'star' : 'star-outline'}
             size={14}
-            color="#F59E0B"
+            color={THEME.colors.warning}
           />
         ))}
       </View>
 
       {/* Review body — full text, HTML stripped */}
       {bodyText.length > 0 && (
-        <Text className="text-base text-slate-700 leading-relaxed">{bodyText}</Text>
+        <Text className="text-base text-foreground leading-relaxed">{bodyText}</Text>
       )}
     </View>
   );

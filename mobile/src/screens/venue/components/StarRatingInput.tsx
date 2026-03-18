@@ -1,5 +1,6 @@
 import { View, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { THEME } from '../../../constants/theme';
 
 interface StarRatingInputProps {
   rating: number;
@@ -11,7 +12,7 @@ const STARS = [1, 2, 3, 4, 5] as const;
 /**
  * 5-star tap-to-rate input.
  * Each star is an accessible radio button (accessibilityRole="radio").
- * Filled stars rendered in amber (#F59E0B), empty in slate (#CBD5E1).
+ * Filled stars rendered in warning (amber), empty in iconSubtle.
  */
 export function StarRatingInput({ rating, onChange }: StarRatingInputProps) {
   return (
@@ -28,7 +29,7 @@ export function StarRatingInput({ rating, onChange }: StarRatingInputProps) {
           <Ionicons
             name={star <= rating ? 'star' : 'star-outline'}
             size={36}
-            color={star <= rating ? '#F59E0B' : '#CBD5E1'}
+            color={star <= rating ? THEME.colors.warning : THEME.colors.iconSubtle}
           />
         </Pressable>
       ))}

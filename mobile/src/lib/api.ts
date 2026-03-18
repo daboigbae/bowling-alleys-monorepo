@@ -1,4 +1,5 @@
 import { firebaseAuth } from './firebase';
+import { API } from '../constants/api';
 import type {
   SendCodeRequest,
   SendCodeResponse,
@@ -6,7 +7,7 @@ import type {
   VerifyCodeResponse,
 } from '../types/auth';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? '';
+const API_BASE_URL = API.baseUrl;
 
 export async function request<TBody, TResponse>(
   method: 'GET' | 'POST' | 'PUT' | 'DELETE',

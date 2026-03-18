@@ -15,13 +15,14 @@ import { getAuth, signInWithCustomToken } from 'firebase/auth';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { firebaseApp } from '../../src/lib/firebase';
 import { sendCode, verifyCode } from '../../src/lib/api';
+import { THEME } from '../../src/constants/theme';
 
 type Step = 'email' | 'code';
 
-// Border color values match THEME.colors.border and THEME.colors.error —
-// inline style required because THEME tokens are not registered in tailwind.config.js.
-const BORDER_DEFAULT = '#B6B0BE';
-const BORDER_ERROR = '#EF4444';
+// Border color values reference THEME tokens — inline style required because
+// borderColor is dynamic (switches between error and default states).
+const BORDER_DEFAULT = THEME.colors.border;
+const BORDER_ERROR = THEME.colors.error;
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
@@ -71,7 +72,7 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-white"
+      className="flex-1 bg-card"
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <StatusBar style="dark" />
@@ -87,7 +88,7 @@ export default function LoginScreen() {
           accessibilityLabel="Cancel sign in"
           onPress={() => router.back()}
         >
-          <Text className="text-base text-[#d42330]">Cancel</Text>
+          <Text className="text-base text-primary">Cancel</Text>
         </Pressable>
 
         {step === 'email' ? (
@@ -100,16 +101,16 @@ export default function LoginScreen() {
               resizeMode="contain"
               className="self-center mb-6"
             />
-            <Text className="text-2xl font-bold text-slate-900 mb-2">Sign In</Text>
-            <Text className="text-base text-slate-500 mb-8">
+            <Text className="text-2xl font-bold text-foreground mb-2">Sign In</Text>
+            <Text className="text-base text-muted-foreground mb-8">
               Enter your email to receive a sign-in code.
             </Text>
 
             <TextInput
-              className="h-12 border rounded-xl px-4 text-base text-slate-900"
+              className="h-12 border rounded-xl px-4 text-base text-foreground"
               style={{ borderColor: error !== null ? BORDER_ERROR : BORDER_DEFAULT }}
               placeholder="your@email.com"
-              placeholderTextColor="#6D6774"
+              placeholderTextColor={THEME.colors.mutedForeground}
               value={email}
               onChangeText={(text) => {
                 setEmail(text);
@@ -128,7 +129,7 @@ export default function LoginScreen() {
             )}
 
             <Pressable
-              className="bg-[#d42330] items-center justify-center rounded-xl mt-6 h-12"
+              className="bg-primary items-center justify-center rounded-xl mt-6 h-12"
               style={({ pressed }) => ({
                 opacity: pressed || emailSendDisabled ? 0.6 : 1,
               })}
@@ -139,24 +140,24 @@ export default function LoginScreen() {
               onPress={handleSendCode}
             >
               {isLoading ? (
-                <ActivityIndicator color="#ffffff" />
+                <ActivityIndicator color={THEME.colors.card} />
               ) : (
-                <Text className="text-base font-semibold text-white">Send Code</Text>
+                <Text className="text-base font-semibold text-primary-foreground">Send Code</Text>
               )}
             </Pressable>
           </View>
         ) : (
           <View>
-            <Text className="text-2xl font-bold text-slate-900 mb-2">Check your email</Text>
-            <Text className="text-base text-slate-500 mb-8">
+            <Text className="text-2xl font-bold text-foreground mb-2">Check your email</Text>
+            <Text className="text-base text-muted-foreground mb-8">
               Enter the 6-digit code sent to {email}
             </Text>
 
             <TextInput
-              className="h-14 border rounded-xl px-4 text-2xl font-bold text-center tracking-[8px] text-slate-900"
+              className="h-14 border rounded-xl px-4 text-2xl font-bold text-center tracking-[8px] text-foreground"
               style={{ borderColor: error !== null ? BORDER_ERROR : BORDER_DEFAULT }}
               placeholder="000000"
-              placeholderTextColor="#6D6774"
+              placeholderTextColor={THEME.colors.mutedForeground}
               value={code}
               onChangeText={(text) => {
                 setCode(text);
@@ -183,14 +184,14 @@ export default function LoginScreen() {
                       setError(null);
                     }}
                   >
-                    <Text className="text-sm font-medium text-[#d42330]">Resend</Text>
+                    <Text className="text-sm font-medium text-primary">Resend</Text>
                   </Pressable>
                 )}
               </View>
             )}
 
             <Pressable
-              className="bg-[#d42330] items-center justify-center rounded-xl mt-6 h-12"
+              className="bg-primary items-center justify-center rounded-xl mt-6 h-12"
               style={({ pressed }) => ({
                 opacity: pressed || codeVerifyDisabled ? 0.6 : 1,
               })}
@@ -201,9 +202,9 @@ export default function LoginScreen() {
               onPress={handleVerifyCode}
             >
               {isLoading ? (
-                <ActivityIndicator color="#ffffff" />
+                <ActivityIndicator color={THEME.colors.card} />
               ) : (
-                <Text className="text-base font-semibold text-white">Verify</Text>
+                <Text className="text-base font-semibold text-primary-foreground">Verify</Text>
               )}
             </Pressable>
 
@@ -218,7 +219,7 @@ export default function LoginScreen() {
                 setError(null);
               }}
             >
-              <Text className="text-sm text-[#d42330]">← Back to email</Text>
+              <Text className="text-sm text-primary">← Back to email</Text>
             </Pressable>
           </View>
         )}

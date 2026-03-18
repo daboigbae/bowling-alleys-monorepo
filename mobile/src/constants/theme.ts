@@ -1,6 +1,8 @@
 // Design tokens for the BAIO mobile app.
-// Colors are resolved from frontend/app/globals.css (light mode CSS variables).
+// Colors are resolved from mobile/src/constants/colors.js — single source of truth.
 // Font families correspond to registered names in mobile/app/_layout.tsx.
+
+const RAW = require('./colors') as Record<string, string>;
 
 export const THEME = {
   fonts: {
@@ -20,54 +22,46 @@ export const THEME = {
 
   colors: {
     // --- Primary (brand red / main CTA) ---
-    // #d42330
-    primary: '#d42330',
-    // hsl(210 40% 98%)
-    primaryForeground: '#F8FAFC',
+    primary: RAW.primary,
+    primaryForeground: RAW.primaryForeground,
 
     // --- Secondary (muted surface) ---
-    // hsl(265 15% 96%)
-    secondary: '#F4F3F6',
-    // hsl(270 15% 13%)
-    secondaryForeground: '#211C26',
+    secondary: RAW.secondary,
+    secondaryForeground: RAW.secondaryForeground,
 
     // --- Accent (orange) ---
-    // hsl(24.6 95% 53.1%)
-    accent: '#F97316',
-    // hsl(60 9.1% 97.8%)
-    accentForeground: '#F9F9F4',
+    accent: RAW.accent,
+    accentForeground: RAW.accentForeground,
 
     // --- Backgrounds ---
-    // hsl(40 28% 87%) — warm beige, mirrors web body background
-    background: '#E7E1D4',
-    // hsl(0 0% 100%) — white card surfaces
-    card: '#FFFFFF',
+    background: RAW.background,
+    card: RAW.card,
 
     // --- Muted surface ---
-    // hsl(265 15% 96%)
-    muted: '#F4F3F6',
-    // hsl(265 6% 43%)
-    mutedForeground: '#6D6774',
+    muted: RAW.muted,
+    mutedForeground: RAW.mutedForeground,
 
     // --- Text ---
-    // hsl(270 15% 13%) — dark purple-gray
-    text: '#211C26',
-    // hsl(265 6% 43%) — medium gray
-    textSecondary: '#6D6774',
+    text: RAW.foreground,
+    textSecondary: RAW.textSecondary,
 
     // --- Border / Input ---
-    // hsl(265 10% 72%)
-    border: '#B6B0BE',
+    border: RAW.border,
 
     // --- Semantic ---
-    error: '#EF4444',
-    success: '#22C55E',
-    warning: '#F59E0B',
+    error: RAW.error,
+    success: RAW.success,
+    warning: RAW.warning,
+
+    // --- UI utilities ---
+    placeholder: RAW.placeholder,        // TextInput placeholderTextColor + tab inactive tint
+    primaryDisabled: RAW.primaryDisabled, // disabled text on primary-colored buttons
+    iconSubtle: RAW.iconSubtle,           // muted illustration icons in empty states
   },
 
   tabBar: {
-    activeTint: '#d42330',
-    inactiveTint: '#94A3B8',
+    activeTint: RAW.primary,
+    inactiveTint: RAW.placeholder,
   },
 
   // 4pt base grid — Design Standard §1
