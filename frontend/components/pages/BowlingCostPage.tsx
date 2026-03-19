@@ -83,17 +83,7 @@ export default function BowlingCost({ state: propState, city: propCity }: Bowlin
         "Discover average bowling costs across the United States. Find pricing information for games, hourly rates, and shoe rentals at bowling alleys in your state and city.";
     }
 
-    document.title = title;
-
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute("content", description);
-    } else {
-      const meta = document.createElement("meta");
-      meta.name = "description";
-      meta.content = description;
-      document.head.appendChild(meta);
-    }
+    // Title and meta description are set server-side via generateMetadata in page.tsx
   }, [displayCity, displayState]);
 
   // Fetch USA pricing data

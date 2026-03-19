@@ -99,17 +99,7 @@ export default function Specials({ state: propState, city: propCity }: SpecialsP
       description = "Find bowling alleys offering specials and deals across the U.S. Discover discounted games, happy hour pricing, and promotional offers.";
     }
 
-    document.title = title;
-
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute("content", description);
-    } else {
-      const meta = document.createElement("meta");
-      meta.name = "description";
-      meta.content = description;
-      document.head.appendChild(meta);
-    }
+    // Title and meta description are set server-side via generateMetadata in page.tsx
 
     const structuredData = {
       "@context": "https://schema.org",

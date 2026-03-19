@@ -109,18 +109,7 @@ export default function BowlingLeagues({ state: propState, city: propCity }: Bow
         "Discover bowling leagues across the United States. Find bowling alleys offering seasonal leagues, competitive play, and team opportunities in your state and city.";
     }
 
-    document.title = title;
-
-    // Update meta description
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute("content", description);
-    } else {
-      const meta = document.createElement("meta");
-      meta.name = "description";
-      meta.content = description;
-      document.head.appendChild(meta);
-    }
+    // Title and meta description are set server-side via generateMetadata in page.tsx
 
     // Add structured data for league organization
     const structuredData = {

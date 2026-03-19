@@ -220,16 +220,7 @@ export default function Locations({ state: propState, city: propCity }: Location
     return match ?? selectedCity;
   }, [selectedCity, venuesByCity]);
 
-  // Set page title based on route parameters
-  useEffect(() => {
-    let title = "Find Bowling Alleys by Location - BowlingAlleys.io";
-    if (selectedState && canonicalCity) {
-      title = `Bowling Alleys in ${canonicalCity}, ${selectedState} - BowlingAlleys.io`;
-    } else if (selectedState) {
-      title = `Bowling Alleys in ${selectedState} - BowlingAlleys.io`;
-    }
-    document.title = title;
-  }, [selectedState, canonicalCity]);
+  // Page title is now set via server-side generateMetadata in page.tsx
 
   // Filter venues by search term and selected city
   const filteredVenuesByCity = useMemo(() => {
