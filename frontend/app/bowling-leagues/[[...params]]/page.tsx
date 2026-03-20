@@ -61,7 +61,22 @@ import dynamic from "next/dynamic";
 const BowlingLeaguesPage = dynamic(() => import("@/components/pages/BowlingLeaguesPage"), { ssr: false });
 
 export default function BowlingLeagues({ params }: { params: { params?: string[] } }) {
-  const state = safeDecodeParam(params?.params?.[0]);
-  const city = safeDecodeParam(params?.params?.[1]);
-  return <BowlingLeaguesPage state={state} city={city} />;
+  const stateParam = safeDecodeParam(params?.params?.[0]);
+  const cityParam = safeDecodeParam(params?.params?.[1]);
+
+  let h1 = "Find Bowling Leagues Near You";
+  if (stateParam && cityParam) {
+    const fullState = abbreviationToState[stateParam.toUpperCase()] ?? stateParam;
+    h1 = `Bowling Leagues in ${cityParam}, ${fullState}`;
+  } else if (stateParam) {
+    const fullState = abbreviationToState[stateParam.toUpperCase()] ?? stateParam;
+    h1 = `Bowling Leagues in ${fullState}`;
+  }
+
+  return (
+    <>
+      <h1 className="text-3xl font-bold text-[#0d3149] px-4 pt-8 pb-2 max-w-7xl mx-auto">{h1}</h1>
+      <BowlingLeaguesPage state={stateParam} city={cityParam} />
+    </>
+  );
 }

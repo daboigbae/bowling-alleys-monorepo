@@ -75,7 +75,7 @@ export default function Specials({ params }: { params?: { params?: string[] } })
 
   return (
     <>
-      <h1 className="sr-only">{h1}</h1>
+      <h1 className="text-3xl font-bold text-[#0d3149] px-4 pt-8 pb-2 max-w-7xl mx-auto">{h1}</h1>
       <SpecialsPage state={stateParam} city={cityParam} />
     </>
   );
