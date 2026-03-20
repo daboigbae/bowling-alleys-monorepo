@@ -1,0 +1,59 @@
+User-agent: *
+
+# Allow all high-value content pages
+Allow: /$
+Allow: /locations/
+Allow: /venue/
+Allow: /bowling-leagues/
+Allow: /bowling-cost/
+Allow: /bowling-birthday-party/
+Allow: /cosmic-bowling/
+Allow: /open-bowling/
+Allow: /kids-bowling/
+Allow: /specials/
+Allow: /experiences/
+Allow: /arcade-bowling/
+Allow: /bowling-bar/
+Allow: /bowling-billiards/
+Allow: /bowling-lessons/
+Allow: /bowling-restaurant/
+Allow: /candlepin-bowling/
+Allow: /corporate-events/
+Allow: /duckpin-bowling/
+Allow: /escape-rooms/
+Allow: /karaoke-bowling/
+Allow: /laser-tag/
+Allow: /ping-pong/
+Allow: /pro-shop/
+Allow: /senior-bowling/
+Allow: /snack-bar/
+Allow: /sports-bar/
+Allow: /tournaments/
+Allow: /wheelchair-accessible/
+Allow: /batting-cages/
+Allow: /city-guides/
+Allow: /blog/
+Allow: /about/
+Allow: /contact/
+
+# Block user/account pages (no SEO value, private)
+Disallow: /account/
+Disallow: /profile/
+Disallow: /saved-alleys/
+Disallow: /my-venues/
+Disallow: /u/
+
+# Block owner dashboard (private/thin)
+Disallow: /owner/
+
+# Block dev/internal routes
+Disallow: /dev/
+Disallow: /pitch-deck/
+Disallow: /team-logo-lab/
+Disallow: /founding-partners/
+
+# Block API routes
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://www.bowlingalleys.io/sitemap.xml
