@@ -639,7 +639,7 @@ export default function Locations({ state: propState, city: propCity }: Location
 
           {/* Popular Cities Section */}
           <div className="mt-12 pt-8 border-t">
-            <h2 className="text-2xl font-bold mb-6 text-center">Popular City Guides</h2>
+            <h1 className="text-2xl font-bold mb-6 text-center">Popular City Guides</h1>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
               {hubs.map((hub) => {
                 const city = hub.city ?? getCityFromHubTitle(hub.title);
@@ -659,7 +659,7 @@ export default function Locations({ state: propState, city: propCity }: Location
 
           {/* Bowling Experiences Section */}
           <div className="mt-8">
-            <h2 className="text-2xl font-bold mb-6 text-center">Explore Bowling Experiences</h2>
+            <h1 className="text-2xl font-bold mb-6 text-center">Explore Bowling Experiences</h1>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <Link href="/cosmic-bowling" data-testid="link-cosmic-bowling">
                 <Card className="hover-elevate cursor-pointer h-full">
@@ -730,10 +730,10 @@ export default function Locations({ state: propState, city: propCity }: Location
             {/* Photo Gallery Section */}
             {cityPhotos.length > 0 && (
               <section data-testid="section-city-photos">
-                <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                <h1 className="text-2xl font-bold mb-4 flex items-center gap-2">
                   <ImageIcon className="h-6 w-6 text-primary" />
                   Photos from {canonicalCity} Bowling Alleys
-                </h2>
+                </h1>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {cityPhotos.map((photo, idx) => (
                     <div
@@ -760,10 +760,10 @@ export default function Locations({ state: propState, city: propCity }: Location
             {/* Top 5 Bowling Alleys Section */}
             {top5Venues.length > 0 && (
               <section data-testid="section-top-5">
-                <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                <h1 className="text-2xl font-bold mb-4 flex items-center gap-2">
                   <Trophy className="h-6 w-6 text-yellow-500" />
                   Top {Math.min(5, top5Venues.length)} Bowling Alleys in {canonicalCity}
-                </h2>
+                </h1>
                 <p className="text-muted-foreground mb-6">
                   The highest-rated bowling centers based on Google reviews
                 </p>
@@ -831,10 +831,10 @@ export default function Locations({ state: propState, city: propCity }: Location
 
             {/* Bowling Experiences Section */}
             <section data-testid="section-experiences">
-              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+              <h1 className="text-2xl font-bold mb-4 flex items-center gap-2">
                 <Sparkles className="h-6 w-6 text-purple-500" />
                 Bowling Experiences in {canonicalCity}
-              </h2>
+              </h1>
               <p className="text-muted-foreground mb-6">
                 Discover unique bowling experiences available in {canonicalCity}, {selectedState}
               </p>
@@ -908,10 +908,10 @@ export default function Locations({ state: propState, city: propCity }: Location
             {/* Map Section */}
             {Object.keys(filteredVenuesByCity).length > 0 && (
               <section data-testid="section-map">
-                <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                <h1 className="text-2xl font-bold mb-4 flex items-center gap-2">
                   <MapPin className="h-6 w-6 text-red-500" />
                   Map of Bowling Alleys in {canonicalCity}
-                </h2>
+                </h1>
                 <CityMap
                   venues={Object.values(filteredVenuesByCity).flat()}
                   onVenueClick={(venueId) => {
@@ -924,7 +924,7 @@ export default function Locations({ state: propState, city: propCity }: Location
 
             {/* All Bowling Alleys Section */}
             <section data-testid="section-all-venues">
-              <h2 className="text-2xl font-bold mb-4">All Bowling Alleys</h2>
+              <h1 className="text-2xl font-bold mb-4">All Bowling Alleys</h1>
               {Object.entries(filteredVenuesByCity)
                 .sort(([cityA], [cityB]) => {
                   if (cityA.toLowerCase() === canonicalCity.toLowerCase()) return -1;

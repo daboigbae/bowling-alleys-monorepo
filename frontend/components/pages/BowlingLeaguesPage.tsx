@@ -599,7 +599,7 @@ export default function BowlingLeagues({ state: propState, city: propCity }: Bow
       {/* City Map - Only show when viewing a specific city */}
       {selectedCity && displayCity && Object.keys(filteredVenuesByCity).length > 0 && (
         <div className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4">Map View</h2>
+          <h1 className="text-2xl font-semibold mb-4">Map View</h1>
           <CityMap
             venues={Object.values(filteredVenuesByCity).flat()}
             onVenueClick={handleVenueClick}

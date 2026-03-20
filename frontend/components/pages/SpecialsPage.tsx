@@ -567,7 +567,7 @@ export default function Specials({ state: propState, city: propCity }: SpecialsP
 
       {selectedCity && displayCity && Object.keys(filteredVenuesByCity).length > 0 && (
         <div className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4">Map View</h2>
+          <h1 className="text-2xl font-semibold mb-4">Map View</h1>
           <CityMap
             venues={Object.values(filteredVenuesByCity).flat()}
             onVenueClick={handleVenueClick}
@@ -719,9 +719,9 @@ export default function Specials({ state: propState, city: propCity }: SpecialsP
             })
             .map(([city, venues]) => (
               <div key={city}>
-                <h2 className="text-2xl font-semibold mb-4">
+                <h1 className="text-2xl font-semibold mb-4">
                   {city === displayCity ? city : `${city} (Nearby)`}
-                </h2>
+                </h1>
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                   {venues.map((venue) => (
                     <VenueCard

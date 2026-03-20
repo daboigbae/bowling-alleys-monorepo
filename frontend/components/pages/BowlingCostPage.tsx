@@ -162,7 +162,7 @@ export default function BowlingCost({ state: propState, city: propCity }: Bowlin
   const PricingCard = ({ report, title }: { report: PricingReport; title: string }) => (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold mb-2">{title}</h2>
+        <h1 className="text-2xl font-bold mb-2">{title}</h1>
         <p className="text-muted-foreground">
           Based on {report.venueCount} bowling {report.venueCount === 1 ? "alley" : "alleys"}
         </p>
@@ -355,7 +355,7 @@ export default function BowlingCost({ state: propState, city: propCity }: Bowlin
                 />
 
                 <div className="mt-12">
-                  <h2 className="text-2xl font-bold mb-6">Browse Bowling Costs by State</h2>
+                  <h1 className="text-2xl font-bold mb-6">Browse Bowling Costs by State</h1>
                   <StateSelector
                     states={states}
                     isLoading={statesLoading}
@@ -414,9 +414,9 @@ export default function BowlingCost({ state: propState, city: propCity }: Bowlin
                 <PricingCard report={statePricing} title={`${displayState} Average Bowling Costs`} />
 
                 <div className="mt-12">
-                  <h2 className="text-2xl font-bold mb-6">
+                  <h1 className="text-2xl font-bold mb-6">
                     Browse Bowling Costs by City in {displayState}
-                  </h2>
+                  </h1>
                   {citiesLoading ? (
                     <div className="text-center py-8">
                       <p className="text-muted-foreground">Loading cities...</p>
@@ -519,7 +519,7 @@ export default function BowlingCost({ state: propState, city: propCity }: Bowlin
             {/* City Map - Only show when viewing a specific city */}
             {selectedCity && displayCity && cityVenues.length > 0 && (
               <div className="mt-12 mb-8">
-                <h2 className="text-2xl font-semibold mb-4">Map View</h2>
+                <h1 className="text-2xl font-semibold mb-4">Map View</h1>
                 <CityMap
                   venues={cityVenues}
                   onVenueClick={(venueId) => {
@@ -531,9 +531,9 @@ export default function BowlingCost({ state: propState, city: propCity }: Bowlin
 
             {/* Bowling Alleys List - Always show if we have city/state */}
             <div className="mt-12">
-              <h2 className="text-2xl font-bold mb-6">
+              <h1 className="text-2xl font-bold mb-6">
                 Bowling Alleys in {displayCity}, {displayState}
-              </h2>
+              </h1>
               {cityVenuesLoading ? (
                 <div className="text-center py-8">
                   <p className="text-muted-foreground">Loading bowling alleys...</p>
