@@ -57,10 +57,26 @@ export function generateMetadata({
   };
 }
 
-import SpecialsPage from "@/components/pages/SpecialsPage";
+import dynamic from "next/dynamic";
+const SpecialsPage = dynamic(() => import("@/components/pages/SpecialsPage"), { ssr: false });
 
 export default function Specials({ params }: { params?: { params?: string[] } }) {
-  const state = safeDecodeParam(params?.params?.[0]);
-  const city = safeDecodeParam(params?.params?.[1]);
-  return <SpecialsPage state={state} city={city} />;
+  const stateParam = safeDecodeParam(params?.params?.[0]);
+  const cityParam = safeDecodeParam(params?.params?.[1]);
+
+  let h1 = "Bowling Specials & Deals Near You";
+  if (stateParam && cityParam) {
+    const fullState = abbreviationToState[stateParam.toUpperCase()] ?? stateParam;
+    h1 = "Bowling Specials & Deals in {city}, {fullState}".replace('{city}', cityParam).replace('{fullState}', fullState);
+  } else if (stateParam) {
+    const fullState = abbreviationToState[stateParam.toUpperCase()] ?? stateParam;
+    h1 = "Bowling Specials & Deals in {fullState}".replace('{fullState}', fullState);
+  }
+
+  return (
+    <>
+      <h1 className="sr-only">{h1}</h1>
+      <SpecialsPage state={stateParam} city={cityParam} />
+    </>
+  );
 }

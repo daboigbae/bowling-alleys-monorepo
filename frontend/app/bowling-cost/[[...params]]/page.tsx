@@ -57,10 +57,26 @@ export function generateMetadata({
   };
 }
 
-import BowlingCostPage from "@/components/pages/BowlingCostPage";
+import dynamic from "next/dynamic";
+const BowlingCostPage = dynamic(() => import("@/components/pages/BowlingCostPage"), { ssr: false });
 
 export default function BowlingCost({ params }: { params?: { params?: string[] } }) {
-  const state = safeDecodeParam(params?.params?.[0]);
-  const city = safeDecodeParam(params?.params?.[1]);
-  return <BowlingCostPage state={state} city={city} />;
+  const stateParam = safeDecodeParam(params?.params?.[0]);
+  const cityParam = safeDecodeParam(params?.params?.[1]);
+
+  let h1 = "How Much Does Bowling Cost? Prices & Fees";
+  if (stateParam && cityParam) {
+    const fullState = abbreviationToState[stateParam.toUpperCase()] ?? stateParam;
+    h1 = "Bowling Costs & Prices in {city}, {fullState}".replace('{city}', cityParam).replace('{fullState}', fullState);
+  } else if (stateParam) {
+    const fullState = abbreviationToState[stateParam.toUpperCase()] ?? stateParam;
+    h1 = "Bowling Costs & Prices in {fullState}".replace('{fullState}', fullState);
+  }
+
+  return (
+    <>
+      <h1 className="sr-only">{h1}</h1>
+      <BowlingCostPage state={stateParam} city={cityParam} />
+    </>
+  );
 }

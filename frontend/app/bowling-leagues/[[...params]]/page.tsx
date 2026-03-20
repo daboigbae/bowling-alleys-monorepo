@@ -57,7 +57,8 @@ export function generateMetadata({
   };
 }
 
-import BowlingLeaguesPage from "@/components/pages/BowlingLeaguesPage";
+import dynamic from "next/dynamic";
+const BowlingLeaguesPage = dynamic(() => import("@/components/pages/BowlingLeaguesPage"), { ssr: false });
 
 export default function BowlingLeagues({ params }: { params: { params?: string[] } }) {
   const state = safeDecodeParam(params?.params?.[0]);

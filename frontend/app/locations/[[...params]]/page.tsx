@@ -73,10 +73,26 @@ export function generateMetadata({
   };
 }
 
-import LocationsPage from "@/components/pages/LocationsPage";
+import dynamic from "next/dynamic";
+const LocationsPage = dynamic(() => import("@/components/pages/LocationsPage"), { ssr: false });
 
 export default function Locations({ params }: { params?: { params?: string[] } }) {
-  const state = safeDecodeParam(params?.params?.[0]);
-  const city = safeDecodeParam(params?.params?.[1]);
-  return <LocationsPage state={state} city={city} />;
+  const stateParam = safeDecodeParam(params?.params?.[0]);
+  const cityParam = safeDecodeParam(params?.params?.[1]);
+
+  let h1 = "Find Bowling Alleys by Location | All 50 States";
+  if (stateParam && cityParam) {
+    const fullState = abbreviationToState[stateParam.toUpperCase()] ?? stateParam;
+    h1 = "Bowling Alleys in {city}, {fullState}".replace('{city}', cityParam).replace('{fullState}', fullState);
+  } else if (stateParam) {
+    const fullState = abbreviationToState[stateParam.toUpperCase()] ?? stateParam;
+    h1 = "Bowling Alleys in {fullState}".replace('{fullState}', fullState);
+  }
+
+  return (
+    <>
+      <h1 className="sr-only">{h1}</h1>
+      <LocationsPage state={stateParam} city={cityParam} />
+    </>
+  );
 }
