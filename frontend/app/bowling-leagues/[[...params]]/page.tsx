@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
 import { safeDecodeParam } from "@/lib/params";
 
 const abbreviationToState: Record<string, string> = {
@@ -58,9 +57,7 @@ export function generateMetadata({
   };
 }
 
-const BowlingLeaguesPage = dynamic(() => import("@/components/pages/BowlingLeaguesPage"), {
-  ssr: true,
-});
+import BowlingLeaguesPage from "@/components/pages/BowlingLeaguesPage";
 
 export default function BowlingLeagues({ params }: { params: { params?: string[] } }) {
   const state = safeDecodeParam(params?.params?.[0]);

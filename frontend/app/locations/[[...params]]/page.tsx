@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
+
 import { safeDecodeParam } from "@/lib/params";
 
 // Static mapping — no API call needed for metadata
@@ -73,10 +73,7 @@ export function generateMetadata({
   };
 }
 
-// Client component for interactivity
-const LocationsPage = dynamic(() => import("@/components/pages/LocationsPage"), {
-  ssr: true,
-});
+import LocationsPage from "@/components/pages/LocationsPage";
 
 export default function Locations({ params }: { params?: { params?: string[] } }) {
   const state = safeDecodeParam(params?.params?.[0]);
