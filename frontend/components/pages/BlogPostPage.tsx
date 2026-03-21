@@ -10,6 +10,7 @@ import { type BlogPost } from '@/lib/blog-server';
 import AuthModal from '@/components/AuthModal';
 import RelatedBlogPosts from '@/components/RelatedBlogPosts';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface BlogPostPageProps {
   post: BlogPost;
@@ -192,7 +193,7 @@ export default function BlogPostPage({ post, allPosts }: BlogPostPageProps) {
             <CardContent className="p-6">
               <div className="prose prose-lg max-w-none" data-testid="content-blog-post">
                 {post.content ? (
-                  <ReactMarkdown>{post.content}</ReactMarkdown>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
                 ) : (
                   <div className="text-muted-foreground">Failed to load blog content.</div>
                 )}
