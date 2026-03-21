@@ -166,6 +166,21 @@ export function generateDashboardHTML(report: WeeklyReport): string {
     )
     .join("");
 
+  // Top venue pages
+  const topVenueRows = ga4.topPages
+    .filter((p) => p.path.startsWith("/venue/"))
+    .slice(0, 16)
+    .map((p, i) => `
+      <tr>
+        <td style="color:#8b8fa3;font-size:0.8rem;width:2rem">${String(i + 1).padStart(2, "0")}</td>
+        <td class="page-path"><a href="https://bowlingalleys.io${escapeHtml(p.path)}" target="_blank" style="color:#818cf8">${escapeHtml(p.path)}</a></td>
+        <td>${fmt(p.pageviews)}</td>
+        <td>${fmt(p.users)}</td>
+        <td>${pct(p.bounceRate)}</td>
+        <td>${p.avgEngagementTime.toFixed(0)}s</td>
+      </tr>`)
+    .join("");
+
   // Near-miss queries
   const nearMissRows = gsc.queryGroups.nearMiss
     .slice(0, 10)
@@ -637,6 +652,15 @@ export function generateDashboardHTML(report: WeeklyReport): string {
         <h3>Device Breakdown</h3>
         <canvas id="deviceChart"></canvas>
       </div>
+    </div>
+
+    <!-- Top Venue Pages -->
+    <h2 class="section-title">Top Venue Pages This Week</h2>
+    <div class="table-card">
+      ${topVenueRows ? `<table>
+        <thead><tr><th>#</th><th>Venue</th><th>Views</th><th>Users</th><th>Bounce</th><th>Eng Time</th></tr></thead>
+        <tbody>${topVenueRows}</tbody>
+      </table>` : '<p style="color:#8b8fa3;padding:1rem">No venue pages tracked this week.</p>'}
     </div>
 
     <!-- GA4 Top Pages -->

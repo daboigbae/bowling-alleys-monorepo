@@ -460,6 +460,19 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/^file:\
     }
   }
 
+  const topVenuePages = report.ga4.topPages
+    .filter((p) => p.path.startsWith("/venue/"))
+    .slice(0, 16);
+
+  console.log("\nTop Venue Pages This Week:");
+  if (topVenuePages.length === 0) {
+    console.log("  No venue pages tracked this week.");
+  } else {
+    topVenuePages.forEach((v, i) => {
+      console.log(`  ${String(i + 1).padStart(2, "0")}. ${v.path} — ${v.pageviews} pageviews, ${v.users} users`);
+    });
+  }
+
   console.log("\nInsights:");
   report.insights.forEach((insight, i) => console.log(`  ${i + 1}. ${insight}`));
 

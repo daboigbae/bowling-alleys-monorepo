@@ -123,7 +123,7 @@ export async function fetchGA4Data(
       { name: "bounceRate" },
     ],
     orderBys: [{ metric: { metricName: "screenPageViews" }, desc: true }],
-    limit: 30,
+    limit: 50,
   });
 
   const topPages = (pagesRes.rows ?? []).map((row) => ({
