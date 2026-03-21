@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import AuthModal from "@/components/AuthModal";
 import { MaintenanceBanner } from "@/components/MaintenanceBanner";
-import { getVenues, Venue } from "@/lib/firestore";
+import { getVenues, getHubs, getCityFromHubTitle, Venue } from "@/lib/firestore";
 import { useCityHubMap } from "@/lib/cityHubMap";
 import { trackEvent } from "@/lib/analytics";
 import { useAuth } from "@/providers/auth-provider";
@@ -61,23 +61,25 @@ function stripMarkdownForPreview(raw: string): string {
 }
 
 const BROWSE_CITIES: { city: string; stateAbbr: string }[] = [
-  { city: "New York", stateAbbr: "NY" },
-  { city: "Los Angeles", stateAbbr: "CA" },
+  { city: "Ashburn", stateAbbr: "VA" },
   { city: "Chicago", stateAbbr: "IL" },
-  { city: "Houston", stateAbbr: "TX" },
-  { city: "Phoenix", stateAbbr: "AZ" },
+  { city: "New York", stateAbbr: "NY" },
+  { city: "Denver", stateAbbr: "CO" },
   { city: "Dallas", stateAbbr: "TX" },
+  { city: "Atlanta", stateAbbr: "GA" },
+  { city: "Los Angeles", stateAbbr: "CA" },
+  { city: "Phoenix", stateAbbr: "AZ" },
 ];
 
 const BROWSE_STATES: { label: string; stateAbbr: string }[] = [
   { label: "California", stateAbbr: "CA" },
-  { label: "Texas", stateAbbr: "TX" },
-  { label: "Florida", stateAbbr: "FL" },
   { label: "New York", stateAbbr: "NY" },
-  { label: "Ohio", stateAbbr: "OH" },
-  { label: "Illinois", stateAbbr: "IL" },
-  { label: "Penn.", stateAbbr: "PA" },
+  { label: "Pennsylvania", stateAbbr: "PA" },
+  { label: "Texas", stateAbbr: "TX" },
   { label: "Michigan", stateAbbr: "MI" },
+  { label: "Ohio", stateAbbr: "OH" },
+  { label: "Massachusetts", stateAbbr: "MA" },
+  { label: "Virginia", stateAbbr: "VA" },
 ];
 
 export default function Home() {
@@ -187,6 +189,18 @@ export default function Home() {
     .filter(Boolean) as BlogPost[];
 
   const cityHubMap = useCityHubMap();
+
+  const { data: hubs = [] } = useQuery({ queryKey: ["hubs"], queryFn: getHubs });
+  const cityHeroImageMap = useMemo(() => {
+    return Object.fromEntries(
+      hubs
+        .filter((h) => h.heroOgImageUrl && !h.heroOgImageUrl.startsWith("data:"))
+        .map((h) => {
+          const city = (h.city ?? getCityFromHubTitle(h.title)).toLowerCase();
+          return [city, h.heroOgImageUrl!];
+        })
+    );
+  }, [hubs]);
 
   // Exact cities from design (screenshot), with real venue counts from data
   const topCities = useMemo(() => {
@@ -484,21 +498,26 @@ export default function Home() {
                   "from-amber-800 to-amber-950",
                   "from-violet-900 to-violet-950",
                   "from-teal-800 to-teal-950",
-                ].slice(0, topCities.length).map((gradient, i) => (
-                  <Link
-                    key={`${topCities[i].stateAbbr}-${topCities[i].city}`}
-                    href={cityHubMap[topCities[i].city.toLowerCase()] ?? `/locations/${encodeURIComponent(topCities[i].stateAbbr)}/${encodeURIComponent(topCities[i].city)}`}
-                    className={`rounded-xl bg-gradient-to-br ${gradient} p-6 text-white hover:opacity-95 transition-opacity min-h-[100px] flex flex-col justify-end`}
-                    data-testid={`browse-city-${topCities[i].city.toLowerCase().replace(/\s+/g, "-")}`}
-                  >
-                    <span className="block font-semibold text-lg">
-                      {topCities[i].city}
-                    </span>
-                    <span className="block text-white/90 text-sm">
-                      {topCities[i].count} venue{topCities[i].count !== 1 ? "s" : ""}
-                    </span>
-                  </Link>
-                ))}
+                  "from-blue-900 to-blue-950",
+                  "from-rose-900 to-rose-950",
+                ].slice(0, topCities.length).map((gradient, i) => {
+                  const cityKey = topCities[i].city.toLowerCase();
+                  const heroImage = cityHeroImageMap[cityKey];
+                  return (
+                    <Link
+                      key={`${topCities[i].stateAbbr}-${topCities[i].city}`}
+                      href={cityHubMap[cityKey] ?? `/locations/${encodeURIComponent(topCities[i].stateAbbr)}/${encodeURIComponent(topCities[i].city)}`}
+                      className={`rounded-xl p-6 text-white hover:opacity-95 transition-opacity min-h-[100px] flex flex-col justify-end relative overflow-hidden ${heroImage ? "" : `bg-gradient-to-br ${gradient}`}`}
+                      style={heroImage ? { backgroundImage: `url(${heroImage})`, backgroundSize: "cover", backgroundPosition: "center" } : {}}
+                      data-testid={`browse-city-${topCities[i].city.toLowerCase().replace(/\s+/g, "-")}`}
+                    >
+                      {heroImage && <div className="absolute inset-0 bg-black/40" />}
+                      <span className="relative block font-semibold text-lg">
+                        {topCities[i].city}
+                      </span>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           </section>
