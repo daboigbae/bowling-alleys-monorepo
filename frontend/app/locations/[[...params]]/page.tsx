@@ -76,6 +76,71 @@ export function generateMetadata({
 import dynamic from "next/dynamic";
 const LocationsPage = dynamic(() => import("@/components/pages/LocationsPage"), { ssr: false });
 
+function buildLocationSchema(stateParam?: string, cityParam?: string) {
+  if (cityParam && stateParam) {
+    const fullState = abbreviationToState[stateParam.toUpperCase()] ?? stateParam;
+    const url = `${siteUrl}/locations/${stateParam}/${encodeURIComponent(cityParam)}`;
+    return {
+      "@context": "https://schema.org",
+      "@type": "SearchResultsPage",
+      name: `Bowling Alleys in ${cityParam}, ${fullState}`,
+      description: `Find and compare bowling alleys in ${cityParam}, ${fullState}. Check prices, hours, and reviews.`,
+      url,
+      about: {
+        "@type": "City",
+        name: cityParam,
+        containedInPlace: { "@type": "State", name: fullState },
+      },
+      breadcrumb: {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: siteUrl },
+          { "@type": "ListItem", position: 2, name: "Locations", item: `${siteUrl}/locations` },
+          { "@type": "ListItem", position: 3, name: fullState, item: `${siteUrl}/locations/${stateParam}` },
+          { "@type": "ListItem", position: 4, name: cityParam, item: url },
+        ],
+      },
+    };
+  }
+
+  if (stateParam) {
+    const fullState = abbreviationToState[stateParam.toUpperCase()] ?? stateParam;
+    const url = `${siteUrl}/locations/${stateParam}`;
+    return {
+      "@context": "https://schema.org",
+      "@type": "SearchResultsPage",
+      name: `Bowling Alleys in ${fullState}`,
+      description: `Browse bowling alleys across ${fullState}. Find locations by city, compare prices, check hours, and read reviews.`,
+      url,
+      about: { "@type": "State", name: fullState },
+      breadcrumb: {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: siteUrl },
+          { "@type": "ListItem", position: 2, name: "Locations", item: `${siteUrl}/locations` },
+          { "@type": "ListItem", position: 3, name: fullState, item: url },
+        ],
+      },
+    };
+  }
+
+  // Root /locations page
+  return {
+    "@context": "https://schema.org",
+    "@type": "SearchResultsPage",
+    name: "Find Bowling Alleys by City or State",
+    description: "Browse 1,800+ bowling alleys across all 50 U.S. states. Search by city or state.",
+    url: `${siteUrl}/locations`,
+    breadcrumb: {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: siteUrl },
+        { "@type": "ListItem", position: 2, name: "Locations", item: `${siteUrl}/locations` },
+      ],
+    },
+  };
+}
+
 export default function Locations({ params }: { params?: { params?: string[] } }) {
   const stateParam = safeDecodeParam(params?.params?.[0]);
   const cityParam = safeDecodeParam(params?.params?.[1]);
@@ -89,8 +154,14 @@ export default function Locations({ params }: { params?: { params?: string[] } }
     h1 = "Bowling Alleys in {fullState}".replace('{fullState}', fullState);
   }
 
+  const schema = buildLocationSchema(stateParam, cityParam);
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
       <h1 className="hidden">{h1}</h1>
       <LocationsPage state={stateParam} city={cityParam} />
     </>

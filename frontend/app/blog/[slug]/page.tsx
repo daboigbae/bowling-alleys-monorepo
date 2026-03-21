@@ -66,6 +66,50 @@ export default function BlogPost({ params }: { params: { slug: string } }) {
     notFound();
   }
 
-  return <BlogPostPage post={post} allPosts={allPosts} />;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://bowlingalleys.io";
+  const postUrl = `${siteUrl}/blog/${params.slug}`;
+  const ogImage = post.image ? `${siteUrl}${post.image}` : `${siteUrl}/og-image.png`;
+
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    description: post.description ?? "",
+    image: ogImage,
+    url: postUrl,
+    datePublished: post.date,
+    dateModified: post.updated ?? post.date,
+    author: {
+      "@type": "Organization",
+      name: post.author ?? "BowlingAlleys.io",
+      url: siteUrl,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "BowlingAlleys.io",
+      url: siteUrl,
+      logo: { "@type": "ImageObject", url: `${siteUrl}/favicon.ico` },
+    },
+    mainEntityOfPage: { "@type": "WebPage", "@id": postUrl },
+    ...(post.tags?.length ? { keywords: post.tags.join(", ") } : {}),
+    breadcrumb: {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: siteUrl },
+        { "@type": "ListItem", position: 2, name: "Blog", item: `${siteUrl}/blog` },
+        { "@type": "ListItem", position: 3, name: post.title, item: postUrl },
+      ],
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
+      <BlogPostPage post={post} allPosts={allPosts} />
+    </>
+  );
 }
 
