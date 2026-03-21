@@ -24,12 +24,12 @@ const csGordon = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Find Bowling Alleys: Reviews & Locations - BowlingAlleys.io",
-  description: "Discover the best bowling alleys near you. Read reviews, compare prices, and find cosmic bowling, leagues, birthday parties, and more.",
-  keywords: "bowling alleys, bowling reviews, find bowling alleys, local bowling centers, bowling ratings",
+  title: "Bowling Alleys Near You — Find, Compare & Review | BowlingAlleys.io",
+  description: "Find bowling alleys near you. Compare prices, hours, and reviews across thousands of lanes. Search by city or state — cosmic bowling, leagues, parties and more.",
+  keywords: "bowling alleys near me, bowling alleys, find bowling, local bowling centers, bowling reviews",
   openGraph: {
-    title: "Find Bowling Alleys: Reviews & Locations - BowlingAlleys.io",
-    description: "Discover the best bowling alleys near you. Read reviews, compare prices, and find cosmic bowling, leagues, birthday parties, and more.",
+    title: "Bowling Alleys Near You — Find, Compare & Review | BowlingAlleys.io",
+    description: "Find bowling alleys near you. Compare prices, hours, and reviews across thousands of lanes. Search by city or state — cosmic bowling, leagues, parties and more.",
     url: "https://bowlingalleys.io",
     siteName: "BowlingAlleys.io",
     images: [
@@ -44,8 +44,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Find Bowling Alleys: Reviews & Locations - BowlingAlleys.io",
-    description: "Discover the best bowling alleys near you. Read reviews, compare prices, and find cosmic bowling, leagues, birthday parties, and more.",
+    title: "Bowling Alleys Near You — Find, Compare & Review | BowlingAlleys.io",
+    description: "Find bowling alleys near you. Compare prices, hours, and reviews across thousands of lanes. Search by city or state — cosmic bowling, leagues, parties and more.",
     images: ["https://bowlingalleys.io/attached_assets/find-your-lane.png"],
   },
 };

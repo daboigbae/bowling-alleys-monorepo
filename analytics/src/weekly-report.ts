@@ -245,6 +245,14 @@ export async function generateWeeklyReport(): Promise<WeeklyReport> {
 // Report Index Generator
 // ---------------------------------------------------------------------------
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 function generateReportIndex(): void {
   const reportsDir = resolve(__dirname, "../reports");
   const reports: Array<{ date: string; path: string }> = [];
@@ -290,6 +298,59 @@ function generateReportIndex(): void {
 
   // Sort all by date descending
   reports.sort((a, b) => b.date.localeCompare(a.date));
+
+  // Load experiments for the experiments section
+  const allExperiments = loadExperiments();
+  const runningExps = allExperiments.filter((e) => e.status === "running");
+  const completedExps = allExperiments.filter((e) => e.status !== "running").slice(0, 5);
+
+  const renderExperimentCard = (exp: ReturnType<typeof loadExperiments>[number]) => {
+    const statusClass = exp.status === "running" ? "running" : exp.status === "winner" ? "winner" : exp.status === "loser" ? "loser" : "completed";
+    const statusLabel = exp.status.toUpperCase();
+    const daysElapsed = exp.startDate
+      ? Math.floor((Date.now() - new Date(exp.startDate).getTime()) / 86400000)
+      : null;
+    const affectedPagesHtml = exp.affectedPages?.length
+      ? `<div class="exp-pages">${exp.affectedPages.map((p) => `<code>${escapeHtml(p)}</code>`).join(" ")}</div>`
+      : "";
+    const metaHtml = [
+      exp.startDate ? `Started ${exp.startDate}` : null,
+      daysElapsed !== null ? `${daysElapsed}d elapsed` : null,
+      exp.minDuration ? `Min duration: ${exp.minDuration}` : null,
+      exp.primaryMetric ? `Metric: ${escapeHtml(exp.primaryMetric)}` : null,
+    ]
+      .filter(Boolean)
+      .join(" &middot; ");
+    const resultHtml = exp.result
+      ? `<p class="exp-result">${escapeHtml(exp.result)}</p>`
+      : "";
+    const learningsHtml = exp.learnings
+      ? `<p class="exp-learnings"><strong>Learnings:</strong> ${escapeHtml(exp.learnings)}</p>`
+      : "";
+    return `<div class="exp-card ${statusClass}">
+      <div class="exp-header">
+        <span class="exp-status ${statusClass}">${statusLabel}</span>
+        <span class="exp-id">${escapeHtml(exp.id)}</span>
+        <span class="exp-name">${escapeHtml(exp.name)}</span>
+      </div>
+      <p class="exp-hypothesis">${escapeHtml(exp.hypothesis)}</p>
+      ${affectedPagesHtml}
+      <div class="exp-meta">${metaHtml}</div>
+      ${resultHtml}${learningsHtml}
+    </div>`;
+  };
+
+  const experimentsSection = `
+    <h2 class="section-title">Experiments</h2>
+    <p class="exp-count">${allExperiments.length} total &middot; ${runningExps.length} running &middot; ${completedExps.length} recently completed</p>
+    ${runningExps.length > 0
+      ? `<h3 class="exp-group-label running">Active</h3>${runningExps.map(renderExperimentCard).join("")}`
+      : '<p class="no-exp">No active experiments</p>'
+    }
+    ${completedExps.length > 0
+      ? `<h3 class="exp-group-label completed">Recently Completed</h3>${completedExps.map(renderExperimentCard).join("")}`
+      : ""
+    }`;
 
   // Group by month for display
   const grouped = new Map<string, typeof reports>();
@@ -382,6 +443,54 @@ ${links}
     .report-date { font-weight: 500; }
     .report-file { color: var(--text-dim); font-size: 0.8rem; font-family: monospace; }
     .empty { color: var(--text-dim); font-style: italic; padding: 2rem; text-align: center; }
+    .section-title {
+      font-size: 1rem;
+      color: var(--accent-light);
+      margin: 2rem 0 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .exp-count { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 1rem; }
+    .exp-group-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 1rem 0 0.5rem;
+    }
+    .exp-group-label.running { color: var(--accent-light); }
+    .exp-group-label.completed { color: var(--green); }
+    .no-exp { color: var(--text-dim); font-size: 0.85rem; font-style: italic; margin-bottom: 1rem; }
+    .exp-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+    .exp-card.running { border-left: 3px solid var(--accent); }
+    .exp-card.winner { border-left: 3px solid var(--green); }
+    .exp-card.loser { border-left: 3px solid var(--red); }
+    .exp-card.completed { border-left: 3px solid #8b8fa3; }
+    .exp-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+    .exp-status {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      flex-shrink: 0;
+    }
+    .exp-status.running { background: rgba(99,102,241,0.2); color: var(--accent-light); }
+    .exp-status.winner, .exp-status.completed { background: rgba(34,197,94,0.15); color: var(--green); }
+    .exp-status.loser { background: rgba(239,68,68,0.15); color: #ef4444; }
+    .exp-id { font-size: 0.7rem; color: var(--text-dim); font-family: monospace; }
+    .exp-name { font-weight: 600; font-size: 0.9rem; }
+    .exp-hypothesis { font-size: 0.82rem; color: var(--text-dim); margin-bottom: 0.4rem; line-height: 1.5; }
+    .exp-pages { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
+    .exp-pages code { font-size: 0.75rem; background: rgba(99,102,241,0.1); color: var(--accent-light); padding: 0.1rem 0.4rem; border-radius: 4px; }
+    .exp-meta { font-size: 0.75rem; color: var(--text-dim); }
+    .exp-result { font-size: 0.82rem; color: #22c55e; margin-top: 0.4rem; }
+    .exp-learnings { font-size: 0.82rem; color: var(--text-dim); margin-top: 0.25rem; }
     footer {
       margin-top: 3rem;
       padding-top: 1rem;
@@ -398,7 +507,9 @@ ${links}
       <h1>BowlingAlleys.io Weekly Reports</h1>
       <p>${reports.length} report${reports.length !== 1 ? "s" : ""} generated</p>
     </header>
+    <h2 class="section-title">Reports</h2>
 ${monthSections || '    <div class="empty">No reports yet. Run <code>npm run report</code> to generate your first one.</div>'}
+    ${experimentsSection}
     <footer>BowlingAlleys.io Analytics Pipeline</footer>
   </div>
 </body>

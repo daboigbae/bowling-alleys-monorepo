@@ -30,9 +30,9 @@ export function generateMetadata({
   const cityParam = safeDecodeParam(params?.params?.[1]);
 
   // Default — /locations index
-  let title = "Find Bowling Alleys by Location | All 50 States – BowlingAlleys.io";
+  let title = "Bowling Alleys Near You | Search by City or State – BowlingAlleys.io";
   let description =
-    "Browse 1,800+ bowling alleys across every U.S. state. Compare prices, hours, reviews, and amenities to plan your next bowling night.";
+    "Find bowling alleys near you. Search by city or state — compare prices, hours, reviews, and amenities across 1,800+ locations nationwide.";
   let canonicalPath = "/locations";
 
   if (stateParam && cityParam) {
