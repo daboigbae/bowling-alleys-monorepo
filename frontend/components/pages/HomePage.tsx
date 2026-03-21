@@ -18,6 +18,7 @@ import Image from "next/image";
 import AuthModal from "@/components/AuthModal";
 import { MaintenanceBanner } from "@/components/MaintenanceBanner";
 import { getVenues, Venue } from "@/lib/firestore";
+import { useCityHubMap } from "@/lib/cityHubMap";
 import { trackEvent } from "@/lib/analytics";
 import { useAuth } from "@/providers/auth-provider";
 const heroImage = "/attached_assets/stock_images/bowling_alley_lanes__1f6cc0b1.jpg";
@@ -184,6 +185,8 @@ export default function Home() {
   const featuredPosts = featuredBlogSlugs
     .map((slug) => blogPosts.find((p) => p.slug === slug))
     .filter(Boolean) as BlogPost[];
+
+  const cityHubMap = useCityHubMap();
 
   // Exact cities from design (screenshot), with real venue counts from data
   const topCities = useMemo(() => {
@@ -484,7 +487,7 @@ export default function Home() {
                 ].slice(0, topCities.length).map((gradient, i) => (
                   <Link
                     key={`${topCities[i].stateAbbr}-${topCities[i].city}`}
-                    href={`/locations/${encodeURIComponent(topCities[i].stateAbbr)}/${encodeURIComponent(topCities[i].city)}`}
+                    href={cityHubMap[topCities[i].city.toLowerCase()] ?? `/locations/${encodeURIComponent(topCities[i].stateAbbr)}/${encodeURIComponent(topCities[i].city)}`}
                     className={`rounded-xl bg-gradient-to-br ${gradient} p-6 text-white hover:opacity-95 transition-opacity min-h-[100px] flex flex-col justify-end`}
                     data-testid={`browse-city-${topCities[i].city.toLowerCase().replace(/\s+/g, "-")}`}
                   >

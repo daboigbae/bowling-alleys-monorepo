@@ -61,11 +61,6 @@ export default function CityGuidesPage() {
                           <p className="text-sm text-muted-foreground mb-3">
                             {cardDesc}
                           </p>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <span className="bg-primary/10 text-primary px-2 py-1 rounded">
-                              Guide Available
-                            </span>
-                          </div>
                         </div>
                       </div>
                     </Card>

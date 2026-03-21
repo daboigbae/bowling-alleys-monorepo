@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { getTopAlleys } from "@/lib/firestore";
+import { getTopAlleys, getHubs, getCityFromHubTitle, abbreviationToState } from "@/lib/firestore";
 import Image from "next/image";
 import { SiFacebook, SiReddit, SiCrunchbase } from "react-icons/si";
 import { Crown, Loader2 } from "lucide-react";
@@ -22,6 +22,24 @@ export default function Footer({ initialTopAlleys }: FooterProps) {
     queryFn: getTopAlleys,
     initialData: initialTopAlleys,
   });
+
+  const { data: hubs = [] } = useQuery({
+    queryKey: ["hubs"],
+    queryFn: getHubs,
+  });
+
+  // Group hubs by state, sorted alphabetically
+  const hubsByState = hubs.reduce<Record<string, { slug: string; city: string }[]>>((acc, hub) => {
+    const state = hub.stateCode ?? "";
+    const stateName = abbreviationToState[state] || state;
+    if (!stateName) return acc;
+    const city = hub.city ?? getCityFromHubTitle(hub.title);
+    if (!city) return acc;
+    if (!acc[stateName]) acc[stateName] = [];
+    acc[stateName].push({ slug: hub.slug, city });
+    return acc;
+  }, {});
+  const sortedStates = Object.keys(hubsByState).sort();
 
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterStatus, setNewsletterStatus] = useState<"idle" | "loading" | "success" | "duplicate" | "error" | "rateLimit">("idle");
@@ -440,15 +458,45 @@ export default function Footer({ initialTopAlleys }: FooterProps) {
             </div>
           </div>
 
+          {/* Top Bowling Cities by State */}
+          {sortedStates.length > 0 && (
+            <div className="py-12 border-t">
+              <h3 className="text-xl font-bold mb-6" style={{ color: "#0d3149" }}>
+                Top Bowling Cities
+              </h3>
+              <div className="columns-2 md:columns-3 lg:columns-4 gap-8">
+                {sortedStates.map((stateName) => (
+                  <div key={stateName} className="break-inside-avoid mb-5">
+                    <p className="font-bold mb-2" style={{ color: "#0d3149" }}>
+                      {stateName}
+                    </p>
+                    <div className="flex flex-col gap-1">
+                      {hubsByState[stateName].map((hub) => (
+                        <Link
+                          key={hub.slug}
+                          href={`/${hub.slug}`}
+                          className="hover:text-primary transition-colors"
+                          style={{ color: "#0d3149" }}
+                        >
+                          {hub.city}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Bottom Section */}
-          <div className="pt-8 border-t text-center space-y-2">
+          <div className="pt-8 text-center space-y-2">
             <p className="text-xs" style={{ color: "#0d3149" }}>
               We strive to keep our prices, specials, and venue information as
               up to date as possible. For the most accurate and current details,
               please visit each bowling alley's official website.
             </p>
             <p style={{ color: "#0d3149" }}>
-              © 2025 BowlingAlleys.io. All rights reserved. Find the best
+              © {new Date().getFullYear()} BowlingAlleys.io. All rights reserved. Find the best
               bowling experiences near you.
             </p>
             <p className="text-xs" style={{ color: "#0d3149" }}>
