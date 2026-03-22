@@ -188,6 +188,11 @@ export default function Home() {
     .map((slug) => blogPosts.find((p) => p.slug === slug))
     .filter(Boolean) as BlogPost[];
 
+  const bowlingNewsPosts = [...blogPosts]
+    .filter((p) => (p.tags ?? []).includes("bowling-news"))
+    .sort((a, b) => new Date(b.updated ?? b.date ?? 0).getTime() - new Date(a.updated ?? a.date ?? 0).getTime())
+    .slice(0, 2);
+
   const cityHubMap = useCityHubMap();
 
   const { data: hubs = [] } = useQuery({ queryKey: ["hubs"], queryFn: getHubs });
@@ -558,6 +563,68 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Bowling News Section */}
+        {bowlingNewsPosts.length > 0 && (
+          <section className="py-12 md:py-16 bg-muted/30">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                <h2 className="text-2xl font-semibold text-foreground">
+                  🎳 Bowling News
+                </h2>
+                <Link
+                  href="/blog?category=bowling-news"
+                  className="text-primary hover:underline font-medium inline-flex items-center gap-1 shrink-0"
+                  onClick={() => trackEvent("home_bowling_news_see_all", "engagement", "See all bowling news")}
+                >
+                  See all
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {bowlingNewsPosts.map((post) => (
+                  <Card
+                    key={post.slug}
+                    className="relative hover-elevate transition-colors h-full group bg-white border border-gray-200"
+                  >
+                    <Link
+                      href={`/blog/${post.slug}`}
+                      className="absolute inset-0 z-10 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      aria-labelledby={`news-title-${post.slug}`}
+                      onClick={() => trackEvent("home_bowling_news_click", "engagement", post.slug)}
+                    />
+                    <CardHeader>
+                      <CardTitle
+                        id={`news-title-${post.slug}`}
+                        className="text-lg group-hover:text-primary transition-colors"
+                        style={{ color: "#0d3149" }}
+                      >
+                        {post.title}
+                      </CardTitle>
+                      <CardDescription className="line-clamp-2" style={{ color: "#6b7280" }}>
+                        {post.description}
+                      </CardDescription>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Calendar className="w-3 h-3" style={{ color: "#6b7280" }} />
+                        <time dateTime={post.updated ?? post.date ?? ""}>
+                          {(post.updated || post.date)
+                            ? new Date(post.updated || post.date || "").toLocaleDateString()
+                            : "—"}
+                        </time>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {stripMarkdownForPreview(post.content ?? "").slice(0, 120)}
+                        {stripMarkdownForPreview(post.content ?? "").length > 120 ? "…" : ""}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Featured Posts Section */}
         <section className="py-12 md:py-16" style={{ backgroundColor: "#ffffff" }}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -565,7 +632,7 @@ export default function Home() {
               className="text-2xl font-semibold mb-6"
               style={{ color: "#000000" }}
             >
-              Featured Posts
+              Most Popular Bowling Blogs
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {featuredPosts.slice(0, 4).map((post) => (

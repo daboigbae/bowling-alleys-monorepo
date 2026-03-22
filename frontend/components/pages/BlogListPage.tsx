@@ -83,6 +83,7 @@ export default function BlogListPage({ initialPosts }: BlogListPageProps) {
   // Category mapping based on tags and content
   const getPostCategory = (post: BlogPost) => {
     const tags = post.tags ?? [];
+    if (tags.includes("bowling-news")) return "bowling-news";
     if (tags.includes("beginners")) return "beginners";
     if (tags.includes("advanced")) return "advanced";
     if (tags.includes("social")) return "social";
@@ -97,6 +98,7 @@ export default function BlogListPage({ initialPosts }: BlogListPageProps) {
 
   const categories = [
     { id: "all", label: "All Posts", count: posts?.length || 0 },
+    { id: "bowling-news", label: "Bowling News", count: 0 },
     { id: "beginners", label: "Beginner Guides", count: 0 },
     { id: "advanced", label: "Advanced Tips", count: 0 },
     { id: "social", label: "Night Out Ideas", count: 0 },
