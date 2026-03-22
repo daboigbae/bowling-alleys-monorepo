@@ -2508,6 +2508,45 @@ async function getWheelchairAccessibleLocationsForSitemap() {
   }
 }
 
+// Helper function to get states with any venues (for bowling-with-friends)
+async function getBowlingWithFriendsStatesForSitemap() {
+  try {
+    const venues = await getVenuesForSitemap();
+    const statesSet = new Set(venues.map((v) => v.state).filter(Boolean));
+    const states = Array.from(statesSet);
+    console.log("getBowlingWithFriendsStatesForSitemap: Unique states:", states.length);
+    return states;
+  } catch (error) {
+    console.error("Error fetching bowling-with-friends states for sitemap:", error);
+    return [];
+  }
+}
+
+// Helper function to get all state/city combos (for bowling-with-friends)
+async function getBowlingWithFriendsLocationsForSitemap() {
+  try {
+    const venues = await getVenuesForSitemap();
+    const locations: { state: string | undefined; city: string | undefined }[] = [];
+    const statesSet = new Set(venues.map((v) => v.state).filter(Boolean));
+    const states = Array.from(statesSet);
+
+    for (const state of states) {
+      const citiesSet = new Set(
+        venues.filter((v) => v.state === state).map((v) => v.city).filter(Boolean)
+      );
+      for (const city of Array.from(citiesSet)) {
+        locations.push({ state, city });
+      }
+    }
+
+    console.log("getBowlingWithFriendsLocationsForSitemap: Total locations:", locations.length);
+    return locations;
+  } catch (error) {
+    console.error("Error fetching bowling-with-friends locations for sitemap:", error);
+    return [];
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check route for debugging
   app.get("/api/health", (req, res) => {
@@ -3918,6 +3957,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("Adding tournaments city URL to sitemap:", tournamentsCityUrl);
         smStream.write({
           url: tournamentsCityUrl,
+          changefreq: "weekly",
+          priority: 0.5,
+          lastmod: new Date().toISOString(),
+        });
+      });
+
+      // Add base bowling-with-friends page
+      smStream.write({
+        url: "/bowling-with-friends",
+        changefreq: "weekly",
+        priority: 0.7,
+        lastmod: new Date().toISOString(),
+      });
+
+      // Add state-specific bowling-with-friends pages
+      const bowlingWithFriendsStates = await getBowlingWithFriendsStatesForSitemap();
+      console.log(
+        "Sitemap generation: Bowling With Friends states found:",
+        bowlingWithFriendsStates.length,
+      );
+
+      bowlingWithFriendsStates.forEach((state) => {
+        if (!state) return;
+        const stateSlug = state.replace(/\s+/g, "-");
+        const bwfStateUrl = `/bowling-with-friends/${encodeURIComponent(stateSlug)}`;
+        console.log("Adding bowling-with-friends state URL to sitemap:", bwfStateUrl);
+        smStream.write({
+          url: bwfStateUrl,
+          changefreq: "weekly",
+          priority: 0.6,
+          lastmod: new Date().toISOString(),
+        });
+      });
+
+      // Add city-specific bowling-with-friends pages
+      const bowlingWithFriendsLocations = await getBowlingWithFriendsLocationsForSitemap();
+      console.log(
+        "Sitemap generation: Bowling With Friends locations found:",
+        bowlingWithFriendsLocations.length,
+      );
+
+      bowlingWithFriendsLocations.forEach((location) => {
+        const stateSlug = location.state!.replace(/\s+/g, "-");
+        const citySlug = location.city!.toLowerCase().replace(/\s+/g, "-");
+        const bwfCityUrl = `/bowling-with-friends/${encodeURIComponent(stateSlug)}/${encodeURIComponent(citySlug)}`;
+        console.log("Adding bowling-with-friends city URL to sitemap:", bwfCityUrl);
+        smStream.write({
+          url: bwfCityUrl,
           changefreq: "weekly",
           priority: 0.5,
           lastmod: new Date().toISOString(),
