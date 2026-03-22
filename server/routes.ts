@@ -6187,6 +6187,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     "experiences": {
       title: "Bowling Experiences - Find Your Perfect Bowling Activity | BowlingAlleys.io",
       description: "Explore different bowling experiences: cosmic bowling, leagues, birthday parties, arcade games, bars, and more."
+    },
+    "bowling-with-friends": {
+      title: "Bowling with Friends Near You - Group Lanes & Fun | BowlingAlleys.io",
+      description: "Find the best bowling alleys for a group night out. Compare lanes, food, bars, and pricing — perfect for friends, birthdays, and group outings."
     }
   };
 
@@ -6203,6 +6207,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     "/bowling-lessons/:state?/:city?",
     "/corporate-events/:state?/:city?",
     "/senior-bowling/:state?/:city?",
+    "/bowling-with-friends/:state?/:city?",
     "/sports-bar",
     "/experiences"
   ], async (req, res, next) => {

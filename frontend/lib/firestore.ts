@@ -676,6 +676,24 @@ export const getTournamentsVenuesByState = async (state: string): Promise<Venue[
 };
 
 // Cosmic Bowling specific functions - filter venues to only those with "Glow Bowling" or "Cosmic Bowling" amenities
+// Bowling with friends — all venues with a state, sorted by rating
+export const getBowlingWithFriendsStates = async (): Promise<string[]> => {
+  const allVenues = await getCachedVenues();
+  const states = new Set<string>();
+  allVenues.forEach((venue) => {
+    if (venue.state) states.add(normalizeStateToAbbr(venue.state));
+  });
+  return Array.from(states).sort();
+};
+
+export const getBowlingWithFriendsVenuesByState = async (state: string): Promise<Venue[]> => {
+  const allVenues = await getCachedVenues();
+  const normalizedQuery = normalizeStateToAbbr(state);
+  return allVenues
+    .filter((v) => v.state && normalizeStateToAbbr(v.state) === normalizedQuery)
+    .sort((a, b) => b.avgRating - a.avgRating);
+};
+
 export const getCosmicStates = async (): Promise<string[]> => {
   const allVenues = await getCachedVenues();
   const states = new Set<string>();

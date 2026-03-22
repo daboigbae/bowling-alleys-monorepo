@@ -250,6 +250,14 @@ const experiences: ExperienceCard[] = [
     available: true,
   },
   {
+    title: "Bowling with Friends",
+    description:
+      "Find the best bowling alleys for a group night out. Compare lanes, food, bars, and group pricing — perfect for friends, birthdays, and casual outings.",
+    href: "/bowling-with-friends",
+    icon: Users,
+    available: true,
+  },
+  {
     title: "Tournaments",
     description:
       "Find bowling alleys hosting tournaments and competitive events. Discover local competitions, league championships, and tournament bowling near you.",
