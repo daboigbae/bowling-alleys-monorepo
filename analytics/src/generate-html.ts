@@ -181,6 +181,87 @@ export function generateDashboardHTML(report: WeeklyReport): string {
       </tr>`)
     .join("");
 
+  // Experience / category pages
+  const EXPERIENCE_PREFIXES = [
+    "/cosmic-bowling", "/open-bowling", "/kids-bowling", "/bowling-birthday-party",
+    "/arcade-bowling", "/batting-cages", "/bowling-restaurant", "/bowling-bar",
+    "/sports-bar", "/snack-bar", "/bowling-billiards", "/ping-pong", "/pro-shop",
+    "/laser-tag", "/karaoke-bowling", "/duckpin-bowling", "/candlepin-bowling",
+    "/wheelchair-accessible", "/escape-rooms", "/bowling-lessons", "/corporate-events",
+    "/senior-bowling", "/tournaments", "/bowling-leagues", "/bowling-cost",
+    "/specials", "/experiences",
+  ];
+
+  const isExperiencePath = (path: string) =>
+    EXPERIENCE_PREFIXES.some((pfx) => path.startsWith(pfx));
+
+  // GA4 — aggregate by root experience slug (e.g. /bowling-leagues/KS → /bowling-leagues)
+  const expGA4Map = new Map<string, { pageviews: number; users: number; bounceRate: number; engTime: number; count: number }>();
+  for (const p of ga4.topPages) {
+    if (!isExperiencePath(p.path)) continue;
+    const root = "/" + p.path.split("/").filter(Boolean)[0];
+    const existing = expGA4Map.get(root) ?? { pageviews: 0, users: 0, bounceRate: 0, engTime: 0, count: 0 };
+    expGA4Map.set(root, {
+      pageviews: existing.pageviews + p.pageviews,
+      users: existing.users + p.users,
+      bounceRate: existing.bounceRate + p.bounceRate,
+      engTime: existing.engTime + p.avgEngagementTime,
+      count: existing.count + 1,
+    });
+  }
+
+  // GSC — aggregate impressions/clicks by root experience slug
+  const expGSCMap = new Map<string, { impressions: number; clicks: number; posSum: number; count: number }>();
+  for (const p of gsc.topPages) {
+    const path = p.page.replace(/^https?:\/\/[^/]+/, "");
+    if (!isExperiencePath(path)) continue;
+    const root = "/" + path.split("/").filter(Boolean)[0];
+    const existing = expGSCMap.get(root) ?? { impressions: 0, clicks: 0, posSum: 0, count: 0 };
+    expGSCMap.set(root, {
+      impressions: existing.impressions + p.impressions,
+      clicks: existing.clicks + p.clicks,
+      posSum: existing.posSum + p.position,
+      count: existing.count + 1,
+    });
+  }
+
+  // Merge and sort by impressions desc (GSC is the better signal for discoverability)
+  const allExpSlugs = new Set([...expGA4Map.keys(), ...expGSCMap.keys()]);
+  const expRows = Array.from(allExpSlugs)
+    .map((slug) => {
+      const ga = expGA4Map.get(slug);
+      const gs = expGSCMap.get(slug);
+      const impressions = gs?.impressions ?? 0;
+      const clicks = gs?.clicks ?? 0;
+      const ctr = impressions > 0 ? clicks / impressions : 0;
+      const avgPos = gs && gs.count > 0 ? gs.posSum / gs.count : null;
+      const pageviews = ga?.pageviews ?? 0;
+      // Flag: high impressions, low CTR = opportunity
+      const isOpportunity = impressions >= 20 && ctr < 0.05;
+      // Flag: zero GA4 traffic = underperforming
+      const isDead = pageviews === 0 && impressions < 5;
+      return { slug, impressions, clicks, ctr, avgPos, pageviews, isOpportunity, isDead };
+    })
+    .sort((a, b) => b.impressions - a.impressions || b.pageviews - a.pageviews)
+    .map((e) => {
+      const badge = e.isOpportunity
+        ? `<span class="badge neutral" style="background:rgba(234,179,8,0.15);color:#eab308">opportunity</span>`
+        : e.isDead
+        ? `<span class="badge bad">low traffic</span>`
+        : "";
+      const posStr = e.avgPos !== null ? e.avgPos.toFixed(1) : "—";
+      const ctrStr = e.impressions > 0 ? pct(e.ctr) : "—";
+      return `<tr>
+        <td class="page-path"><a href="https://bowlingalleys.io${escapeHtml(e.slug)}" target="_blank" style="color:#818cf8">${escapeHtml(e.slug)}</a>${badge}</td>
+        <td>${fmt(e.pageviews)}</td>
+        <td>${fmt(e.impressions)}</td>
+        <td>${fmt(e.clicks)}</td>
+        <td>${ctrStr}</td>
+        <td>${posStr}</td>
+      </tr>`;
+    })
+    .join("");
+
   // Near-miss queries
   const nearMissRows = gsc.queryGroups.nearMiss
     .slice(0, 10)
@@ -661,6 +742,19 @@ export function generateDashboardHTML(report: WeeklyReport): string {
         <thead><tr><th>#</th><th>Venue</th><th>Views</th><th>Users</th><th>Bounce</th><th>Eng Time</th></tr></thead>
         <tbody>${topVenueRows}</tbody>
       </table>` : '<p style="color:#8b8fa3;padding:1rem">No venue pages tracked this week.</p>'}
+    </div>
+
+    <!-- Experience / Category Pages -->
+    <h2 class="section-title">Experience Pages Performance</h2>
+    <div class="table-card">
+      ${expRows ? `<table>
+        <thead><tr><th>Experience</th><th>GA4 Views</th><th>GSC Impr</th><th>Clicks</th><th>CTR</th><th>Avg Pos</th></tr></thead>
+        <tbody>${expRows}</tbody>
+      </table>
+      <p style="font-size:0.75rem;color:var(--text-dim);margin-top:0.75rem;">
+        <span style="background:rgba(234,179,8,0.15);color:#eab308;padding:0.1rem 0.4rem;border-radius:999px;font-size:0.7rem;font-weight:600">opportunity</span> = 20+ impressions but under 5% CTR &nbsp;·&nbsp;
+        <span style="background:rgba(239,68,68,0.15);color:#ef4444;padding:0.1rem 0.4rem;border-radius:999px;font-size:0.7rem;font-weight:600">low traffic</span> = no GA4 views and under 5 GSC impressions this week
+      </p>` : '<p style="color:#8b8fa3;padding:1rem">No experience page data this week.</p>'}
     </div>
 
     <!-- GA4 Top Pages -->
